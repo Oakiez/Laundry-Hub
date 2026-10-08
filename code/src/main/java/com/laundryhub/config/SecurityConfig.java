@@ -28,9 +28,11 @@ public class SecurityConfig {
                         .requestMatchers("/staff/**").hasAnyRole("STAFF", "ADMIN")
                         .requestMatchers("/admin/**").hasRole("ADMIN")
                         .anyRequest().authenticated())
-                .formLogin(Customizer.withDefaults())
+                .formLogin(form -> form
+                        .loginPage("/login")
+                        .defaultSuccessUrl("/", true))
                 .httpBasic(Customizer.withDefaults())
-                .logout(Customizer.withDefaults())
+                .logout(logout -> logout.logoutSuccessUrl("/login?logout"))
                 // REST clients get a plain 401 instead of a redirect to the HTML login page
                 .exceptionHandling(ex -> ex.defaultAuthenticationEntryPointFor(
                         new HttpStatusEntryPoint(HttpStatus.UNAUTHORIZED),
