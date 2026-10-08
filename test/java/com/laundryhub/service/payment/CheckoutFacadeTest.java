@@ -127,17 +127,43 @@ class CheckoutFacadeTest {
     }
 
     @Test
-    void confirmCash_publishesEventToOwner() {
+    void confirmPayment_publishesEventToOwner() {
         Payable payable = order(5L);
         when(paymentService.confirm(3L)).thenReturn(paymentFor(payable, true));
         when(orderProvider.findPayable(5L)).thenReturn(payable);
 
-        PaymentResponse response = facade.confirmCash(3L);
+        PaymentResponse response = facade.confirmPayment(3L);
 
         assertEquals(PaymentStatus.PAID, response.status());
         ArgumentCaptor<Object> captor = ArgumentCaptor.forClass(Object.class);
         verify(eventPublisher).publishEvent(captor.capture());
         assertEquals(OWNER_ID, ((PaymentCompletedEvent) captor.getValue()).userId());
+    }
+
+    @Test
+    void getPayment_owner_returnsPayment() {
+        Payable payable = order(5L);
+        when(paymentService.getById(3L)).thenReturn(paymentFor(payable, true));
+        when(orderProvider.findPayable(5L)).thenReturn(payable);
+
+        assertEquals(PaymentStatus.PAID, facade.getPayment(3L, OWNER_ID, false).status());
+    }
+
+    @Test
+    void getPayment_notOwner_throwsAccessDenied() {
+        Payable payable = order(5L);
+        when(paymentService.getById(3L)).thenReturn(paymentFor(payable, true));
+        when(orderProvider.findPayable(5L)).thenReturn(payable);
+
+        assertThrows(AccessDeniedException.class, () -> facade.getPayment(3L, OTHER_USER_ID, false));
+    }
+
+    @Test
+    void getPayment_staff_canViewAnyPayment_withoutOwnerLookup() {
+        when(paymentService.getById(3L)).thenReturn(paymentFor(order(5L), true));
+
+        assertEquals(PaymentStatus.PAID, facade.getPayment(3L, OTHER_USER_ID, true).status());
+        verify(orderProvider, never()).findPayable(any());
     }
 
     private static CheckoutRequest request(PaymentMethod method) {

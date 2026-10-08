@@ -41,6 +41,17 @@ class PaymentTest {
         assertNotNull(p.getPaidAt());
     }
 
+    @Test
+    void markPaid_calledTwice_keepsFirstPaidAt() throws InterruptedException {
+        Payment p = Payment.forPayable(payable(PayableType.LAUNDRY_ORDER, 1L, "10.00"), PaymentMethod.CASH);
+        p.markPaid();
+        var firstPaidAt = p.getPaidAt();
+        Thread.sleep(5);
+        p.markPaid();
+
+        assertEquals(firstPaidAt, p.getPaidAt());
+    }
+
     private static Payable payable(PayableType type, Long id, String amount) {
         return new Payable() {
             public Long getId() { return id; }

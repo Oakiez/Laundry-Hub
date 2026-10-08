@@ -1,0 +1,44 @@
+<!DOCTYPE html>
+<html lang="th" xmlns:th="http://www.thymeleaf.org"
+      xmlns:sec="http://www.thymeleaf.org/extras/spring-security">
+<head th:replace="~{fragments/layout :: head('หน้าแรก')}"></head>
+<body class="d-flex flex-column min-vh-100">
+<nav th:replace="~{fragments/layout :: navbar}"></nav>
+
+<main class="container py-4 flex-grow-1">
+    <div th:replace="~{fragments/layout :: alert}"></div>
+
+    <div class="p-4 mb-4 bg-white border rounded-3">
+        <h1 class="h3">ยินดีต้อนรับสู่ LaundryHub</h1>
+        <p class="mb-0 text-muted">
+            สวัสดี <strong sec:authentication="name">user</strong>
+            (บทบาท: <span th:text="${role}">CUSTOMER</span>)
+        </p>
+    </div>
+
+    <div class="row g-3">
+        <div class="col-md-4">
+            <div class="card h-100">
+                <div class="card-body">
+                    <h2 class="h5 card-title">โปรไฟล์ของฉัน</h2>
+                    <p class="card-text text-muted">ดูและแก้ไขข้อมูลส่วนตัว</p>
+                    <a th:href="@{/profile}" class="btn btn-primary btn-sm">เปิดโปรไฟล์</a>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-4" sec:authorize="hasRole('ADMIN')">
+            <div class="card h-100">
+                <div class="card-body">
+                    <h2 class="h5 card-title">จัดการสาขา</h2>
+                    <p class="card-text text-muted">เพิ่ม แก้ไข ลบสาขา</p>
+                    <a th:href="@{/admin/branches}" class="btn btn-primary btn-sm">จัดการสาขา</a>
+                </div>
+            </div>
+        </div>
+    </div>
+</main>
+
+<footer th:replace="~{fragments/layout :: footer}"></footer>
+<script th:replace="~{fragments/layout :: scripts}"></script>
+</body>
+</html>
