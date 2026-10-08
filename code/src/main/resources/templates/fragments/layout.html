@@ -1,0 +1,110 @@
+<!DOCTYPE html>
+<html lang="th" xmlns:th="http://www.thymeleaf.org"
+      xmlns:sec="http://www.thymeleaf.org/extras/spring-security">
+
+<!--
+  Shared layout fragments (owner: Oak). How to use in any page:
+
+  <!DOCTYPE html>
+  <html lang="th" xmlns:th="http://www.thymeleaf.org" xmlns:sec="http://www.thymeleaf.org/extras/spring-security">
+  <head th:replace="~{fragments/layout :: head('Page title')}"></head>
+  <body class="d-flex flex-column min-vh-100">
+  <nav th:replace="~{fragments/layout :: navbar}"></nav>
+  <main class="container py-4 flex-grow-1">
+      <div th:replace="~{fragments/layout :: alert}"></div>
+      ... page content ...
+  </main>
+  <footer th:replace="~{fragments/layout :: footer}"></footer>
+  <script th:replace="~{fragments/layout :: scripts}"></script>
+  </body>
+  </html>
+
+  Flash messages: put "success" / "error" / "info" in RedirectAttributes (or Model) and the alert fragment shows them.
+  Need a new navbar link for your module? Add it in the marked section below and tell Oak.
+-->
+
+<head th:fragment="head(title)">
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title th:text="${title} + ' | LaundryHub'">LaundryHub</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" th:href="@{/css/app.css}">
+</head>
+
+<body>
+
+<nav th:fragment="navbar" class="navbar navbar-expand-lg navbar-dark bg-primary">
+    <div class="container">
+        <a class="navbar-brand fw-bold" th:href="@{/}">LaundryHub</a>
+        <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#mainNav"
+                aria-controls="mainNav" aria-expanded="false" aria-label="Toggle navigation">
+            <span class="navbar-toggler-icon"></span>
+        </button>
+
+        <div class="collapse navbar-collapse" id="mainNav">
+            <ul class="navbar-nav me-auto">
+                <li class="nav-item" sec:authorize="isAuthenticated()">
+                    <a class="nav-link" th:href="@{/}">หน้าแรก</a>
+                </li>
+
+                <!-- CUSTOMER links: add yours here (Peach: orders, Pond: machines, Shogun: payments/notifications) -->
+                <li sec:authorize="hasRole('CUSTOMER')" th:remove="tag"></li>
+
+                <!-- STAFF links: add yours here (Peach: order board, Pond: machine status) -->
+                <li sec:authorize="hasAnyRole('STAFF','ADMIN')" th:remove="tag"></li>
+
+                <!-- ADMIN links -->
+                <li class="nav-item" sec:authorize="hasRole('ADMIN')">
+                    <a class="nav-link" th:href="@{/admin/branches}">จัดการสาขา</a>
+                </li>
+            </ul>
+
+            <ul class="navbar-nav ms-auto align-items-lg-center">
+                <li class="nav-item" sec:authorize="isAnonymous()">
+                    <a class="nav-link" th:href="@{/login}">เข้าสู่ระบบ</a>
+                </li>
+                <li class="nav-item" sec:authorize="isAnonymous()">
+                    <a class="nav-link" th:href="@{/register}">สมัครสมาชิก</a>
+                </li>
+
+                <li class="nav-item" sec:authorize="isAuthenticated()">
+                    <a class="nav-link" th:href="@{/profile}">
+                        <span sec:authentication="name">user</span>
+                    </a>
+                </li>
+                <li class="nav-item" sec:authorize="isAuthenticated()">
+                    <form th:action="@{/logout}" method="post" class="d-inline">
+                        <button type="submit" class="btn btn-outline-light btn-sm">ออกจากระบบ</button>
+                    </form>
+                </li>
+            </ul>
+        </div>
+    </div>
+</nav>
+
+<div th:fragment="alert">
+    <div th:if="${success}" class="alert alert-success alert-dismissible fade show" role="alert">
+        <span th:text="${success}">success</span>
+        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+    </div>
+    <div th:if="${error}" class="alert alert-danger alert-dismissible fade show" role="alert">
+        <span th:text="${error}">error</span>
+        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+    </div>
+    <div th:if="${info}" class="alert alert-info alert-dismissible fade show" role="alert">
+        <span th:text="${info}">info</span>
+        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+    </div>
+</div>
+
+<footer th:fragment="footer" class="bg-light border-top py-3 mt-auto">
+    <div class="container text-center text-muted small">
+        LaundryHub &copy; 2026 &middot; CP353002 Principles of Software Design and Development
+    </div>
+</footer>
+
+<script th:fragment="scripts"
+        src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+
+</body>
+</html>

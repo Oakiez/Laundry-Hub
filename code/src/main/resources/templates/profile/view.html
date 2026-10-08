@@ -1,0 +1,62 @@
+<!DOCTYPE html>
+<html lang="th" xmlns:th="http://www.thymeleaf.org"
+      xmlns:sec="http://www.thymeleaf.org/extras/spring-security">
+<head th:replace="~{fragments/layout :: head('โปรไฟล์ของฉัน')}"></head>
+<body class="d-flex flex-column min-vh-100">
+<nav th:replace="~{fragments/layout :: navbar}"></nav>
+
+<main class="container py-4 flex-grow-1">
+    <div th:replace="~{fragments/layout :: alert}"></div>
+
+    <h1 class="h4 mb-3">โปรไฟล์ของฉัน</h1>
+
+    <div class="card mb-4">
+        <div class="card-body">
+            <h2 class="h6 text-muted">ข้อมูลบัญชี</h2>
+            <dl class="row mb-0">
+                <dt class="col-sm-3">ชื่อผู้ใช้</dt>
+                <dd class="col-sm-9" th:text="${user.username}">username</dd>
+                <dt class="col-sm-3">อีเมล</dt>
+                <dd class="col-sm-9" th:text="${user.email}">email</dd>
+                <dt class="col-sm-3">บทบาท</dt>
+                <dd class="col-sm-9"><span class="badge text-bg-secondary" th:text="${user.role}">CUSTOMER</span></dd>
+            </dl>
+        </div>
+    </div>
+
+    <div class="alert alert-info" th:unless="${hasProfile}">
+        บัญชีนี้ไม่มีข้อมูลโปรไฟล์ลูกค้า (มีเฉพาะบัญชีลูกค้า)
+    </div>
+
+    <div class="card" th:if="${hasProfile}">
+        <div class="card-body">
+            <h2 class="h6 text-muted">ข้อมูลส่วนตัว</h2>
+            <form th:action="@{/profile}" th:object="${form}" method="post" novalidate>
+                <div class="mb-3">
+                    <label for="fullName" class="form-label">ชื่อ-นามสกุล</label>
+                    <input type="text" id="fullName" th:field="*{fullName}" class="form-control"
+                           th:classappend="${#fields.hasErrors('fullName')} ? 'is-invalid'">
+                    <div class="invalid-feedback" th:errors="*{fullName}">error</div>
+                </div>
+                <div class="mb-3">
+                    <label for="phone" class="form-label">เบอร์โทร</label>
+                    <input type="text" id="phone" th:field="*{phone}" class="form-control"
+                           th:classappend="${#fields.hasErrors('phone')} ? 'is-invalid'">
+                    <div class="invalid-feedback" th:errors="*{phone}">error</div>
+                </div>
+                <div class="mb-3">
+                    <label for="address" class="form-label">ที่อยู่</label>
+                    <input type="text" id="address" th:field="*{address}" class="form-control"
+                           th:classappend="${#fields.hasErrors('address')} ? 'is-invalid'">
+                    <div class="invalid-feedback" th:errors="*{address}">error</div>
+                </div>
+                <button type="submit" class="btn btn-primary">บันทึก</button>
+            </form>
+        </div>
+    </div>
+</main>
+
+<footer th:replace="~{fragments/layout :: footer}"></footer>
+<script th:replace="~{fragments/layout :: scripts}"></script>
+</body>
+</html>
