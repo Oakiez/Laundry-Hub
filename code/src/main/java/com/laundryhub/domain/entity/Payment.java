@@ -1,6 +1,7 @@
 package com.laundryhub.domain.entity;
 
 import com.laundryhub.domain.Payable;
+import com.laundryhub.domain.enums.PayableType;
 import com.laundryhub.domain.enums.PaymentMethod;
 import com.laundryhub.domain.enums.PaymentStatus;
 import jakarta.persistence.Column;
@@ -87,6 +88,15 @@ public class Payment {
 
     public void markFailed() {
         this.status = PaymentStatus.FAILED;
+    }
+
+    /** ชนิดของสิ่งที่ถูกชำระ ดูจาก FK ที่มีค่า (DB รับประกันว่ามีอย่างเดียว) */
+    public PayableType getPayableType() {
+        return orderId != null ? PayableType.LAUNDRY_ORDER : PayableType.USAGE_SESSION;
+    }
+
+    public Long getPayableRefId() {
+        return orderId != null ? orderId : sessionId;
     }
 
     public Long getId() {
