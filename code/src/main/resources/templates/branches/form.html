@@ -1,0 +1,45 @@
+<!DOCTYPE html>
+<html lang="th" xmlns:th="http://www.thymeleaf.org"
+      xmlns:sec="http://www.thymeleaf.org/extras/spring-security">
+<head th:replace="~{fragments/layout :: head('ข้อมูลสาขา')}"></head>
+<body class="d-flex flex-column min-vh-100">
+<nav th:replace="~{fragments/layout :: navbar}"></nav>
+
+<main class="container py-4 flex-grow-1">
+    <div th:replace="~{fragments/layout :: alert}"></div>
+
+    <h1 class="h4 mb-3" th:text="${branchId == null} ? 'เพิ่มสาขา' : 'แก้ไขสาขา'">ข้อมูลสาขา</h1>
+
+    <div class="card" style="max-width: 560px;">
+        <div class="card-body">
+            <form th:action="${branchId == null} ? @{/admin/branches} : @{/admin/branches/{id}(id=${branchId})}"
+                  th:object="${form}" method="post" novalidate>
+                <div class="mb-3">
+                    <label for="name" class="form-label">ชื่อสาขา</label>
+                    <input type="text" id="name" th:field="*{name}" class="form-control"
+                           th:classappend="${#fields.hasErrors('name')} ? 'is-invalid'">
+                    <div class="invalid-feedback" th:errors="*{name}">error</div>
+                </div>
+                <div class="mb-3">
+                    <label for="address" class="form-label">ที่อยู่</label>
+                    <input type="text" id="address" th:field="*{address}" class="form-control"
+                           th:classappend="${#fields.hasErrors('address')} ? 'is-invalid'">
+                    <div class="invalid-feedback" th:errors="*{address}">error</div>
+                </div>
+                <div class="mb-3">
+                    <label for="phone" class="form-label">เบอร์โทร</label>
+                    <input type="text" id="phone" th:field="*{phone}" class="form-control"
+                           th:classappend="${#fields.hasErrors('phone')} ? 'is-invalid'">
+                    <div class="invalid-feedback" th:errors="*{phone}">error</div>
+                </div>
+                <button type="submit" class="btn btn-primary">บันทึก</button>
+                <a th:href="@{/admin/branches}" class="btn btn-outline-secondary">ยกเลิก</a>
+            </form>
+        </div>
+    </div>
+</main>
+
+<footer th:replace="~{fragments/layout :: footer}"></footer>
+<script th:replace="~{fragments/layout :: scripts}"></script>
+</body>
+</html>
