@@ -12,6 +12,7 @@ import org.springframework.test.web.servlet.setup.MockMvcBuilders;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
@@ -92,6 +93,26 @@ class GlobalExceptionHandlerTest {
                 .andExpect(status().isBadRequest());
     }
 
+    @Test
+    void wrongHttpMethod_returns405_notFiveHundred() throws Exception {
+        mockMvc.perform(post("/t/not-found"))
+                .andExpect(status().isMethodNotAllowed())
+                .andExpect(jsonPath("$.status").value(405));
+    }
+
+    @Test
+    void missingRequiredParam_returns400() throws Exception {
+        mockMvc.perform(get("/t/param"))
+                .andExpect(status().isBadRequest())
+                .andExpect(jsonPath("$.message").value("Missing required parameter 'q'"));
+    }
+
+    @Test
+    void unsupportedContentType_returns415() throws Exception {
+        mockMvc.perform(post("/t/validate").contentType(MediaType.TEXT_PLAIN).content("x"))
+                .andExpect(status().isUnsupportedMediaType());
+    }
+
     record Body(@NotBlank String name) {
     }
 
@@ -130,6 +151,10 @@ class GlobalExceptionHandlerTest {
         @GetMapping("/t/boom")
         void boom() {
             throw new IllegalStateException("secret internal detail");
+        }
+
+        @GetMapping("/t/param")
+        void param(@RequestParam String q) {
         }
 
         @PostMapping("/t/validate")
