@@ -82,6 +82,9 @@ public class Payment {
 
     /** เปลี่ยนเป็น PAID พร้อมบันทึกเวลาที่รับเงิน */
     public void markPaid() {
+        if (this.status == PaymentStatus.PAID) {
+            return; // idempotent: ไม่เขียนทับเวลาที่รับเงินครั้งแรก
+        }
         this.status = PaymentStatus.PAID;
         this.paidAt = LocalDateTime.now();
     }

@@ -127,12 +127,12 @@ class CheckoutFacadeTest {
     }
 
     @Test
-    void confirmCash_publishesEventToOwner() {
+    void confirmPayment_publishesEventToOwner() {
         Payable payable = order(5L);
         when(paymentService.confirm(3L)).thenReturn(paymentFor(payable, true));
         when(orderProvider.findPayable(5L)).thenReturn(payable);
 
-        PaymentResponse response = facade.confirmCash(3L);
+        PaymentResponse response = facade.confirmPayment(3L);
 
         assertEquals(PaymentStatus.PAID, response.status());
         ArgumentCaptor<Object> captor = ArgumentCaptor.forClass(Object.class);
