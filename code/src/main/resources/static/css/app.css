@@ -1,0 +1,12 @@
+body {
+    background-color: #f5f7fa;
+}
+
+.auth-card {
+    max-width: 480px;
+    margin: 2rem auto;
+}
+
+.table-actions form {
+    display: inline;
+}
