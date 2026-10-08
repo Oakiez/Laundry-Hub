@@ -67,12 +67,25 @@ public class CheckoutFacade {
         return paymentMapper.toResponse(payment);
     }
 
-    /** พนักงานยืนยันรับเงินสด แล้วแจ้งเตือนเจ้าของ */
+    /** พนักงานยืนยันรับเงินของ payment ที่ค้าง PENDING (เช่น เงินสด) แล้วแจ้งเตือนเจ้าของ */
     @Transactional
-    public PaymentResponse confirmCash(Long paymentId) {
+    public PaymentResponse confirmPayment(Long paymentId) {
         Payment payment = paymentService.confirm(paymentId);
         Payable payable = providerFor(payment.getPayableType()).findPayable(payment.getPayableRefId());
         publishCompleted(payment, payable.getOwnerUserId());
+        return paymentMapper.toResponse(payment);
+    }
+
+    /** ดู payment ได้เฉพาะเจ้าของ payable หรือพนักงาน */
+    @Transactional(readOnly = true)
+    public PaymentResponse getPayment(Long paymentId, Long currentUserId, boolean staff) {
+        Payment payment = paymentService.getById(paymentId);
+        if (!staff) {
+            Payable payable = providerFor(payment.getPayableType()).findPayable(payment.getPayableRefId());
+            if (!Objects.equals(payable.getOwnerUserId(), currentUserId)) {
+                throw new AccessDeniedException("You can only view your own payments");
+            }
+        }
         return paymentMapper.toResponse(payment);
     }
 
