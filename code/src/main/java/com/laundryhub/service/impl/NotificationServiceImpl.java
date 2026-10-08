@@ -6,8 +6,11 @@ import com.laundryhub.repository.NotificationRepository;
 import com.laundryhub.service.NotificationService;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
+import org.springframework.security.access.AccessDeniedException;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+
+import java.util.Objects;
 
 @Service
 @Transactional
@@ -41,8 +44,11 @@ public class NotificationServiceImpl implements NotificationService {
     }
 
     @Override
-    public Notification markRead(Long notificationId) {
+    public Notification markRead(Long notificationId, Long requesterUserId) {
         Notification notification = getById(notificationId);
+        if (!Objects.equals(notification.getUserId(), requesterUserId)) {
+            throw new AccessDeniedException("You can only mark your own notifications as read");
+        }
         notification.markRead();
         return notificationRepository.save(notification);
     }

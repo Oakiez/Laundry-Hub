@@ -13,6 +13,7 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
+import org.springframework.security.access.AccessDeniedException;
 
 import java.util.List;
 import java.util.Optional;
@@ -23,6 +24,7 @@ import static org.junit.jupiter.api.Assertions.assertSame;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
@@ -89,13 +91,23 @@ class NotificationServiceImplTest {
         when(notificationRepository.findById(1L)).thenReturn(Optional.of(notification));
         when(notificationRepository.save(notification)).thenReturn(notification);
 
-        assertTrue(service.markRead(1L).isRead());
+        assertTrue(service.markRead(1L, 7L).isRead());
+    }
+
+    @Test
+    void markRead_notOwner_throwsAccessDenied_andDoesNotSave() {
+        Notification notification = new Notification(7L, "hi");
+        when(notificationRepository.findById(1L)).thenReturn(Optional.of(notification));
+
+        assertThrows(AccessDeniedException.class, () -> service.markRead(1L, 99L));
+        assertFalse(notification.isRead());
+        verify(notificationRepository, never()).save(any());
     }
 
     @Test
     void markRead_missing_throwsNotFound() {
         when(notificationRepository.findById(99L)).thenReturn(Optional.empty());
 
-        assertThrows(ResourceNotFoundException.class, () -> service.markRead(99L));
+        assertThrows(ResourceNotFoundException.class, () -> service.markRead(99L, 7L));
     }
 }

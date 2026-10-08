@@ -12,8 +12,13 @@ public interface NotificationService {
     /** @param unread true = เฉพาะที่ยังไม่อ่าน, false = เฉพาะที่อ่านแล้ว, null = ทั้งหมด */
     Page<Notification> findByUser(Long userId, Boolean unread, Pageable pageable);
 
-    /** @throws com.laundryhub.exception.ResourceNotFoundException ถ้าไม่พบ */
-    Notification markRead(Long notificationId);
+    /**
+     * ทำเครื่องหมายว่าอ่านแล้ว เฉพาะเจ้าของแจ้งเตือน
+     *
+     * @throws com.laundryhub.exception.ResourceNotFoundException ถ้าไม่พบ
+     * @throws org.springframework.security.access.AccessDeniedException ถ้าไม่ใช่เจ้าของ
+     */
+    Notification markRead(Long notificationId, Long requesterUserId);
 
     Notification getById(Long notificationId);
 }
