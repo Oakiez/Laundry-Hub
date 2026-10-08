@@ -140,6 +140,32 @@ class CheckoutFacadeTest {
         assertEquals(OWNER_ID, ((PaymentCompletedEvent) captor.getValue()).userId());
     }
 
+    @Test
+    void getPayment_owner_returnsPayment() {
+        Payable payable = order(5L);
+        when(paymentService.getById(3L)).thenReturn(paymentFor(payable, true));
+        when(orderProvider.findPayable(5L)).thenReturn(payable);
+
+        assertEquals(PaymentStatus.PAID, facade.getPayment(3L, OWNER_ID, false).status());
+    }
+
+    @Test
+    void getPayment_notOwner_throwsAccessDenied() {
+        Payable payable = order(5L);
+        when(paymentService.getById(3L)).thenReturn(paymentFor(payable, true));
+        when(orderProvider.findPayable(5L)).thenReturn(payable);
+
+        assertThrows(AccessDeniedException.class, () -> facade.getPayment(3L, OTHER_USER_ID, false));
+    }
+
+    @Test
+    void getPayment_staff_canViewAnyPayment_withoutOwnerLookup() {
+        when(paymentService.getById(3L)).thenReturn(paymentFor(order(5L), true));
+
+        assertEquals(PaymentStatus.PAID, facade.getPayment(3L, OTHER_USER_ID, true).status());
+        verify(orderProvider, never()).findPayable(any());
+    }
+
     private static CheckoutRequest request(PaymentMethod method) {
         return new CheckoutRequest(PayableType.LAUNDRY_ORDER, 5L, method);
     }
