@@ -43,8 +43,8 @@ class AuthServiceTest {
 
     @Test
     void register_success_encodesPasswordAndCreatesCustomerWithProfile() {
-        when(userRepository.existsByUsername("somchai")).thenReturn(false);
-        when(userRepository.existsByEmail("somchai@test.com")).thenReturn(false);
+        when(userRepository.existsByUsernameIgnoreCase("somchai")).thenReturn(false);
+        when(userRepository.existsByEmailIgnoreCase("somchai@test.com")).thenReturn(false);
         when(passwordEncoder.encode("password123")).thenReturn("ENCODED");
         when(userRepository.save(any(User.class))).thenAnswer(inv -> inv.getArgument(0));
 
@@ -65,7 +65,7 @@ class AuthServiceTest {
 
     @Test
     void register_duplicateUsername_throwsAndSavesNothing() {
-        when(userRepository.existsByUsername("somchai")).thenReturn(true);
+        when(userRepository.existsByUsernameIgnoreCase("somchai")).thenReturn(true);
 
         assertThatThrownBy(() -> authService.register(request))
                 .isInstanceOf(DuplicateResourceException.class)
@@ -76,8 +76,8 @@ class AuthServiceTest {
 
     @Test
     void register_duplicateEmail_throwsAndSavesNothing() {
-        when(userRepository.existsByUsername("somchai")).thenReturn(false);
-        when(userRepository.existsByEmail("somchai@test.com")).thenReturn(true);
+        when(userRepository.existsByUsernameIgnoreCase("somchai")).thenReturn(false);
+        when(userRepository.existsByEmailIgnoreCase("somchai@test.com")).thenReturn(true);
 
         assertThatThrownBy(() -> authService.register(request))
                 .isInstanceOf(DuplicateResourceException.class)

@@ -30,10 +30,10 @@ public class AuthServiceImpl implements AuthService {
     @Override
     @Transactional
     public UserResponse register(RegisterRequest request) {
-        if (userRepository.existsByUsername(request.username())) {
+        if (userRepository.existsByUsernameIgnoreCase(request.username())) {
             throw new DuplicateResourceException("Username '" + request.username() + "' is already taken");
         }
-        if (userRepository.existsByEmail(request.email())) {
+        if (userRepository.existsByEmailIgnoreCase(request.email())) {
             throw new DuplicateResourceException("Email '" + request.email() + "' is already registered");
         }
 
