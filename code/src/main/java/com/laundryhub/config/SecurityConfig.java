@@ -2,7 +2,6 @@ package com.laundryhub.config;
 
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
-import org.springframework.http.HttpMethod;
 import org.springframework.http.HttpStatus;
 import org.springframework.security.config.Customizer;
 import org.springframework.security.config.annotation.method.configuration.EnableMethodSecurity;
@@ -22,9 +21,7 @@ public class SecurityConfig {
                         .requestMatchers("/login", "/register", "/css/**", "/js/**",
                                 "/api/v1/auth/**",
                                 "/swagger-ui/**", "/swagger-ui.html", "/v3/api-docs/**").permitAll()
-                        .requestMatchers(HttpMethod.POST, "/api/v1/branches/**").hasRole("ADMIN")
-                        .requestMatchers(HttpMethod.PUT, "/api/v1/branches/**").hasRole("ADMIN")
-                        .requestMatchers(HttpMethod.DELETE, "/api/v1/branches/**").hasRole("ADMIN")
+                        // URL rules only for whole areas; per-endpoint rules live in each controller as @PreAuthorize
                         .requestMatchers("/staff/**").hasAnyRole("STAFF", "ADMIN")
                         .requestMatchers("/admin/**").hasRole("ADMIN")
                         .anyRequest().authenticated())
