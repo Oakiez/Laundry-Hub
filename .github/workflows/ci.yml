@@ -1,0 +1,55 @@
+name: CI
+
+# Runs on every pull request into develop/main and on every push to them,
+# so a commit with failing tests (or a broken Docker build) is caught before it can be deployed.
+on:
+  pull_request:
+    branches: [develop, main]
+  push:
+    branches: [develop, main]
+
+# a newer run on the same branch/PR makes the older one pointless
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+
+permissions:
+  contents: read
+
+jobs:
+  test:
+    name: Test (mvn test)
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up JDK 17
+        uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '17'
+          cache: maven
+          cache-dependency-path: code/pom.xml
+
+      # tests live in the repo-level test/ folder; code/pom.xml points Maven at ../test/java
+      - name: Run unit tests
+        working-directory: code
+        run: mvn -B test
+
+      - name: Upload test reports
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: surefire-reports
+          path: code/target/surefire-reports
+          if-no-files-found: ignore
+
+  docker-build:
+    name: Docker build
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      # same Dockerfile Render uses; makes sure the image still builds (tests are skipped inside it)
+      - name: Build image
+        run: docker build -t laundryhub:ci code
