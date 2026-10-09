@@ -18,9 +18,9 @@
 - **State:** ถ้าไม่ใช้ State จะต้องเขียน `switch (status) { case RECEIVED -> WASHING; case WASHING -> DRYING; ... }` ใน `advance()` และอีกชุดใน `cancel()` ถ้าวันหน้าเพิ่มสถานะ (เช่น `QUALITY_CHECK`) ต้องไล่แก้ทุก switch และลืมได้ง่าย เมื่อใช้ State กฎของแต่ละสถานะอยู่ในคลาสของมันเอง เพิ่มสถานะ = เพิ่ม 1 คลาส + 1 บรรทัดใน Factory
   - ออกแบบให้ผ่าน **LSP**: `next()` คืน `Optional<OrderState>` แทนการ throw สถานะสุดท้าย (`PickedUpState`, `CancelledState`) คืน `Optional.empty()` ผู้เรียกจึงใช้ทุก State ได้แบบเดียวกัน
   - ข้อแลกเปลี่ยน: มี 7 คลาสเล็กๆ แทนที่จะเป็นเมธอดเดียว และยังมี `switch` 1 จุดใน `OrderStateFactory` (แปลง enum ที่เก็บใน DB เป็นคลาส) ซึ่ง Java ตรวจว่าครบทุก case ตอน compile
-- **Strategy:** ถ้าไม่ใช้ `OrderServiceImpl` ต้องมีสูตรราคาฝังอยู่ข้างใน และถ้ามีโปรลดราคาต้องแก้ Service เมื่อใช้ Strategy Service ถือแค่ interface (Spring ฉีดตัวจริงให้ตาม generic type) สูตรเองทดสอบแยกได้โดยไม่ต้องใช้ DB (`FullServicePricingTest` 6 เคส)
+- **Strategy:** ถ้าไม่ใช้ Strategy แล้ว `OrderServiceImpl` ต้องมีสูตรราคาฝังอยู่ข้างใน และถ้ามีโปรลดราคาต้องแก้ Service เมื่อใช้ Strategy Service ถือแค่ interface (Spring ฉีดตัวจริงให้ตาม generic type) สูตรเองทดสอบแยกได้โดยไม่ต้องใช้ DB (`FullServicePricingTest` 6 เคส)
   - เหตุผลที่ `if (express)` ใน `FullServicePricing` ไม่ขัด OCP: เป็นการอ่านค่าจากข้อมูล (ค่าด่วนต่อกิโลจาก `service_types.express_surcharge`) ไม่ใช่การแยกตามประเภทของวิธีคิดราคา
-- **Observer:** ถ้าไม่ใช้ `OrderService` ต้องเรียก `NotificationService` ตรงๆ ทุกจุดที่เปลี่ยนสถานะ สองโมดูลจะผูกกัน เมื่อใช้ event ผู้ยิงแค่ `publishEvent` เพิ่มผู้ฟังได้โดยไม่แก้ OrderService
+- **Observer:** ถ้าไม่ใช้ Observer แล้ว `OrderService` ต้องเรียก `NotificationService` ตรงๆ ทุกจุดที่เปลี่ยนสถานะ สองโมดูลจะผูกกัน เมื่อใช้ event ผู้ยิงแค่ `publishEvent` เพิ่มผู้ฟังได้โดยไม่แก้ OrderService
 - **Builder:** ใช้เฉพาะ `OrderResponse` เพราะเป็น DTO เดียวของโมดูลที่มี field เยอะ DTO เล็กอื่น (`OrderItemResponse` 6 field) ยังใช้ constructor ปกติ ไม่ได้ใส่ Builder ทุกคลาสเพื่อให้ครบ
 
 ## Enterprise Patterns ในโมดูลออเดอร์
