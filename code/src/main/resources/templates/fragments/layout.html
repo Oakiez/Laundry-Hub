@@ -48,10 +48,20 @@
                 </li>
 
                 <!-- CUSTOMER links: add yours here (Peach: orders, Pond: machines, Shogun: payments/notifications) -->
-                <li sec:authorize="hasRole('CUSTOMER')" th:remove="tag"></li>
+                <li class="nav-item" sec:authorize="hasRole('CUSTOMER')">
+                    <a class="nav-link" th:href="@{/payments/new}">ชำระเงิน</a>
+                </li>
+                <li class="nav-item" sec:authorize="hasRole('CUSTOMER')">
+                    <a class="nav-link" th:href="@{/notifications}">แจ้งเตือน</a>
+                </li>
 
                 <!-- STAFF links: add yours here (Peach: order board, Pond: machine status) -->
-                <li sec:authorize="hasAnyRole('STAFF','ADMIN')" th:remove="tag"></li>
+                <li class="nav-item" sec:authorize="hasAnyRole('STAFF','ADMIN')">
+                    <a class="nav-link" th:href="@{/staff/payments}">รายการชำระเงิน</a>
+                </li>
+                <li class="nav-item" sec:authorize="hasAnyRole('STAFF','ADMIN')">
+                    <a class="nav-link" th:href="@{/notifications}">แจ้งเตือน</a>
+                </li>
 
                 <!-- ADMIN links -->
                 <li class="nav-item" sec:authorize="hasRole('ADMIN')">
