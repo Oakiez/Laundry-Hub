@@ -1,0 +1,55 @@
+<!DOCTYPE html>
+<html lang="th" xmlns:th="http://www.thymeleaf.org"
+      xmlns:sec="http://www.thymeleaf.org/extras/spring-security">
+<head th:replace="~{fragments/layout :: head('จัดการสาขา')}"></head>
+<body class="d-flex flex-column min-vh-100">
+<nav th:replace="~{fragments/layout :: navbar}"></nav>
+
+<main class="container py-4 flex-grow-1">
+    <div th:replace="~{fragments/layout :: alert}"></div>
+
+    <div class="d-flex justify-content-between align-items-center mb-3">
+        <h1 class="h4 mb-0">จัดการสาขา</h1>
+        <a th:href="@{/admin/branches/new}" class="btn btn-primary">+ เพิ่มสาขา</a>
+    </div>
+
+    <div class="card">
+        <div class="table-responsive">
+            <table class="table table-hover align-middle mb-0">
+                <thead class="table-light">
+                <tr>
+                    <th>#</th>
+                    <th>ชื่อสาขา</th>
+                    <th>ที่อยู่</th>
+                    <th>เบอร์โทร</th>
+                    <th class="text-end">จัดการ</th>
+                </tr>
+                </thead>
+                <tbody>
+                <tr th:each="b : ${branches}">
+                    <td th:text="${b.id}">1</td>
+                    <td th:text="${b.name}">name</td>
+                    <td th:text="${b.address}">address</td>
+                    <td th:text="${b.phone}">phone</td>
+                    <td class="text-end table-actions">
+                        <a th:href="@{/admin/branches/{id}/edit(id=${b.id})}"
+                           class="btn btn-outline-secondary btn-sm">แก้ไข</a>
+                        <form th:action="@{/admin/branches/{id}/delete(id=${b.id})}" method="post"
+                              onsubmit="return confirm('ยืนยันการลบสาขานี้?');">
+                            <button type="submit" class="btn btn-outline-danger btn-sm">ลบ</button>
+                        </form>
+                    </td>
+                </tr>
+                <tr th:if="${#lists.isEmpty(branches)}">
+                    <td colspan="5" class="text-center text-muted py-4">ยังไม่มีสาขา</td>
+                </tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
+</main>
+
+<footer th:replace="~{fragments/layout :: footer}"></footer>
+<script th:replace="~{fragments/layout :: scripts}"></script>
+</body>
+</html>

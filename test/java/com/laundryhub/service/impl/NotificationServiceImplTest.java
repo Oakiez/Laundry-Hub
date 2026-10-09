@@ -1,6 +1,7 @@
 package com.laundryhub.service.impl;
 
 import com.laundryhub.domain.entity.Notification;
+import com.laundryhub.exception.BusinessRuleException;
 import com.laundryhub.exception.ResourceNotFoundException;
 import com.laundryhub.repository.NotificationRepository;
 import org.junit.jupiter.api.Test;
@@ -59,6 +60,19 @@ class NotificationServiceImplTest {
         ArgumentCaptor<Notification> captor = ArgumentCaptor.forClass(Notification.class);
         verify(notificationRepository).save(captor.capture());
         assertEquals(255, captor.getValue().getMessage().length());
+    }
+
+    @Test
+    void notifyUser_nullUser_throwsBusinessRule_andDoesNotSave() {
+        assertThrows(BusinessRuleException.class, () -> service.notifyUser(null, "hello"));
+        verify(notificationRepository, never()).save(any());
+    }
+
+    @Test
+    void notifyUser_nullOrBlankMessage_throwsBusinessRule_andDoesNotSave() {
+        assertThrows(BusinessRuleException.class, () -> service.notifyUser(7L, null));
+        assertThrows(BusinessRuleException.class, () -> service.notifyUser(7L, "   "));
+        verify(notificationRepository, never()).save(any());
     }
 
     @Test

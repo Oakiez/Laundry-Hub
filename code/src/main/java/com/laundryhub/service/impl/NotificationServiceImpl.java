@@ -1,6 +1,7 @@
 package com.laundryhub.service.impl;
 
 import com.laundryhub.domain.entity.Notification;
+import com.laundryhub.exception.BusinessRuleException;
 import com.laundryhub.exception.ResourceNotFoundException;
 import com.laundryhub.repository.NotificationRepository;
 import com.laundryhub.service.NotificationService;
@@ -27,6 +28,12 @@ public class NotificationServiceImpl implements NotificationService {
 
     @Override
     public Notification notifyUser(Long userId, String message) {
+        if (userId == null) {
+            throw new BusinessRuleException("Notification requires a user");
+        }
+        if (message == null || message.isBlank()) {
+            throw new BusinessRuleException("Notification message must not be blank");
+        }
         String safeMessage = message.length() > MAX_MESSAGE_LENGTH
                 ? message.substring(0, MAX_MESSAGE_LENGTH)
                 : message;
