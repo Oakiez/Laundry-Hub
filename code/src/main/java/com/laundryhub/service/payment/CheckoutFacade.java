@@ -5,7 +5,6 @@ import com.laundryhub.domain.entity.Payment;
 import com.laundryhub.domain.enums.PayableType;
 import com.laundryhub.domain.enums.PaymentStatus;
 import com.laundryhub.dto.request.CheckoutRequest;
-import com.laundryhub.dto.response.PayableSummary;
 import com.laundryhub.dto.response.PaymentResponse;
 import com.laundryhub.event.PaymentCompletedEvent;
 import com.laundryhub.exception.BusinessRuleException;
@@ -88,20 +87,6 @@ public class CheckoutFacade {
             }
         }
         return paymentMapper.toResponse(payment);
-    }
-
-    /**
-     * สรุปรายการที่จะชำระ ใช้แสดงหน้าชำระเงิน (ตรวจสิทธิ์แบบเดียวกับ {@link #checkout})
-     *
-     * @throws AccessDeniedException ถ้าไม่ใช่เจ้าของและไม่ใช่พนักงาน
-     */
-    @Transactional(readOnly = true)
-    public PayableSummary getPayableSummary(PayableType type, Long payableId, Long currentUserId, boolean staff) {
-        Payable payable = providerFor(type).findPayable(payableId);
-        if (!staff && !Objects.equals(payable.getOwnerUserId(), currentUserId)) {
-            throw new AccessDeniedException("You can only pay for your own " + type);
-        }
-        return new PayableSummary(payable.getPayableType(), payable.getId(), payable.getPayableAmount());
     }
 
     private PayableProvider providerFor(PayableType type) {
