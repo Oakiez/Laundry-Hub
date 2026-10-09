@@ -6,13 +6,18 @@ import org.springframework.stereotype.Component;
 import java.math.BigDecimal;
 import java.math.RoundingMode;
 
+/**
+ * Price of one laundry item: weightKg × (pricePerKg + expressSurcharge if express), rounded to 2 decimals (HALF_UP).
+ * expressSurcharge is baht per kg, e.g. 2 kg express at 25.00 + 10.00 = 70.00.
+ * Input values are validated in {@link FullServicePricingInput}.
+ */
 @Component
 public class FullServicePricing implements PricingStrategy<FullServicePricingInput> {
 
     @Override
     public BigDecimal calculate(FullServicePricingInput input) {
-        if (input.weightKg() == null || input.weightKg().signum() <= 0) {
-            throw new BusinessRuleException("Weight must be greater than 0");
+        if (input == null) {
+            throw new BusinessRuleException("Pricing input is required");
         }
         BigDecimal rate = input.pricePerKg();
         if (input.express()) {
