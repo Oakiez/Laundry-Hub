@@ -21,7 +21,9 @@ mvn test                                        # รันทั้งหมด
 mvn test -Dtest=GlobalExceptionHandlerTest      # รันคลาสเดียว
 ```
 
-ภาพหน้าจอผลรัน: `img/test-run-payment.png` (ผล `BUILD SUCCESS`, `Tests run: 57, Failures: 0, Errors: 0`)
+ภาพหน้าจอผลรัน (`BUILD SUCCESS`, `Tests run: 57, Failures: 0, Errors: 0`):
+
+![ผลรัน mvn test ของโมดูล Payment, Notification และ API Quality](../../img/test-run-payment.png)
 
 ## 2. สรุปผล (โมดูลของผู้เขียน)
 
@@ -89,13 +91,25 @@ mvn test -Dtest=GlobalExceptionHandlerTest      # รันคลาสเดี
 
 ## 4. ข้อบกพร่องที่พบระหว่างทดสอบและรีวิว (และแก้แล้ว)
 
-| # | พบจาก | ปัญหา | การแก้ไข |
-|---|---|---|---|
-| 1 | เทสต์ `GlobalExceptionHandlerTest` ล้ม 8 ข้อ | `@RestControllerAdvice(basePackages=...)` จำกัดขอบเขตผิด handler ไม่ถูกเรียกกับ controller นอก package | เปลี่ยนตัวกรอง (commit `fix`) |
-| 2 | Code Review ของปอนด์ (PR #3) | handler `Exception` กลืน error ของ Spring MVC ทำให้ 405/400/415 กลายเป็น 500 | เพิ่ม handler เฉพาะ 3 ชนิด + เทสต์ |
-| 3 | เทสต์ที่เพิ่มจากข้อ 2 ล้ม 1 ข้อ | 405 เกิดก่อนเลือก controller (handler เป็น null) ตัวกรอง advice แบบกำหนดเงื่อนไขจึงไม่ทำงาน body ไม่ใช่ `ApiErrorResponse` | เอาตัวกรองออกให้ advice ครอบทุก controller |
-| 4 | Code Review ของปอนด์ (PR #3) | `markPaid()` เรียกซ้ำเขียนทับ `paidAt` | ทำให้ idempotent + เทสต์ |
-| 5 | Code Review ของปอนด์ (PR #6) | `notifyUser` ไม่ตรวจ `userId`/ข้อความ null | ตรวจและโยน `BusinessRuleException` + เทสต์ |
+**ข้อ 1 — เทสต์ `GlobalExceptionHandlerTest` ล้ม 8 ข้อ**
+- ปัญหา: `@RestControllerAdvice(basePackages=...)` จำกัดขอบเขตผิด handler จึงไม่ถูกเรียกกับ controller ที่อยู่นอก package
+- แก้ไข: เปลี่ยนตัวกรองขอบเขต (commit `fix`)
+
+**ข้อ 2 — Code Review ของปอนด์ (PR #3)**
+- ปัญหา: handler ของ `Exception` กลืน error ของ Spring MVC ทำให้ 405/400/415 กลายเป็น 500
+- แก้ไข: เพิ่ม handler เฉพาะ 3 ชนิด พร้อมเทสต์
+
+**ข้อ 3 — เทสต์ที่เพิ่มจากข้อ 2 ล้ม 1 ข้อ**
+- ปัญหา: 405 เกิดก่อน Spring เลือก controller (handler เป็น null) ตัวกรอง advice แบบกำหนดเงื่อนไขจึงไม่ทำงาน และ body ไม่ใช่ `ApiErrorResponse`
+- แก้ไข: เอาตัวกรองออกให้ advice ครอบทุก controller
+
+**ข้อ 4 — Code Review ของปอนด์ (PR #3)**
+- ปัญหา: `markPaid()` เรียกซ้ำแล้วเขียนทับ `paidAt`
+- แก้ไข: ทำให้ idempotent พร้อมเทสต์
+
+**ข้อ 5 — Code Review ของปอนด์ (PR #6)**
+- ปัญหา: `notifyUser` ไม่ตรวจ `userId` และข้อความที่เป็น null
+- แก้ไข: ตรวจแล้วโยน `BusinessRuleException` พร้อมเทสต์
 
 ## 5. ผลรวมทั้งโปรเจค
 
