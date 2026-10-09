@@ -7,6 +7,7 @@ import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
+import org.hibernate.annotations.BatchSize;
 
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
@@ -55,6 +56,8 @@ public class LaundryOrder implements Payable {
     private LocalDateTime updatedAt;
 
     // deleting an order deletes its items; removing an item from the list deletes that row
+    // BatchSize: a page of orders loads all their items in one IN (...) query instead of one query per order (N+1)
+    @BatchSize(size = 50)
     @OneToMany(mappedBy = "order", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<LaundryOrderItem> items = new ArrayList<>();
 
