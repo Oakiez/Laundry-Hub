@@ -171,7 +171,7 @@ Docker แพ็กแอปพลิเคชันพร้อมสภาพ�
 ### 3.x การออกแบบการ Deploy และ CI/CD
 1. **Dockerfile แบบ multi-stage:** ชั้น build ใช้ Maven กับ JDK 17 คัดลอก `pom.xml` และดาวน์โหลด dependency ก่อนคัดลอกโค้ด เพื่อให้ Docker จำชั้นนี้ไว้ได้เมื่อแก้โค้ด ชั้นรันใช้เฉพาะ JRE 17 คัดลอกไฟล์ `.jar` มา รันด้วยผู้ใช้ที่ไม่ใช่ root และตั้ง `-XX:MaxRAMPercentage=75` เพื่อให้เหมาะกับหน่วยความจำ 512 MB ของแผนฟรี ขั้น build ข้ามเทสต์เพราะโฟลเดอร์ `test/` อยู่นอก `code/` ตามข้อกำหนดของรายวิชา
 2. **docker-compose:** มีบริการฐานข้อมูล PostgreSQL 16 พร้อม healthcheck และบริการแอปที่รอจนฐานข้อมูลพร้อมรับการเชื่อมต่อก่อนสตาร์ท
-3. **Render และ Neon:** แอปรันบน Render แบบ Docker *(ตรวจก่อนส่ง: ภูมิภาคของ Render ที่เลือกไว้ ว่าเป็นสิงคโปร์ตามข้อความนี้หรือไม่)* ฐานข้อมูลอยู่บน Neon ภูมิภาคสิงคโปร์ แยกจากแอป ข้อมูลจึงไม่หายเมื่อ deploy ใหม่ ค่า `DB_URL`, `DB_USER`, `DB_PASSWORD` ตั้งเป็นตัวแปรสภาพแวดล้อมบน Render และใช้ที่อยู่แบบเชื่อมต่อตรง (ไม่ผ่าน connection pooler) เพราะ Flyway ต้องการการเชื่อมต่อโดยตรงขณะรัน migration
+3. **Render และ Neon:** แอปรันบน Render แบบ Docker (ภูมิภาคสิงคโปร์ Southeast Asia) ฐานข้อมูลอยู่บน Neon (ภูมิภาคสิงคโปร์) แยกจากแอป ข้อมูลจึงไม่หายเมื่อ deploy ใหม่ ค่า `DB_URL`, `DB_USER`, `DB_PASSWORD` ตั้งเป็นตัวแปรสภาพแวดล้อมบน Render และใช้ที่อยู่แบบเชื่อมต่อตรง (ไม่ผ่าน connection pooler) เพราะ Flyway ต้องการการเชื่อมต่อโดยตรงขณะรัน migration
 4. **GitHub Actions:** ไฟล์ `.github/workflows/ci.yml` มี 2 งาน คือ `Test (mvn test)` และ `Docker build` รันทุก Pull Request ที่เข้า `develop` หรือ `main` และทุกการ push เข้าสองสาขานี้
 5. **Branch protection:** ตั้ง ruleset บน `main` และ `develop` ห้ามลบและห้าม force push ต้องผ่าน Pull Request ที่ได้รับอนุมัติอย่างน้อย 1 คน และต้องผ่าน CI ทั้งสองงาน
 
