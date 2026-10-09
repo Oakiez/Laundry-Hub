@@ -29,6 +29,25 @@
         <div class="col-md-4" sec:authorize="hasRole('CUSTOMER')">
             <div class="card h-100">
                 <div class="card-body">
+                    <h2 class="h5 card-title">จองเครื่องซัก-อบ</h2>
+                    <p class="card-text text-muted">ดูเครื่องที่ว่างและจองเวลา</p>
+                    <a th:href="@{/machines}" class="btn btn-primary btn-sm">ดูเครื่อง</a>
+                    <a th:href="@{/sessions/history}" class="btn btn-outline-secondary btn-sm">รอบใช้งานของฉัน</a>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-4" sec:authorize="hasAnyRole('STAFF','ADMIN')">
+            <div class="card h-100">
+                <div class="card-body">
+                    <h2 class="h5 card-title">สถานะเครื่อง</h2>
+                    <p class="card-text text-muted">ดูและอัปเดตสถานะเครื่องซัก-อบ</p>
+                    <a th:href="@{/staff/machines}" class="btn btn-primary btn-sm">เปิดรายการเครื่อง</a>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-4" sec:authorize="hasRole('CUSTOMER')">
+            <div class="card h-100">
+                <div class="card-body">
                     <h2 class="h5 card-title">ชำระเงิน</h2>
                     <p class="card-text text-muted">จ่ายค่าออเดอร์หรือรอบใช้เครื่อง</p>
                     <a th:href="@{/payments/new}" class="btn btn-primary btn-sm">ไปหน้าชำระเงิน</a>
