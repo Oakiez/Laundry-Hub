@@ -22,4 +22,4 @@
 
 SelfServiceWebSecurityTest ตรวจ template จริงทั้งบอร์ด/รายละเอียด/จอง/ประวัติ, CSRF, STAFF denial, forged owner/amount, validation, overlap form และ trusted actor รวมทั้งลิงก์ชำระเงินในสามสถานะและการซ่อนลิงก์ของรอบยกเลิก ส่วน SessionPaymentIntegrationTest ตรวจ form booking/lifecycle กับ Service และ PostgreSQL จริง หลังรวม develop f7c82e1 (PR #26) พร้อมเทสต์ลิงก์ใหม่ ผลรวมโปรเจกต์ 357 รายการผ่านเมื่อ LAUNDRY_DB_TESTS=true วันที่ 10 ตุลาคม 2569
 
-หน้าเว็บและ diagrams ชุดหลัก merge ผ่าน PR #25 แล้ว โดย Test และ Docker build ผ่านทั้งสองรายการ งานลิงก์ชำระเงินเพิ่มเติมต้องผ่าน CI และ human review ใน PR ถัดไป ยังไม่ได้ยืนยัน flow จองและชำระบน deployment ผ่านบัญชีจริง
+หน้าเว็บและ diagrams ชุดหลัก merge ผ่าน PR #25 แล้ว โดย Test และ Docker build ผ่านทั้งสองรายการ งานลิงก์ชำระเงินเพิ่มเติม merge ผ่าน PR #28 แล้ว โดยโชกุน approve และ Test/Docker build ผ่าน ยังไม่ได้ยืนยัน flow จองและชำระบน deployment ผ่านบัญชีจริง
