@@ -2,13 +2,13 @@
 
 ผู้รับผิดชอบ: ภีมเดช กลั่นกิ่ง (โชกุน) · Test Lead
 ขอบเขตของฉบับนี้: ผลรวมทั้งโปรเจค ([หัวข้อ 5](#5-ผลรวมทั้งโปรเจค)) และรายละเอียดกรณีทดสอบของโมดูลผู้เขียน คือ Payment, Notification และ API Quality (Exception handling) ([หัวข้อ 2–4](#2-สรุปผล-โมดูลของผู้เขียน))
-ผลทดสอบรอบล่าสุด: **212 ข้อ — ผ่าน 203, ข้ามโดยเจตนา 9, ล้มเหลว 0** · `BUILD SUCCESS`
+ผลทดสอบรอบล่าสุด: **311 ข้อ — ผ่าน 276, ข้ามโดยเจตนา 35, ล้มเหลว 0** · `BUILD SUCCESS` (เมื่อเปิดเทสต์ฐานข้อมูลจริง: **321 ข้อ ผ่านทั้งหมด ข้าม 0**)
 
 ## 1. สภาพแวดล้อมและวิธีรัน
 
 | รายการ | ค่า |
 |---|---|
-| วันที่รันล่าสุด | 9 ต.ค. 2569 (2026-10-09) 22:16 น. (รอบรวมงานของทุกโมดูลบน `develop`) |
+| วันที่รันล่าสุด | 10 ต.ค. 2569 (2026-10-10) 03:27 น. (รอบรวมงานของทุกโมดูลบน `develop`) |
 | Java | Temurin 17.0.20.1 |
 | Maven | 3.10.0 |
 | Spring Boot | 3.5.7 |
@@ -44,7 +44,7 @@ mvn test -Dtest=GlobalExceptionHandlerTest      # รันคลาสเดี
 | Notification (REST) | `NotificationApiControllerTest` | 6 | 6 | 0 |
 | **รวม** | **13 คลาส** | **81** | **81** | **0** |
 
-ผลของทั้งโปรเจคจาก Maven: `Tests run: 212, Failures: 0, Errors: 0, Skipped: 9` · `BUILD SUCCESS` (ตัวเลขของผู้เขียนข้างบนเป็นส่วนหนึ่งของ 212 ข้อ ดูหัวข้อ 5)
+ผลของทั้งโปรเจคจาก Maven: `Tests run: 311, Failures: 0, Errors: 0, Skipped: 35` · `BUILD SUCCESS` (ตัวเลขของผู้เขียนข้างบนเป็นส่วนหนึ่งของ 311 ข้อ ดูหัวข้อ 5) ตารางข้างบนนับเฉพาะเทสต์ที่รันใน `mvn test` ปกติ (81 ข้อ) ยังมี `PaymentRepositoryDbTest` อีก 13 ข้อที่ข้ามในการรันปกติและรันเมื่อเปิด `LAUNDRY_DB_TESTS=true` (หัวข้อ 3.6) รวมเป็น 94 ข้อของโมดูลนี้
 
 ## 3. รายละเอียดกรณีทดสอบ
 
@@ -126,7 +126,7 @@ mvn test -Dtest=GlobalExceptionHandlerTest      # รันคลาสเดี
 | 21 | `PATCH /api/v1/payments/2/confirm` ซ้ำ | STAFF | 409 `Payment 2 is already paid` | ผ่าน |
 | 22 | `GET /api/v1/users/3/notifications?unread=true` | CUSTOMER เจ้าของ | 200 พบ 2 ข้อความ "ชำระเงินสำเร็จสำหรับการใช้เครื่อง #1 / #2" | ผ่าน (Observer ข้ามโมดูลทำงานจริง) |
 
-ข้อ 15–22 ทดสอบเมื่อ 10 ต.ค. 2569 เวลา 02:20 น. หลังโมดูลเครื่องซักเพิ่ม `SessionPayableProvider` เข้า `develop` เนื่องจากยังไม่มี API/หน้าเว็บจองเครื่อง จึงเพิ่มรอบใช้เครื่อง 2 รอบและออเดอร์ 1 รายการลงฐานข้อมูลในเครื่องโดยตรงด้วย SQL แล้วเรียก API ชำระเงินตามปกติ
+ข้อ 15–22 ทดสอบเมื่อ 10 ต.ค. 2569 เวลา 02:20 น. หลังโมดูลเครื่องซักเพิ่ม `SessionPayableProvider` เข้า `develop` ซึ่งขณะทดสอบยังไม่มี API จองเครื่อง (ภายหลังโมดูลเครื่องซักเพิ่มแล้ว) จึงเพิ่มรอบใช้เครื่อง 2 รอบและออเดอร์ 1 รายการลงฐานข้อมูลในเครื่องโดยตรงด้วย SQL แล้วเรียก API ชำระเงินตามปกติ
 
 error ทุกแบบตอบเป็นรูปแบบ `ApiErrorResponse` เดียวกัน ส่วน 401 ตอนทดสอบในเครื่องรอบนี้ (ก่อนมี handler ของโมดูล Auth) ตอบ body ว่าง ภายหลังโมดูล Auth เพิ่ม `ApiAuthenticationEntryPoint` ทำให้ 401 ตอบเป็น `ApiErrorResponse` ด้วย ยืนยันกับเว็บที่ deploy แล้ว (`GET /api/v1/payments` ไม่ล็อกอิน → 401 พร้อม `ApiErrorResponse`)
 
@@ -193,20 +193,20 @@ error ทุกแบบตอบเป็นรูปแบบ `ApiErrorRespons
 
 ## 5. ผลรวมทั้งโปรเจค
 
-ที่มา: รายงาน Maven Surefire ของการรัน `mvn test` บน `develop` รวมงานของทุกคน เมื่อ 9 ต.ค. 2569 22:16 น. (รันซ้ำก่อนส่งงานจริงเพื่อยืนยัน)
+ที่มา: รายงาน Maven Surefire ของการรัน `mvn test` บน `develop` รวมงานของทุกคน เมื่อ 10 ต.ค. 2569 03:27 น. (รันซ้ำก่อนส่งงานจริงเพื่อยืนยัน)
 
 | โมดูล | ผู้รับผิดชอบ | คลาสเทสต์ | จำนวนเทสต์ | ผ่าน | ข้าม | ล้มเหลว |
 |---|---|---:|---:|---:|---:|---:|
-| Payment / Notification / API Quality | โชกุน | 13 | 81 | 81 | 0 | 0 |
+| Payment / Notification / API Quality | โชกุน | 14 | 94 | 81 | 13 | 0 |
 | Auth / User / Branch / Security | โอ๊ค | 4 | 29 | 29 | 0 | 0 |
-| Full-Service Order | พีช | 4 | 38 | 38 | 0 | 0 |
-| Self-Service Machine | ปอนด์ | 5 | 64 | 55 | 9 | 0 |
-| **รวม** | | **26** | **212** | **203** | **9** | **0** |
+| Full-Service Order (รวม Service Type) | พีช | 7 | 69 | 69 | 0 | 0 |
+| Self-Service Machine / Session | ปอนด์ | 11 | 119 | 97 | 22 | 0 |
+| **รวม** | | **36** | **311** | **276** | **35** | **0** |
 
 รายคลาสของโมดูลอื่น (จากรายงานเดียวกัน)
 - โอ๊ค: `SecurityRulesTest` 13 · `BranchServiceTest` 8 · `UserServiceTest` 5 · `AuthServiceTest` 3
-- พีช: `OrderStateTest` 15 · `OrderServiceTest` 14 · `FullServicePricingTest` 6 · `OrderPayableProviderTest` 3
-- ปอนด์: `BookingValidatorTest` 19 · `MachineServiceImplTest` 18 · `SelfServicePricingTest` 11 · `MachineStateTest` 7 · `SelfServiceRepositoryTest` (รอบ `mvn test` ปกติ Maven นับว่า**ข้าม 9** โดยเจตนา ส่วนเมื่อเปิดสวิตช์ให้ต่อ PostgreSQL จริงรันได้ **19 ข้อ ผ่านทั้งหมด** ดูด้านล่าง)
+- พีช: `OrderSecurityTest` 17 · `OrderStateTest` 15 · `OrderServiceTest` 14 · `ServiceTypeServiceTest` 7 · `ServiceTypeSecurityTest` 7 · `FullServicePricingTest` 6 · `OrderPayableProviderTest` 3
+- ปอนด์: `SessionServiceImplTest` 20 · `BookingValidatorTest` 19 · `MachineServiceImplTest` 19 · `SelfServicePricingTest` 11 · `SessionApiSecurityTest` 10 · `MachineApiSecurityTest` 8 · `MachineStateTest` 7 · `SessionPayableProviderTest` 3 · เทสต์ที่ต่อ PostgreSQL จริง (รอบ `mvn test` ปกติ Maven นับว่า**ข้ามโดยเจตนา 22**) ได้แก่ `SelfServiceRepositoryTest` 9 · `SessionLifecycleIntegrationTest` 7 · `SessionPaymentIntegrationTest` 6 เมื่อเปิดสวิตช์ให้ต่อ PostgreSQL จริง `SelfServiceRepositoryTest` รันได้ **19 ข้อ ผ่านทั้งหมด** ดูด้านล่าง
 
 **ผลรันแยกของ `SelfServiceRepositoryTest` กับฐานข้อมูลจริง** (9 ต.ค. 2569, PostgreSQL 16 ใน Docker พอร์ต 5433, ตั้ง `LAUNDRY_DB_TESTS=true`):
 
@@ -216,16 +216,16 @@ LAUNDRY_DB_TESTS=true mvn test -Dtest=SelfServiceRepositoryTest
 # Tests run: 19, Failures: 0, Errors: 0, Skipped: 0 · BUILD SUCCESS
 ```
 
-เทสต์นี้สร้าง schema ชั่วคราวของตัวเอง (ชื่อสุ่ม) รัน Flyway ในนั้นแล้วลบทิ้งตอนจบ จึงไม่แตะตารางจริง เมื่อรวมผลนี้กับผลรันแยกของ `PaymentRepositoryDbTest` (13 ข้อ ดูหัวข้อ 3.6) ทั้งโปรเจคผ่านรวม **235 ข้อ (203 + 19 + 13) ไม่มีล้มเหลว** (รวมจากสามการรัน) ที่ตัวเลขต่างกัน (ข้าม 9 แต่รันจริง 19) เพราะเมื่อข้ามทั้งคลาส Maven นับตามจำนวนเมธอดเทสต์ ซึ่งในไฟล์มี `@Test` 7 เมธอด + `@ParameterizedTest` 2 เมธอด = 9 แต่ตอนรันจริงเทสต์แบบพารามิเตอร์แตกเป็นหลายกรณี รวมเป็น 19 ข้อ (ตรวจจากโค้ดของ `SelfServiceRepositoryTest`)
+เทสต์นี้สร้าง schema ชั่วคราวของตัวเอง (ชื่อสุ่ม) รัน Flyway ในนั้นแล้วลบทิ้งตอนจบ จึงไม่แตะตารางจริง เมื่อรวมผลนี้กับผลรันแยกของ `PaymentRepositoryDbTest` (13 ข้อ ดูหัวข้อ 3.6) เมื่อเปิด `LAUNDRY_DB_TESTS=true` และรันทั้งโปรเจคครั้งเดียวกับ PostgreSQL 16 จริง (10 ต.ค. 2569 03:50 น.) ได้ **`Tests run: 321, Failures: 0, Errors: 0, Skipped: 0` · `BUILD SUCCESS`** (276 ข้อที่รันปกติ + 45 ข้อที่ต่อฐานข้อมูล คือ `PaymentRepositoryDbTest` 13 + `SelfServiceRepositoryTest` 19 + `SessionLifecycleIntegrationTest` 7 + `SessionPaymentIntegrationTest` 6) ข้อความ `ERROR ... test_block_notification` ในล็อกของ `SessionLifecycleIntegrationTest` เป็นความตั้งใจของเทสต์ที่ทดสอบการ rollback ธุรกรรมเมื่อบันทึกแจ้งเตือนล้มเหลว ไม่ใช่ข้อผิดพลาด ที่ตัวเลขต่างกัน (ข้าม 9 แต่รันจริง 19) เพราะเมื่อข้ามทั้งคลาส Maven นับตามจำนวนเมธอดเทสต์ ซึ่งในไฟล์มี `@Test` 7 เมธอด + `@ParameterizedTest` 2 เมธอด = 9 แต่ตอนรันจริงเทสต์แบบพารามิเตอร์แตกเป็นหลายกรณี รวมเป็น 19 ข้อ (ตรวจจากโค้ดของ `SelfServiceRepositoryTest`)
 
 ## 6. ข้อจำกัดและสิ่งที่ยังไม่ได้ทดสอบ
 
 - **เทสต์ที่ต่อฐานข้อมูลจริงเป็นแบบ opt-in** (ต้องตั้ง `LAUNDRY_DB_TESTS=true` และเปิด PostgreSQL) จึงไม่ถูกรวมใน `mvn test` ปกติและ CI ปัจจุบันของทีมไม่ได้รันชุดนี้ ตัวเลขผลรวมหัวข้อ 5 จึงเป็นเทสต์แบบ unit เป็นหลัก ส่วนเทสต์ที่ต่อ DB จริงของ payments/notifications (`PaymentRepositoryDbTest` 13 ข้อ ครอบ `UNIQUE`, `FK`, `CHECK`) ผ่านแล้วตามหัวข้อ 3.6
-- **flow ชำระเงินกับรอบใช้เครื่องทดสอบแบบ manual แล้ว** (หัวข้อ 3.4 ข้อ 15–22: COIN, เงินสด, ยืนยัน, แจ้งเตือน) แต่ยังไม่มี API/หน้าเว็บสำหรับจองเครื่อง จึงใช้รอบใช้เครื่องที่เพิ่มลงฐานข้อมูลโดยตรง ยังไม่ได้ทดสอบ flow ตั้งแต่จองจนถึงจ่ายเงิน
+- **flow ชำระเงินกับรอบใช้เครื่องทดสอบแบบ manual แล้ว** (หัวข้อ 3.4 ข้อ 15–22: COIN, เงินสด, ยืนยัน, แจ้งเตือน) โดยใช้รอบใช้เครื่องที่เพิ่มลงฐานข้อมูลโดยตรง เพราะตอนทดสอบยังไม่มี API จองเครื่อง ต่อมาโมดูลเครื่องซักเพิ่ม API จอง/เริ่ม/จบ/ยกเลิกแล้ว และมีเทสต์ `SessionPaymentIntegrationTest` (ต่อ PostgreSQL จริง ทดสอบจองแล้วจ่ายผ่าน HTTP) แต่ผู้เขียนยังไม่ได้ทดสอบ flow ตั้งแต่จองจนจ่ายด้วยตัวเองแบบ manual
 - **สิทธิ์ (`@PreAuthorize`) ของ payments/notifications ยืนยันแบบ manual แล้ว** (หัวข้อ 3.4) แต่ยังไม่มีเทสต์อัตโนมัติ เพราะเทสต์ controller แบบ standalone ไม่เปิดใช้ method security
 - **เทสต์ repository ของโมดูล Self-Service (`SelfServiceRepositoryTest`) ถูกข้ามโดยเจตนา** ในการรัน `mvn test` ปกติ (Maven นับเป็นข้าม 9) เพราะตั้งให้รันเฉพาะเมื่อกำหนด `LAUNDRY_DB_TESTS=true` และมี PostgreSQL พร้อม (ไม่ให้การรันเทสต์ทั่วไปต้องพึ่งฐานข้อมูล) จึงนับเป็น "ข้าม" ไม่ใช่ "ผ่าน" ในตารางหัวข้อ 5 แต่ได้ยืนยันแยกแล้วว่าผ่านครบ 19 ข้อกับ PostgreSQL จริง (ดูหัวข้อ 5) เทสต์ชุดนี้เป็นของโมดูลเครื่องซัก ไม่ได้ครอบคลุม `payments`/`notifications`
 - ตัวเลขในหัวข้อ 5 อ้างอิงการรัน ณ เวลาที่ระบุ หากมีการแก้โค้ดหลังจากนั้นต้องรันใหม่
 - **ยังไม่ได้ทดสอบหน้าเว็บ (Thymeleaf)**
 - **ยังไม่ได้ตั้งค่า Jacoco** จึงยังไม่มีตัวเลข code coverage (รายการระดับ P2)
 - ไม่มีเทสต์การทำงานพร้อมกัน (race) ของการจ่ายซ้ำจริง (สองคำขอพร้อมกัน) ตัว `UNIQUE` ที่กันการจ่ายซ้ำพิสูจน์แล้วในหัวข้อ 3.6 แต่สถานการณ์สองคำขอแข่งกันยังไม่ได้ทดสอบ
-- **หมายเหตุตัวเลขหัวข้อ 2 และ 5:** เป็นผลของรอบวันที่ 22:16 ก่อนเพิ่ม `PaymentRepositoryDbTest` เมื่อคลาสนี้เข้า `develop` การรัน `mvn test` ปกติจะนับเทสต์เพิ่ม (เมธอดของคลาสนี้ถูกนับเป็น "ข้าม") ต้องรันรอบสุดท้ายก่อนส่งงานเพื่อยืนยันตัวเลขอีกครั้ง
+- **หมายเหตุตัวเลขหัวข้อ 2 และ 5:** อ้างอิงการรัน 10 ต.ค. 2569 03:27 น. หลังรวม `develop` ที่มี `PaymentRepositoryDbTest` และโมดูลเครื่องซักครบแล้ว หากมีการแก้โค้ดหลังจากนั้นต้องรันใหม่ก่อนส่งงาน
