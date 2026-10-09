@@ -27,6 +27,16 @@ class PaymentProcessorFactoryTest {
     }
 
     @Test
+    void addingNewProcessor_needsNoChangeToFactory() {
+        CoinProcessor coin = new CoinProcessor();
+        // เพิ่มวิธีชำระใหม่เพียงส่งอีก 1 ตัวเข้า constructor — โค้ดของ Factory ไม่ถูกแก้ (OCP)
+        PaymentProcessorFactory extended = new PaymentProcessorFactory(List.of(cash, qr, coin));
+
+        assertSame(coin, extended.getProcessor(PaymentMethod.COIN));
+        assertSame(cash, extended.getProcessor(PaymentMethod.CASH));
+    }
+
+    @Test
     void nullMethod_throwsBusinessRuleException() {
         assertThrows(BusinessRuleException.class, () -> factory.getProcessor(null));
     }

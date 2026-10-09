@@ -8,7 +8,7 @@
 | Pattern | ปัญหาที่แก้ | ไฟล์/คลาสที่ใช้ | Class Diagram |
 |---|---|---|---|
 | **Observer** | เมื่อสถานะออเดอร์/รอบใช้เครื่อง/การชำระเปลี่ยน ต้องแจ้งเตือนผู้ใช้ โดยไม่ให้โมดูลต้นทางต้องรู้จักระบบแจ้งเตือน (loose coupling) | `…/event/NotificationEventListener.java` (`@EventListener`) · event ใน `…/event/*Event.java` · ผู้ยิง `CheckoutFacade.publishCompleted` (บรรทัด 100) | [ดูด้านล่าง](#observer) |
-| **Strategy** | วิธีชำระแต่ละแบบ (เงินสด/QR/เหรียญ) มีพฤติกรรมต่างกัน ไม่อยากเขียน `if-else` ตามวิธีชำระ | `…/service/payment/PaymentProcessor.java` (interface) · `CashProcessor` · `QrMockProcessor` | [ดูด้านล่าง](#strategy--factory) |
+| **Strategy** | วิธีชำระแต่ละแบบ (เงินสด/QR/เหรียญ) มีพฤติกรรมต่างกัน ไม่อยากเขียน `if-else` ตามวิธีชำระ | `…/service/payment/PaymentProcessor.java` (interface) · `CashProcessor` · `QrMockProcessor` · `CoinProcessor` | [ดูด้านล่าง](#strategy--factory) |
 | **Factory** | เลือก processor ที่ถูกต้องตาม `PaymentMethod` โดยผู้เรียกไม่ต้องรู้จักคลาสจริง | `…/service/payment/PaymentProcessorFactory.java` | [ดูด้านล่าง](#strategy--factory) |
 | **Facade** | ขั้นตอนชำระเงินมีหลายส่วน (หา payable, ตรวจสิทธิ์, สร้าง payment, ยิง event) ให้ Controller เรียกจุดเดียว | `…/service/payment/CheckoutFacade.java` | [ดูด้านล่าง](#facade) |
 
@@ -80,7 +80,8 @@ classDiagram
         +process(Payment) PAID
     }
     class CoinProcessor {
-        <<future: OCP>>
+        +process(Payment) PAID
+        only USAGE_SESSION
     }
     class PaymentProcessorFactory {
         -Map~PaymentMethod, PaymentProcessor~ processors
