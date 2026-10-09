@@ -117,6 +117,16 @@ mvn test -Dtest=GlobalExceptionHandlerTest      # รันคลาสเดี
 | 12 | `POST /api/v1/payments` (ออเดอร์ที่ไม่มี) | CUSTOMER | 404 `Order 1 not found` | ผ่าน (Facade ทำงานต่อกับ `PayableProvider` ของโมดูลออเดอร์) |
 | 13 | `PATCH /api/v1/payments/1/confirm` | CUSTOMER | 403 | ผ่าน |
 | 14 | `PATCH /api/v1/payments/9999/confirm` | STAFF | 404 | ผ่าน |
+| 15 | `POST /api/v1/payments` รอบใช้เครื่อง #1 วิธี `COIN` | CUSTOMER | 201 `PAID` | ผ่าน (`CoinProcessor` + `SessionPayableProvider` ต่อกับ Checkout) |
+| 16 | `POST /api/v1/payments` ออเดอร์ฝากซัก #1 วิธี `COIN` | CUSTOMER | 400 `Coin payment is only available for machine sessions` | ผ่าน (กฎธุรกิจของเหรียญ) |
+| 17 | `POST /api/v1/payments` รอบใช้เครื่อง #1 ซ้ำ วิธี `QR_MOCK` | CUSTOMER | 409 `USAGE_SESSION 1 already has a payment` | ผ่าน (กันจ่ายซ้ำ) |
+| 18 | `POST /api/v1/payments` รอบใช้เครื่อง #2 วิธี `CASH` | CUSTOMER | 201 `PENDING` | ผ่าน |
+| 19 | `PATCH /api/v1/payments/2/confirm` | CUSTOMER | 403 | ผ่าน |
+| 20 | `PATCH /api/v1/payments/2/confirm` | STAFF | 200 `PAID` | ผ่าน |
+| 21 | `PATCH /api/v1/payments/2/confirm` ซ้ำ | STAFF | 409 `Payment 2 is already paid` | ผ่าน |
+| 22 | `GET /api/v1/users/3/notifications?unread=true` | CUSTOMER เจ้าของ | 200 พบ 2 ข้อความ "ชำระเงินสำเร็จสำหรับการใช้เครื่อง #1 / #2" | ผ่าน (Observer ข้ามโมดูลทำงานจริง) |
+
+ข้อ 15–22 ทดสอบเมื่อ 10 ต.ค. 2569 เวลา 02:20 น. หลังโมดูลเครื่องซักเพิ่ม `SessionPayableProvider` เข้า `develop` เนื่องจากยังไม่มี API/หน้าเว็บจองเครื่อง จึงเพิ่มรอบใช้เครื่อง 2 รอบและออเดอร์ 1 รายการลงฐานข้อมูลในเครื่องโดยตรงด้วย SQL แล้วเรียก API ชำระเงินตามปกติ
 
 error ทุกแบบตอบเป็นรูปแบบ `ApiErrorResponse` เดียวกัน ส่วน 401 ตอนทดสอบในเครื่องรอบนี้ (ก่อนมี handler ของโมดูล Auth) ตอบ body ว่าง ภายหลังโมดูล Auth เพิ่ม `ApiAuthenticationEntryPoint` ทำให้ 401 ตอบเป็น `ApiErrorResponse` ด้วย ยืนยันกับเว็บที่ deploy แล้ว (`GET /api/v1/payments` ไม่ล็อกอิน → 401 พร้อม `ApiErrorResponse`)
 
@@ -211,7 +221,7 @@ LAUNDRY_DB_TESTS=true mvn test -Dtest=SelfServiceRepositoryTest
 ## 6. ข้อจำกัดและสิ่งที่ยังไม่ได้ทดสอบ
 
 - **เทสต์ที่ต่อฐานข้อมูลจริงเป็นแบบ opt-in** (ต้องตั้ง `LAUNDRY_DB_TESTS=true` และเปิด PostgreSQL) จึงไม่ถูกรวมใน `mvn test` ปกติและ CI ปัจจุบันของทีมไม่ได้รันชุดนี้ ตัวเลขผลรวมหัวข้อ 5 จึงเป็นเทสต์แบบ unit เป็นหลัก ส่วนเทสต์ที่ต่อ DB จริงของ payments/notifications (`PaymentRepositoryDbTest` 13 ข้อ ครอบ `UNIQUE`, `FK`, `CHECK`) ผ่านแล้วตามหัวข้อ 3.6
-- **ยังไม่ได้ทดสอบ flow ชำระเงินแบบครบวงจรถึง DB กับรอบใช้เครื่อง** เพราะยังไม่มี `SessionPayableProvider` ของโมดูลเครื่องซัก (มีเฉพาะ `OrderPayableProvider` ของโมดูลออเดอร์) ใน `develop`
+- **flow ชำระเงินกับรอบใช้เครื่องทดสอบแบบ manual แล้ว** (หัวข้อ 3.4 ข้อ 15–22: COIN, เงินสด, ยืนยัน, แจ้งเตือน) แต่ยังไม่มี API/หน้าเว็บสำหรับจองเครื่อง จึงใช้รอบใช้เครื่องที่เพิ่มลงฐานข้อมูลโดยตรง ยังไม่ได้ทดสอบ flow ตั้งแต่จองจนถึงจ่ายเงิน
 - **สิทธิ์ (`@PreAuthorize`) ของ payments/notifications ยืนยันแบบ manual แล้ว** (หัวข้อ 3.4) แต่ยังไม่มีเทสต์อัตโนมัติ เพราะเทสต์ controller แบบ standalone ไม่เปิดใช้ method security
 - **เทสต์ repository ของโมดูล Self-Service (`SelfServiceRepositoryTest`) ถูกข้ามโดยเจตนา** ในการรัน `mvn test` ปกติ (Maven นับเป็นข้าม 9) เพราะตั้งให้รันเฉพาะเมื่อกำหนด `LAUNDRY_DB_TESTS=true` และมี PostgreSQL พร้อม (ไม่ให้การรันเทสต์ทั่วไปต้องพึ่งฐานข้อมูล) จึงนับเป็น "ข้าม" ไม่ใช่ "ผ่าน" ในตารางหัวข้อ 5 แต่ได้ยืนยันแยกแล้วว่าผ่านครบ 19 ข้อกับ PostgreSQL จริง (ดูหัวข้อ 5) เทสต์ชุดนี้เป็นของโมดูลเครื่องซัก ไม่ได้ครอบคลุม `payments`/`notifications`
 - ตัวเลขในหัวข้อ 5 อ้างอิงการรัน ณ เวลาที่ระบุ หากมีการแก้โค้ดหลังจากนั้นต้องรันใหม่
