@@ -6,7 +6,7 @@
 The algorithm is `basePrice + pricePerMinute * durationMinutes` using BigDecimal.
 It rejects missing/negative prices and durations outside 10–180 minutes.
 Tests exercise boundary values and pricing arithmetic. SessionService receives
-PricingStrategy through constructor injection (`service/impl/SessionServiceImpl.java:42`)
+PricingStrategy through constructor injection (`service/impl/SessionServiceImpl.java:41`)
 and persists a server-calculated amount when booking.
 
 ## State
@@ -65,7 +65,10 @@ Machine events currently have no notification consumer.
 MachineApiController and SessionApiController now expose DTOs through their service
 interfaces with constructor injection, @Valid requests, @PreAuthorize role rules
 and PageResponse pagination. User identity/staff flags come from SecurityUtils.
-UI remains pending. Start follows the brief's
+SelfServiceWebController uses the same interfaces for machine browsing, booking,
+own history and staff maintenance. It introduces no separate pricing or state rules.
+The three sequence diagrams and Machine state diagram are under doc/diagrams/*-pond.md.
+Start follows the brief's
 session/machine status rules; it does not enforce a clock window or payment prerequisite.
 Wrong lifecycle states use BusinessRuleException (400), following the shared handler
 and the brief's unit-test contract; the API table's proposed 409 needs team agreement
