@@ -1,6 +1,6 @@
 # Sequence 3 — ชำระเงินสำหรับรอบใช้งาน
 
-ตรวจจาก develop a21cb2a ใช้ API ของโชกุนและ SessionPayableProvider ของปอนด์ ไม่พึ่ง getPayableSummary ที่กำลังเสนอ revert
+ตรวจ flow จาก develop a21cb2a และตรวจซ้ำหลังรวม PR #24 ที่ 6a877cd ใช้ API ของโชกุนและ SessionPayableProvider ของปอนด์ ไม่พึ่ง getPayableSummary ซึ่งถูกลบแล้ว
 
 ```mermaid
 sequenceDiagram

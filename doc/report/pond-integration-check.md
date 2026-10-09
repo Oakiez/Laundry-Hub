@@ -1,6 +1,6 @@
 # ผลตรวจงานปอนด์กับทีม — 10 ตุลาคม 2569
 
-ตรวจหน้า GitHub ของ Laundry-Hub/develop ก่อนเริ่มงาน และ fetch/merge develop a21cb2a (PR #23) เข้าสาขา Pathiphan_6733805892_03 งานเว็บ/diagrams ด้านล่างเป็นงานเพิ่มในสาขาปอนด์ ยังไม่ได้ยืนยันว่าอยู่บน GitHub หรือ deploy แล้ว
+ตรวจหน้า GitHub ของ Laundry-Hub/develop ก่อนเริ่มงาน และ fetch/merge develop a21cb2a (PR #23) เข้าสาขา Pathiphan_6733805892_03 จากนั้นตรวจว่าเว็บ/diagrams push ถึง cff088b แล้ว และรวม PR revert #24 จาก develop 6a877cd โดยไม่มี conflict งานเว็บยังต้องเปิด PR และยังไม่ยืนยัน deploy
 
 | จุดเชื่อมต่อ | ผลตรวจจากโค้ดจริง |
 |---|---|
@@ -22,7 +22,7 @@
 1. `doc/diagrams/class-diagram.md:352` ยังบอกว่าไม่มี Service เรียก BookingValidator/SelfServicePricing ต้องปรับเป็น SessionServiceImpl เรียกทั้งสอง และเพิ่มเส้นความสัมพันธ์ตามจริง ส่วน Machine event ไม่มี listener ยังถูกต้อง
 2. `doc/diagrams/class-diagram.md:428` ตาราง Observer ยังบอกว่า SessionStatusChangedEvent ไม่มี publisher ตอนนี้มีแล้วจาก SessionServiceImpl (`:186`) และ listener ของโชกุนรับอยู่
 3. ให้โอ๊ครวมไฟล์ `doc/sections/solid-analysis-pond.md` และ `design-patterns-pond.md` ใหม่หลัง merge งานนี้ ก่อนตรวจ citation ในไฟล์รวม
-4. develop a21cb2a ยังมี CheckoutFacade.getPayableSummary ที่บรรทัด 99 และเลข class/constructor/providerFor เป็น 30/37/107 ถ้า PR revert ของโชกุน merge เลขจะเปลี่ยน ต้องตรวจบน SHA หลัง merge อีกครั้ง งานเว็บปอนด์ไม่เรียกเมธอดนี้
+4. PR revert #24 merge แล้วที่ develop 6a877cd ลบ CheckoutFacade.getPayableSummary/PayableSummary และเทสต์ 4 ข้อ เลข class/constructor/providerFor กลับเป็น 29/36/92 ตรวจแล้วงานเว็บปอนด์ไม่เรียกเมธอดนี้และ flow จอง/ชำระเดิมยังผ่านเทสต์
 
 ## ข้อแตกต่างที่ยังต้องให้ทีมตกลง
 
@@ -34,7 +34,7 @@
 
 ## หลักฐานทดสอบ
 
-`mvn -f code/pom.xml test` โดยเปิด `LAUNDRY_DB_TESTS=true` ผ่าน **339 tests, 0 failures, 0 errors, 0 skipped** วันที่ 10 ตุลาคม 2569 เพิ่มจากฐานเดิม 325 ด้วย MVC tests 13 กรณีและ web integration จริง 1 กรณี ฐานข้อมูลของเทสต์เป็น schema สุ่มแยกจาก public
+`mvn -f code/pom.xml test` โดยเปิด `LAUNDRY_DB_TESTS=true` ผ่าน **335 tests, 0 failures, 0 errors, 0 skipped** วันที่ 10 ตุลาคม 2569 หลังรวม develop 6a877cd รอบก่อน revert ผ่าน 339 และลด 4 ข้อตามการลบ summary tests งานเว็บเพิ่ม MVC tests 13 กรณีและ web integration จริง 1 กรณี ฐานข้อมูลของเทสต์เป็น schema สุ่มแยกจาก public
 
 ผลนี้เป็นผลในเครื่อง ไม่ใช่ผล CI ของ PR ที่ยังไม่ได้เปิด CI ปัจจุบันไม่เปิด opt-in PostgreSQL suite และต้องรอ Test + Docker build บน GitHub หลัง push ก่อน merge
 

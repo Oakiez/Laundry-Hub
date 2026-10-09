@@ -83,7 +83,7 @@ SessionService.findPayable คืนข้อมูลตาม contract แล�
 
 ### ผลการทดสอบโมดูล Self-Service
 
-ผลทดสอบล่าสุดวันที่ 10 ตุลาคม 2569 บนฐาน develop a21cb2a พร้อมหน้าเว็บใน branch ปอนด์ มี 339 รายการ Failures 0 Errors 0 Skipped 0 และ BUILD SUCCESS โดยเปิด LAUNDRY_DB_TESTS=true (รอบก่อนหน้าเพิ่มเว็บมี 325 รายการ) ตัวเลขเป็นจำนวนทั้งโปรเจกต์ ไม่ใช่จำนวนเทสต์ที่ปอนด์เขียนทั้งหมด Log รอบล่าสุดอยู่ใน code/target/pond-web-final-tests.log ซึ่งเป็น build output ไม่ได้ commit เข้ารายงาน
+ผลทดสอบล่าสุดวันที่ 10 ตุลาคม 2569 บนฐาน develop 6a877cd พร้อมหน้าเว็บใน branch ปอนด์ มี 335 รายการ Failures 0 Errors 0 Skipped 0 และ BUILD SUCCESS โดยเปิด LAUNDRY_DB_TESTS=true รอบก่อน revert ผ่าน 339 และลด 4 ข้อเพราะ PR #24 ลบเทสต์ getPayableSummary ตัวเลขเป็นจำนวนทั้งโปรเจกต์ ไม่ใช่จำนวนเทสต์ที่ปอนด์เขียนทั้งหมด Log รอบล่าสุดอยู่ใน code/target/pond-revert-sync-tests.log ซึ่งเป็น build output ไม่ได้ commit เข้ารายงาน
 
 | ประเภท | หลักฐานที่ตรวจ |
 |---|---|

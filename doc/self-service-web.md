@@ -16,10 +16,10 @@
 
 วันที่และเวลาของ booking เป็น LocalDateTime ตาม timezone แอปเดิม ไม่มีการแปลง UTC ในเว็บชุดนี้ ระยะเวลา 10–180 นาที สถานะเครื่องแสดงสถานะปัจจุบัน การจองอนาคตยังต้องผ่าน overlap check และไม่เปลี่ยน Machine เป็น RESERVED
 
-ไม่มีหน้าชำระเงินใหม่ในงานชุดนี้ Payment ผ่าน API ของโชกุน ซึ่งมี SessionPayableProvider และ integration test อยู่แล้ว ไม่พึ่ง getPayableSummary ที่ทีมกำลังเสนอ revert
+ไม่มีหน้าชำระเงินใหม่ในงานชุดนี้ Payment ผ่าน API ของโชกุน ซึ่งมี SessionPayableProvider และ integration test อยู่แล้ว ไม่พึ่ง getPayableSummary ซึ่งถูกลบใน PR #24 แล้ว
 
 ## การตรวจ
 
-SelfServiceWebSecurityTest ตรวจ template จริงทั้งบอร์ด/รายละเอียด/จอง/ประวัติ, CSRF, STAFF denial, forged owner/amount, validation, overlap form และ trusted actor ส่วน SessionPaymentIntegrationTest ตรวจ form booking/lifecycle กับ Service และ PostgreSQL จริง ผลรวมโปรเจกต์ 339 รายการผ่านเมื่อ LAUNDRY_DB_TESTS=true
+SelfServiceWebSecurityTest ตรวจ template จริงทั้งบอร์ด/รายละเอียด/จอง/ประวัติ, CSRF, STAFF denial, forged owner/amount, validation, overlap form และ trusted actor ส่วน SessionPaymentIntegrationTest ตรวจ form booking/lifecycle กับ Service และ PostgreSQL จริง หลังรวม develop 6a877cd (PR #24) ผลรวมโปรเจกต์ 335 รายการผ่านเมื่อ LAUNDRY_DB_TESTS=true ลดจาก 339 เพราะ PR revert ลบ summary tests 4 ข้อ
 
 ยังไม่ได้ตรวจภาพใน browser หรือยืนยัน deployment ต้องผ่าน Test + Docker build และ human review ของ PR ก่อน merge
