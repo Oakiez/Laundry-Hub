@@ -62,9 +62,14 @@ notification listener joins the transaction. Integration tests deliberately reje
 a notification insert and verify session/machine changes roll back together.
 Machine events currently have no notification consumer.
 
-No Machine/Session HTTP endpoints or UI are delivered yet. Start follows the brief's
+MachineApiController and SessionApiController now expose DTOs through their service
+interfaces with constructor injection, @Valid requests, @PreAuthorize role rules
+and PageResponse pagination. User identity/staff flags come from SecurityUtils.
+UI remains pending. Start follows the brief's
 session/machine status rules; it does not enforce a clock window or payment prerequisite.
 Wrong lifecycle states use BusinessRuleException (400), following the shared handler
 and the brief's unit-test contract; the API table's proposed 409 needs team agreement
-before an HTTP controller is added. Database concurrency tests are opt-in via
+with the team; the implemented endpoints retain the shared 400 mapping.
+See doc/self-service-api.md for endpoints and verified HTTP behavior.
+Database concurrency tests are opt-in via
 LAUNDRY_DB_TESTS=true and run against an isolated generated PostgreSQL schema.

@@ -40,4 +40,9 @@ that order (`service/impl/SessionServiceImpl.java:160`). PostgreSQL integration 
 observe two waiting transactions and verify one conflicting request fails.
 Cancellation is restricted to RESERVED and never frees another session's machine.
 The caller must derive currentUserId/staff from authentication, never request data;
-controllers will enforce role rules using @PreAuthorize in the next stage.
+MachineApiController and SessionApiController now enforce role rules using
+@PreAuthorize. They depend on service interfaces and return DTOs, never entities.
+SessionApiController derives currentUserId/staff from SecurityUtils; ownership
+of individual sessions remains enforced inside SessionService as well.
+The MVC tests check role denial before service invocation and identity spoofing;
+the PostgreSQL HTTP test verifies actual ownership enforcement across layers.
