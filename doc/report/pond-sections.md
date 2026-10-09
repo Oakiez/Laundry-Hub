@@ -83,7 +83,7 @@ SessionService.findPayable คืนข้อมูลตาม contract แล�
 
 ### ผลการทดสอบโมดูล Self-Service
 
-ผลทดสอบล่าสุดวันที่ 10 ตุลาคม 2569 หลังรวม develop f3663df มี 325 รายการ Failures 0 Errors 0 Skipped 0 และ BUILD SUCCESS โดยเปิด LAUNDRY_DB_TESTS=true (รอบก่อนบนฐาน d7e7fe7 มี 321 รายการ) ตัวเลขเป็นจำนวนทั้งโปรเจกต์ ไม่ใช่จำนวนเทสต์ที่ปอนด์เขียนทั้งหมด Log รอบล่าสุดอยู่ใน code/target/pond-report-sync-tests.log ซึ่งเป็น build output ไม่ได้ commit เข้ารายงาน
+ผลทดสอบล่าสุดวันที่ 10 ตุลาคม 2569 บนฐาน develop 6a877cd พร้อมหน้าเว็บใน branch ปอนด์ มี 335 รายการ Failures 0 Errors 0 Skipped 0 และ BUILD SUCCESS โดยเปิด LAUNDRY_DB_TESTS=true รอบก่อน revert ผ่าน 339 และลด 4 ข้อเพราะ PR #24 ลบเทสต์ getPayableSummary ตัวเลขเป็นจำนวนทั้งโปรเจกต์ ไม่ใช่จำนวนเทสต์ที่ปอนด์เขียนทั้งหมด Log รอบล่าสุดอยู่ใน code/target/pond-revert-sync-tests.log ซึ่งเป็น build output ไม่ได้ commit เข้ารายงาน
 
 | ประเภท | หลักฐานที่ตรวจ |
 |---|---|
@@ -99,17 +99,17 @@ SessionService.findPayable คืนข้อมูลตาม contract แล�
 
 ### ผลการรีวิวและข้อจำกัดของหลักฐาน
 
-PR #22 มี review และ approval จากโชกุน และ CI ผ่านสอง checks ก่อน merge เข้า main แต่ใช้ base ผิดจาก workflow ของทีม จึงยังต้องส่ง diff ของปอนด์เข้า develop ผ่าน PR ใหม่ การผ่านเทสต์ในเครื่องซึ่งเปิดฐานข้อมูลไม่เท่ากับ CI ทดสอบ PostgreSQL เพราะ workflow ปัจจุบันไม่ได้เปิด opt-in database suite รายละเอียดอยู่ใน doc/self-service-api.md และ doc/test-report/session-lifecycle-pond.md
+PR #22 มี review และ approval จากโชกุนก่อน merge เข้า main แต่ใช้ base ผิดจาก workflow ของทีม จากนั้น PR #23 ส่งงานเข้า develop แล้วที่ a21cb2a หน้าเว็บและ diagrams เป็นงานเพิ่มเติมใน branch ปอนด์ที่ต้องเปิด PR ไป develop และให้โชกุนตรวจอีกครั้ง การผ่านเทสต์ในเครื่องซึ่งเปิดฐานข้อมูลไม่เท่ากับ CI ทดสอบ PostgreSQL เพราะ workflow ปัจจุบันไม่ได้เปิด opt-in database suite รายละเอียดอยู่ใน doc/self-service-api.md และ doc/test-report/session-lifecycle-pond.md
 
 ## บทที่ 5 สรุปผลและข้อเสนอแนะ
 
 ### สรุปโมดูลที่ทำแล้ว
 
-ส่งมอบ Entity/Repository, Strategy, State, BookingValidator, MachineService/SessionService, DTO/Mapper, REST API เครื่องและรอบใช้งาน, SessionPayableProvider และเทสต์กฎธุรกิจ/สิทธิ์/ฐานข้อมูล การจองคิดราคาและเวลาใน server ใช้ lock ป้องกันคำขอพร้อมกัน และเปลี่ยนสถานะเครื่องกับรอบใช้งานใน transaction เดียวกัน
+ส่งมอบ Entity/Repository, Strategy, State, BookingValidator, MachineService/SessionService, DTO/Mapper, REST API เครื่องและรอบใช้งาน, SessionPayableProvider และเทสต์กฎธุรกิจ/สิทธิ์/ฐานข้อมูล การจองคิดราคาและเวลาใน server ใช้ lock ป้องกันคำขอพร้อมกัน และเปลี่ยนสถานะเครื่องกับรอบใช้งานใน transaction เดียวกัน เพิ่มหน้าเว็บเครื่อง จอง ประวัติ และพนักงานเปลี่ยนสถานะ โดยใช้ layout ของทีมและ Service เดียวกับ API พร้อม Sequence Diagram สาม scenario และ State Diagram ของ Machine ใน branch ปอนด์
 
 ### งานที่ยังไม่ส่งมอบและแนวทางพัฒนาต่อ
 
-หน้าเว็บดูเครื่อง จอง ประวัติ และพนักงานเปลี่ยนสถานะยังไม่ส่งมอบ เช่นเดียวกับ Sequence Diagram สาม scenario และ State Diagram ของ Machine งานเหล่านี้ต้องทำเป็น PR แยกและอัปเดตรายงานหลังตรวจจริง โดยยังไม่ถือว่าถูกตัดจากขอบเขต Start ปัจจุบันตรวจสถานะ แต่ไม่บังคับช่วงเวลาเริ่มหรือการชำระเงินก่อนใช้งาน Machine event ยังไม่มี listener และ API อ่านเครื่องใช้ข้อกำหนดล็อกอินของทีม
+หน้าเว็บและ diagrams ผ่านการตรวจใน branch แต่ยังต้อง push เปิด PR ให้โชกุนรีวิวและผ่าน CI ก่อน merge เข้า develop ยังไม่ได้ยืนยัน deployment ของงานชุดนี้ Start ปัจจุบันตรวจสถานะ แต่ไม่บังคับช่วงเวลาเริ่มหรือการชำระเงินก่อนใช้งาน Machine event ยังไม่มี listener และ API อ่านเครื่องใช้ข้อกำหนดล็อกอินของทีม หน้าชำระเงินเว็บอยู่นอกงานเว็บชุดนี้ ระบบชำระผ่าน API ของโชกุนได้ตามเทสต์ integration
 
 ก่อนปิดงานควรตกลง HTTP status ของ lifecycle ให้ตรง brief ทุกส่วน ตรวจ flow ผ่านหน้าเว็บจริง และปรับ diagrams/เอกสารรวมตาม branch ที่ส่งมอบล่าสุด แนวทางขยายคือกำหนดนโยบายเริ่มก่อน/หลังเวลาจองและ session เกินเวลา รวมทั้งเลือกผู้รับแจ้งเตือนเครื่องหยุดบริการก่อนเพิ่ม listener
 
@@ -123,4 +123,8 @@ PR #22 มี review และ approval จากโชกุน และ CI �
 - วิเคราะห์ส่วนบุคคล: doc/sections/solid-analysis-pond.md และ design-patterns-pond.md
 - เทสต์ HTTP: test/java/com/laundryhub/service/SessionPaymentIntegrationTest.java
 - เทสต์การแข่งขัน: test/java/com/laundryhub/service/SessionLifecycleIntegrationTest.java
-- *(ยังไม่มี Sequence/State Diagram ของปอนด์สำหรับแนบในเล่ม ต้องเติมหลังส่งมอบจริง)*
+- หน้าเว็บ: code/src/main/java/com/laundryhub/controller/web/SelfServiceWebController.java และ templates/machines/, templates/sessions/
+- เทสต์เว็บ: test/java/com/laundryhub/security/SelfServiceWebSecurityTest.java และกรณี realWebFormBooksForAuthenticatedOwnerAndLifecyclePersists ใน SessionPaymentIntegrationTest
+- Sequence Diagram: doc/diagrams/sequence-order-create-pond.md, sequence-session-booking-pond.md, sequence-checkout-pond.md
+- State Diagram: doc/diagrams/state-machine-pond.md
+- ผลตรวจความสอดคล้องกับทีม: doc/report/pond-integration-check.md
