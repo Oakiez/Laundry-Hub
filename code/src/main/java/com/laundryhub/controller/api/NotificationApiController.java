@@ -1,5 +1,6 @@
 package com.laundryhub.controller.api;
 
+import com.laundryhub.common.PageableValidator;
 import com.laundryhub.common.SecurityUtils;
 import com.laundryhub.dto.response.NotificationResponse;
 import com.laundryhub.mapper.NotificationMapper;
@@ -18,6 +19,8 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
+import java.util.Set;
+
 @RestController
 @RequestMapping("/api/v1")
 @Tag(name = "Notifications")
@@ -25,6 +28,8 @@ public class NotificationApiController {
 
     // เจ้าของหรือแอดมิน: #userId คือ path variable, principal.id คือ id ของผู้ล็อกอิน (AppUserDetails.getId())
     private static final String OWNER_OR_ADMIN = "hasRole('ADMIN') or #userId == authentication.principal.id";
+
+    private static final Set<String> SORTABLE_FIELDS = Set.of("id", "createdAt", "read");
 
     private final NotificationService notificationService;
     private final NotificationMapper notificationMapper;
@@ -42,6 +47,7 @@ public class NotificationApiController {
             @PathVariable Long userId,
             @RequestParam(required = false) Boolean unread,
             @PageableDefault(size = 10, sort = "createdAt", direction = Sort.Direction.DESC) Pageable pageable) {
+        PageableValidator.requireSortableBy(pageable, SORTABLE_FIELDS);
         return new PagedModel<>(notificationService.findByUser(userId, unread, pageable)
                 .map(notificationMapper::toResponse));
     }

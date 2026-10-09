@@ -1,5 +1,6 @@
 package com.laundryhub.controller.api;
 
+import com.laundryhub.common.PageableValidator;
 import com.laundryhub.common.SecurityUtils;
 import com.laundryhub.domain.enums.PaymentStatus;
 import com.laundryhub.domain.enums.Role;
@@ -27,12 +28,15 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestController;
 
+import java.util.Set;
+
 @RestController
 @RequestMapping("/api/v1/payments")
 @Tag(name = "Payments")
 public class PaymentApiController {
 
     private static final String STAFF_OR_ADMIN = "hasAnyRole('STAFF','ADMIN')";
+    private static final Set<String> SORTABLE_FIELDS = Set.of("id", "createdAt", "paidAt", "amount", "status", "method");
 
     private final CheckoutFacade checkoutFacade;
     private final PaymentService paymentService;
@@ -65,6 +69,7 @@ public class PaymentApiController {
     public PagedModel<PaymentResponse> list(
             @RequestParam(required = false) PaymentStatus status,
             @PageableDefault(size = 10, sort = "createdAt", direction = Sort.Direction.DESC) Pageable pageable) {
+        PageableValidator.requireSortableBy(pageable, SORTABLE_FIELDS);
         return new PagedModel<>(paymentService.findAll(status, pageable).map(paymentMapper::toResponse));
     }
 

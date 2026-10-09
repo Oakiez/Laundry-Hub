@@ -24,8 +24,10 @@ import org.springframework.test.web.servlet.setup.MockMvcBuilders;
 
 import java.util.List;
 
+import static org.hamcrest.Matchers.containsString;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
+import static org.mockito.Mockito.verifyNoInteractions;
 import static org.mockito.Mockito.when;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.patch;
@@ -73,6 +75,14 @@ class NotificationApiControllerTest {
         mockMvc.perform(get("/api/v1/users/7/notifications"))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.content").isEmpty());
+    }
+
+    @Test
+    void list_unknownSortField_returns400() throws Exception {
+        mockMvc.perform(get("/api/v1/users/7/notifications").param("sort", "abc"))
+                .andExpect(status().isBadRequest())
+                .andExpect(jsonPath("$.message").value(containsString("abc")));
+        verifyNoInteractions(notificationService);
     }
 
     @Test
