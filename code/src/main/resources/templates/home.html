@@ -26,6 +26,33 @@
                 </div>
             </div>
         </div>
+        <div class="col-md-4" sec:authorize="hasRole('CUSTOMER')">
+            <div class="card h-100">
+                <div class="card-body">
+                    <h2 class="h5 card-title">ชำระเงิน</h2>
+                    <p class="card-text text-muted">จ่ายค่าออเดอร์หรือรอบใช้เครื่อง</p>
+                    <a th:href="@{/payments/new}" class="btn btn-primary btn-sm">ไปหน้าชำระเงิน</a>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-4" sec:authorize="hasAnyRole('STAFF','ADMIN')">
+            <div class="card h-100">
+                <div class="card-body">
+                    <h2 class="h5 card-title">รายการชำระเงิน</h2>
+                    <p class="card-text text-muted">ดูและยืนยันรับเงินสด</p>
+                    <a th:href="@{/staff/payments}" class="btn btn-primary btn-sm">เปิดรายการ</a>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-4">
+            <div class="card h-100">
+                <div class="card-body">
+                    <h2 class="h5 card-title">แจ้งเตือน</h2>
+                    <p class="card-text text-muted">ดูข้อความแจ้งเตือนของคุณ</p>
+                    <a th:href="@{/notifications}" class="btn btn-primary btn-sm">เปิดแจ้งเตือน</a>
+                </div>
+            </div>
+        </div>
         <div class="col-md-4" sec:authorize="hasRole('ADMIN')">
             <div class="card h-100">
                 <div class="card-body">
