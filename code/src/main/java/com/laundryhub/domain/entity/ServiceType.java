@@ -4,9 +4,12 @@ import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
+import org.hibernate.annotations.BatchSize;
 
 import java.math.BigDecimal;
 
+// BatchSize: service types referenced by many order items are loaded together, not one query each
+@BatchSize(size = 50)
 @Entity
 @Table(name = "service_types")
 @Getter
