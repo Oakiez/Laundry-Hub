@@ -22,6 +22,8 @@ import java.util.UUID;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.httpBasic;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.patch;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 
 /** Real Spring wiring, security, checkout, processors and PostgreSQL in an isolated schema. */
@@ -91,6 +93,42 @@ class SessionPaymentIntegrationTest {
 
     private String request(Long id, String method) {
         return "{\"payableType\":\"USAGE_SESSION\",\"payableId\":" + id + ",\"method\":\"" + method + "\"}";
+    }
+
+    @Test
+    void realHttpBookingPaymentStartAndFinishPreservePriceAndMachineState() throws Exception {
+        Long machineId = jdbc.queryForObject("SELECT machine_id FROM usage_sessions WHERE id=?", Long.class, sessionId);
+        jdbc.update("UPDATE machines SET base_price=20,price_per_minute=1.50 WHERE id=?", machineId);
+        String body = "{\"userId\":" + ownerId + ",\"startTime\":\"2030-01-02T10:00:00\",\"durationMinutes\":30}";
+        var result = mvc.perform(post("/api/v1/machines/" + machineId + "/sessions")
+                        .with(httpBasic("provider_customer", "test-password"))
+                        .contentType(MediaType.APPLICATION_JSON).content(body))
+                .andExpect(status().isCreated()).andExpect(jsonPath("$.amount").value(65))
+                .andExpect(jsonPath("$.status").value("RESERVED")).andReturn();
+        Long bookedId = new com.fasterxml.jackson.databind.ObjectMapper()
+                .readTree(result.getResponse().getContentAsString()).get("id").longValue();
+        mvc.perform(post("/api/v1/machines/" + machineId + "/sessions")
+                        .with(httpBasic("provider_customer", "test-password"))
+                        .contentType(MediaType.APPLICATION_JSON).content(body))
+                .andExpect(status().isConflict());
+        mvc.perform(patch("/api/v1/sessions/" + bookedId + "/start")
+                        .with(httpBasic("provider_other", "test-password")))
+                .andExpect(status().isForbidden());
+        mvc.perform(post("/api/v1/payments").with(httpBasic("provider_customer", "test-password"))
+                        .contentType(MediaType.APPLICATION_JSON).content(request(bookedId, "COIN")))
+                .andExpect(status().isCreated()).andExpect(jsonPath("$.amount").value(65))
+                .andExpect(jsonPath("$.status").value("PAID"));
+        mvc.perform(patch("/api/v1/sessions/" + bookedId + "/start")
+                        .with(httpBasic("provider_customer", "test-password")))
+                .andExpect(status().isOk()).andExpect(jsonPath("$.status").value("IN_USE"));
+        mvc.perform(patch("/api/v1/sessions/" + bookedId + "/finish")
+                        .with(httpBasic("provider_customer", "test-password")))
+                .andExpect(status().isOk()).andExpect(jsonPath("$.status").value("COMPLETED"));
+        mvc.perform(get("/api/v1/users/" + ownerId + "/sessions?sort=startTime,desc")
+                        .with(httpBasic("provider_customer", "test-password")))
+                .andExpect(status().isOk()).andExpect(jsonPath("$.totalElements").value(2));
+        assertEquals("AVAILABLE", jdbc.queryForObject("SELECT status FROM machines WHERE id=?", String.class, machineId));
+        assertEquals(4, jdbc.queryForObject("SELECT count(*) FROM notifications WHERE user_id=?", Integer.class, ownerId));
     }
 
     @Test
