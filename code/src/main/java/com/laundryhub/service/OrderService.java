@@ -1,5 +1,6 @@
 package com.laundryhub.service;
 
+import com.laundryhub.domain.Payable;
 import com.laundryhub.domain.enums.OrderStatus;
 import com.laundryhub.dto.request.ChangeStatusRequest;
 import com.laundryhub.dto.request.CreateOrderRequest;
@@ -25,4 +26,7 @@ public interface OrderService {
     void cancelByCustomer(Long customerId, Long orderId);
 
     OrderResponse changeStatus(Long orderId, ChangeStatusRequest.Action action);
+
+    /** Used by the payment module through OrderPayableProvider; throws ResourceNotFoundException if the order does not exist. */
+    Payable findPayable(Long orderId);
 }

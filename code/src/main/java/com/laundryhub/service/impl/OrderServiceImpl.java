@@ -1,5 +1,6 @@
 package com.laundryhub.service.impl;
 
+import com.laundryhub.domain.Payable;
 import com.laundryhub.domain.entity.Branch;
 import com.laundryhub.domain.entity.LaundryOrder;
 import com.laundryhub.domain.entity.LaundryOrderItem;
@@ -40,7 +41,6 @@ import java.util.Set;
 @Transactional(readOnly = true)
 public class OrderServiceImpl implements OrderService {
 
-    
     private static final Set<String> SORTABLE_FIELDS =
             Set.of("id", "createdAt", "updatedAt", "status", "totalAmount", "totalWeightKg");
 
@@ -88,7 +88,6 @@ public class OrderServiceImpl implements OrderService {
         return orderMapper.toResponse(findOwnedOrder(customerId, orderId));
     }
 
-    
     @Override
     public PageResponse<OrderResponse> listForCustomer(Long customerId, OrderStatus status, Pageable pageable) {
         checkSortable(pageable);
@@ -142,6 +141,12 @@ public class OrderServiceImpl implements OrderService {
         return orderMapper.toResponse(orderRepository.saveAndFlush(order));
     }
 
+    @Override
+    public Payable findPayable(Long orderId) {
+        return orderRepository.findById(orderId)
+                .orElseThrow(() -> new ResourceNotFoundException("Order " + orderId + " not found"));
+    }
+
     // State pattern: the current state decides what comes next, no if/else chain over statuses here
     private void advance(LaundryOrder order) {
         OrderState next = OrderStateFactory.from(order.getStatus()).next()
@@ -192,7 +197,7 @@ public class OrderServiceImpl implements OrderService {
         order.setTotalAmount(totalAmount);
     }
 
-        // an unknown sort field would fail deep inside Spring Data as a 500; reject it up front as a 400
+    // an unknown sort field would fail deep inside Spring Data as a 500; reject it up front as a 400
     private void checkSortable(Pageable pageable) {
         pageable.getSort().forEach(order -> {
             if (!SORTABLE_FIELDS.contains(order.getProperty())) {
@@ -201,13 +206,10 @@ public class OrderServiceImpl implements OrderService {
         });
     }
 
-
     private User findCustomer(Long customerId) {
         return userRepository.findById(customerId)
                 .filter(user -> user.getRole() == Role.CUSTOMER)
                 .orElseThrow(() -> new ResourceNotFoundException("Customer " + customerId + " not found"));
-
-                
     }
 
     private ServiceType findActiveServiceType(Long serviceTypeId) {
