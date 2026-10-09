@@ -137,7 +137,7 @@ cd Laundry-Hub
 git checkout develop
 ```
 
-> ถ้าเครื่องมี PostgreSQL ติดตั้งอยู่แล้วและใช้พอร์ต 5432 ให้หยุดมันก่อน (หรือเปลี่ยนพอร์ตใน `code/docker-compose.yml`) ไม่เช่นนั้นแอปจะต่อฐานข้อมูลของ Docker ไม่ได้
+> ฐานข้อมูลใน Docker เปิดที่พอร์ต **5433** (แมปเป็น 5433 เพื่อไม่ชนกับ PostgreSQL ที่ติดตั้งในเครื่องซึ่งมักใช้ 5432) ถ้าพอร์ต 5433 ถูกใช้อยู่ให้เปลี่ยนค่าใน `code/docker-compose.yml` และ `DB_URL`
 
 ## How to Run
 
@@ -160,7 +160,7 @@ docker compose up --build
 
 | ตัวแปร | ค่าเริ่มต้น | ความหมาย |
 |---|---|---|
-| `DB_URL` | `jdbc:postgresql://localhost:5432/laundryhub` | JDBC URL ของฐานข้อมูล |
+| `DB_URL` | `jdbc:postgresql://localhost:5433/laundryhub` | JDBC URL ของฐานข้อมูล |
 | `DB_USER` | `laundry` | ชื่อผู้ใช้ฐานข้อมูล |
 | `DB_PASSWORD` | `laundry` | รหัสผ่านฐานข้อมูล (ห้าม commit ค่าจริง) |
 | `PORT` | `8080` | พอร์ตของแอป |
@@ -211,6 +211,8 @@ mvn test
 ไม่ต้องเปิดฐานข้อมูล เพราะเป็น unit test ที่ใช้ Mockito ผลทดสอบและ coverage อยู่ใน `doc/test-report/`
 
 > Docker build ข้ามเทสต์ (`-Dmaven.test.skip=true`) เพราะ `test/` อยู่นอก `code/` จึงควรรัน `mvn test` ในเครื่องก่อน push ทุกครั้ง
+>
+> **CI:** GitHub Actions (`.github/workflows/ci.yml`) รัน `mvn test` และทดสอบ build Docker image อัตโนมัติทุกครั้งที่เปิด Pull Request เข้า `develop`/`main` และทุกครั้งที่ push เข้าสองสาขานี้
 
 ## Deployment URL
 
