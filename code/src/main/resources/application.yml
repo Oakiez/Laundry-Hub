@@ -1,6 +1,6 @@
 spring:
   datasource:
-    url: ${DB_URL:jdbc:postgresql://localhost:5432/laundryhub}
+    url: ${DB_URL:jdbc:postgresql://localhost:5433/laundryhub}
     username: ${DB_USER:laundry}
     password: ${DB_PASSWORD:laundry}
   jpa:
