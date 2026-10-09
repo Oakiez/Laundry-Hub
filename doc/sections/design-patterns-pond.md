@@ -44,6 +44,12 @@ the team along with the core brief requirements.
 
 ## Current limits
 
+SessionPayableProvider now adapts SessionService.findPayable to the shared
+PayableProvider interface and declares USAGE_SESSION. Spring collects it into
+CheckoutFacade's provider registry through constructor injection. No checkout or
+processor code is changed to add this supported payable type. Missing sessions
+propagate ResourceNotFoundException; ownership remains CheckoutFacade's responsibility.
+
 No Machine/Session HTTP endpoints or UI are delivered yet. The existing overlap
 query and machine lock must be composed in SessionService and tested under
 concurrency before claiming simultaneous bookings are prevented end to end.
