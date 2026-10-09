@@ -218,6 +218,8 @@ LAUNDRY_DB_TESTS=true mvn test -Dtest=SelfServiceRepositoryTest
 
 เทสต์นี้สร้าง schema ชั่วคราวของตัวเอง (ชื่อสุ่ม) รัน Flyway ในนั้นแล้วลบทิ้งตอนจบ จึงไม่แตะตารางจริง เมื่อรวมผลนี้กับผลรันแยกของ `PaymentRepositoryDbTest` (13 ข้อ ดูหัวข้อ 3.6) เมื่อเปิด `LAUNDRY_DB_TESTS=true` และรันทั้งโปรเจคครั้งเดียวกับ PostgreSQL 16 จริง (10 ต.ค. 2569 03:50 น.) ได้ **`Tests run: 321, Failures: 0, Errors: 0, Skipped: 0` · `BUILD SUCCESS`** (276 ข้อที่รันปกติ + 45 ข้อที่ต่อฐานข้อมูล คือ `PaymentRepositoryDbTest` 13 + `SelfServiceRepositoryTest` 19 + `SessionLifecycleIntegrationTest` 7 + `SessionPaymentIntegrationTest` 6) ข้อความ `ERROR ... test_block_notification` ในล็อกของ `SessionLifecycleIntegrationTest` เป็นความตั้งใจของเทสต์ที่ทดสอบการ rollback ธุรกรรมเมื่อบันทึกแจ้งเตือนล้มเหลว ไม่ใช่ข้อผิดพลาด ที่ตัวเลขต่างกัน (ข้าม 9 แต่รันจริง 19) เพราะเมื่อข้ามทั้งคลาส Maven นับตามจำนวนเมธอดเทสต์ ซึ่งในไฟล์มี `@Test` 7 เมธอด + `@ParameterizedTest` 2 เมธอด = 9 แต่ตอนรันจริงเทสต์แบบพารามิเตอร์แตกเป็นหลายกรณี รวมเป็น 19 ข้อ (ตรวจจากโค้ดของ `SelfServiceRepositoryTest`)
 
+![ผลรัน mvn test ทั้งโปรเจคเมื่อเปิดเทสต์ฐานข้อมูลจริง (LAUNDRY_DB_TESTS=true) 321 ข้อ ผ่านทั้งหมด](../../img/test-run-full-db.png)
+
 ## 6. ข้อจำกัดและสิ่งที่ยังไม่ได้ทดสอบ
 
 - **เทสต์ที่ต่อฐานข้อมูลจริงเป็นแบบ opt-in** (ต้องตั้ง `LAUNDRY_DB_TESTS=true` และเปิด PostgreSQL) จึงไม่ถูกรวมใน `mvn test` ปกติและ CI ปัจจุบันของทีมไม่ได้รันชุดนี้ ตัวเลขผลรวมหัวข้อ 5 จึงเป็นเทสต์แบบ unit เป็นหลัก ส่วนเทสต์ที่ต่อ DB จริงของ payments/notifications (`PaymentRepositoryDbTest` 13 ข้อ ครอบ `UNIQUE`, `FK`, `CHECK`) ผ่านแล้วตามหัวข้อ 3.6
