@@ -40,10 +40,9 @@ public class UsageSession implements Payable {
     @JoinColumn(name = "machine_id", nullable = false)
     private Machine machine;
 
-    // Replace with the agreed User association when the foundation module lands.
-    // The existing database foreign key still enforces the user reference.
-    @Column(name = "user_id", nullable = false)
-    private Long userId;
+    @ManyToOne(fetch = FetchType.LAZY, optional = false)
+    @JoinColumn(name = "user_id", nullable = false)
+    private User user;
 
     @Enumerated(EnumType.STRING)
     @Column(nullable = false, length = 20)
@@ -84,6 +83,6 @@ public class UsageSession implements Payable {
 
     @Override
     public Long getOwnerUserId() {
-        return userId;
+        return user.getId();
     }
 }
