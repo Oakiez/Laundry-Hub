@@ -425,7 +425,7 @@ classDiagram
 |---|---|---|---|---|
 | Strategy | Behavioral | `PricingStrategy` ← `FullServicePricing`, `SelfServicePricing` · `PaymentProcessor` ← `Cash/QrMock/CoinProcessor` | `service/pricing/`, `service/payment/` | พีช, ปอนด์, โชกุน |
 | State | Behavioral | `OrderState` ← 7 สถานะ + `OrderStateFactory` · `MachineState` ← 4 สถานะ + `MachineStateFactory` | `service/state/` | พีช, ปอนด์ |
-| Observer | Behavioral | `OrderStatusChangedEvent`, `MachineStatusChangedEvent`, `PaymentCompletedEvent` → `NotificationEventListener` | `event/` | พีช, ปอนด์ (ยิง), โชกุน (ยิง/ฟัง) |
+| Observer | Behavioral | `OrderStatusChangedEvent`, `SessionStatusChangedEvent`, `PaymentCompletedEvent` → `NotificationEventListener` (`MachineStatusChangedEvent` ถูกยิงแล้วแต่ยังไม่มี listener · `SessionStatusChangedEvent` มี listener แต่ยังไม่มีผู้ยิง) | `event/` | พีช (ยิง Order), ปอนด์ (ยิง Machine), โชกุน (ยิง Payment / ฟังทั้งหมด) |
 | Factory (Simple Factory แบบ registry) | Creational | `PaymentProcessorFactory` → `PaymentProcessor` | `service/payment/` | โชกุน |
 | Facade | Structural | `CheckoutFacade` | `service/payment/CheckoutFacade.java` | โชกุน |
 | Builder | Creational | `OrderResponse.builder()` (Lombok `@Builder`) | `dto/response/OrderResponse.java` | พีช |
