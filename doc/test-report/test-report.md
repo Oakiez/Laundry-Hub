@@ -89,6 +89,37 @@ mvn test -Dtest=GlobalExceptionHandlerTest      # รันคลาสเดี
 
 **`NotificationEventListenerTest` (4)** — Observer เรียก `notificationService.notifyUser` ด้วยข้อความที่ถูกต้องสำหรับ `OrderStatusChangedEvent`, `SessionStatusChangedEvent` และ `PaymentCompletedEvent` (ออเดอร์/รอบใช้เครื่อง)
 
+### 3.4 ทดสอบกับแอปจริง (manual end-to-end)
+
+รันแอปจริงด้วย `docker compose up -d db` (PostgreSQL 16 พอร์ต 5433) และ `mvn spring-boot:run` เมื่อ 9 ต.ค. 2569 แล้วทดสอบด้วย `curl` และ Swagger UI โดยใช้ผู้ใช้ตัวอย่างจาก `V2__seed_data.sql`
+
+**การเริ่มระบบ:** Flyway ใช้ migration V1/V2 สำเร็จ · Hibernate `ddl-auto: validate` ผ่าน (entity ของ `Payment`/`Notification` ตรงกับตารางจริงทุกคอลัมน์) · `Started LaundryHubApplication` โดยไม่มี error
+
+| # | กรณี | ผู้ใช้ | ผลที่ได้ | ผลที่คาดหวัง |
+|---|---|---|---:|---|
+| 1 | `GET /api/v1/payments` | ไม่ล็อกอิน | 401 | ผ่าน |
+| 2 | `GET /api/v1/payments` | CUSTOMER | 403 + `ApiErrorResponse` | ผ่าน (`@PreAuthorize`) |
+| 3 | `GET /api/v1/payments` | STAFF | 200 + `content`/`page` | ผ่าน |
+| 4 | `GET /api/v1/payments?status=NOPE` | STAFF | 400 | ผ่าน |
+| 5 | `GET /api/v1/payments?sort=abc` | STAFF | 400 (ก่อนแก้ได้ 500) | ผ่านหลังแก้ ดูข้อบกพร่องข้อ 6 |
+| 6 | `GET /api/v1/payments?sort=password` | STAFF | 400 | ผ่าน (ไม่เปิดให้เรียงด้วยฟิลด์ที่ไม่อนุญาต) |
+| 7 | `GET /api/v1/users/3/notifications` | CUSTOMER เจ้าของ | 200 | ผ่าน |
+| 8 | `GET /api/v1/users/2/notifications` | CUSTOMER (ของคนอื่น) | 403 | ผ่าน |
+| 9 | `GET /api/v1/users/3/notifications?unread=true` | ADMIN | 200 | ผ่าน |
+| 10 | `PATCH /api/v1/notifications/9999/read` | CUSTOMER | 404 | ผ่าน |
+| 11 | `POST /api/v1/payments` body ว่าง | CUSTOMER | 400 + `fieldErrors` 3 รายการ | ผ่าน |
+| 12 | `POST /api/v1/payments` (ออเดอร์ที่ไม่มี) | CUSTOMER | 404 `Order 1 not found` | ผ่าน (Facade ทำงานต่อกับ `PayableProvider` ของโมดูลออเดอร์) |
+| 13 | `PATCH /api/v1/payments/1/confirm` | CUSTOMER | 403 | ผ่าน |
+| 14 | `PATCH /api/v1/payments/9999/confirm` | STAFF | 404 | ผ่าน |
+
+error ทุกแบบ (ยกเว้น 401 จากชั้น Security) ตอบเป็นรูปแบบ `ApiErrorResponse` เดียวกัน
+
+ภาพจาก Swagger UI (พารามิเตอร์แบ่งหน้า `page`/`size`/`sort` แยกช่อง และผล 200):
+
+![Swagger UI: GET /api/v1/payments ผล 200](../../img/swagger-payments-list-200.png)
+
+![Swagger UI: โครงสร้างตัวอย่างของ PaymentResponse](../../img/swagger-payments-response-schema.png)
+
 ## 4. ข้อบกพร่องที่พบระหว่างทดสอบและรีวิว (และแก้แล้ว)
 
 **ข้อ 1 — เทสต์ `GlobalExceptionHandlerTest` ล้ม 8 ข้อ**
@@ -111,6 +142,14 @@ mvn test -Dtest=GlobalExceptionHandlerTest      # รันคลาสเดี
 - ปัญหา: `notifyUser` ไม่ตรวจ `userId` และข้อความที่เป็น null
 - แก้ไข: ตรวจแล้วโยน `BusinessRuleException` พร้อมเทสต์
 
+**ข้อ 6 — Code Review ของปอนด์ (PR #10) และยืนยันด้วยการทดสอบจริง**
+- ปัญหา: `GET /api/v1/payments?sort=abc` (ฟิลด์ที่ไม่มี) ได้ **500** แทนที่จะเป็น 400 เพราะ error ของ Spring Data หลุดไปถึง handler สุดท้าย
+- แก้ไข: เพิ่ม `PageableValidator` ตรวจฟิลด์ที่อนุญาตให้เรียง (whitelist) ใน `PaymentApiController` และ `NotificationApiController` ตอบ 400 พร้อมบอกฟิลด์ที่ใช้ได้ มีเทสต์ 7 ข้อ และยืนยันซ้ำกับแอปจริง
+
+**ข้อ 7 — พบจากการดู Swagger ระหว่างทดสอบจริง**
+- ปัญหา: พารามิเตอร์แบ่งหน้าของ payments/notifications แสดงใน Swagger เป็นช่อง `pageable` ก้อนเดียว (JSON) ทดลองใช้งานไม่สะดวก ขณะที่ endpoint ออเดอร์แสดง `page`/`size`/`sort` แยกช่อง
+- แก้ไข: เพิ่ม `@ParameterObject` ที่พารามิเตอร์ `Pageable`
+
 ## 5. ผลรวมทั้งโปรเจค
 
 > ต้องอัปเดตตารางนี้หลังรวมงานของทุกคนเข้า `develop` และรัน `mvn test` ครั้งสุดท้ายก่อนส่ง
@@ -125,8 +164,8 @@ mvn test -Dtest=GlobalExceptionHandlerTest      # รันคลาสเดี
 
 ## 6. ข้อจำกัดและสิ่งที่ยังไม่ได้ทดสอบ
 
-- **ยังไม่มีเทสต์ระดับ Integration กับฐานข้อมูลจริง** เทสต์ทั้งหมดเป็น Unit Test (Mockito / MockMvc standalone) จึงยังไม่ได้ยืนยันกับ PostgreSQL ว่าชื่อคอลัมน์ของ `Payment`/`Notification` (เช่น `is_read`) ตรงกับ `V1__init_schema.sql` และ constraint (`UNIQUE`, `CHECK`) ทำงานตามที่ออกแบบ
-- **ยังไม่ได้ทดสอบ REST controller และสิทธิ์ (`@PreAuthorize`)** ของ payments/notifications เพราะรอ Security ของโมดูล Auth
+- **ยังไม่มีเทสต์อัตโนมัติระดับ Integration กับฐานข้อมูลจริง** เทสต์อัตโนมัติทั้งหมดเป็น Unit Test (Mockito / MockMvc standalone) การยืนยันกับ PostgreSQL ทำแบบ manual ในหัวข้อ 3.4 เท่านั้น (ชื่อคอลัมน์ผ่าน `validate`) แต่ **ยังไม่ได้ทดสอบ constraint ของฐานข้อมูล** (`UNIQUE` ของ `order_id`/`session_id`, `CHECK chk_payment_target`) กับการบันทึก payment จริง เพราะยังไม่มีออเดอร์/รอบใช้เครื่องตัวอย่างให้ชำระ
+- **สิทธิ์ (`@PreAuthorize`) ยืนยันแบบ manual แล้ว** (หัวข้อ 3.4) แต่ยังไม่มีเทสต์อัตโนมัติ เพราะเทสต์ controller แบบ standalone ไม่เปิดใช้ method security
 - **ยังไม่ได้ทดสอบหน้าเว็บ (Thymeleaf)**
 - **ยังไม่ได้ตั้งค่า Jacoco** จึงยังไม่มีตัวเลข code coverage (รายการระดับ P2)
 - ไม่มีเทสต์การทำงานพร้อมกัน (race) ของการจ่ายซ้ำ ป้องกันด้วย `UNIQUE` ใน DB ซึ่งต้องยืนยันด้วย integration test

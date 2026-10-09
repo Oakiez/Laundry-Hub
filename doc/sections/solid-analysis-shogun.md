@@ -20,7 +20,8 @@
 | ไฟล์ : บรรทัด | หลักฐาน |
 |---|---|
 | `…/service/payment/PaymentProcessor.java:8` | interface ที่ทุกวิธีชำระ implement |
-| `…/service/payment/PaymentProcessorFactory.java:21-27` | รับ `List<PaymentProcessor>` ทาง constructor แล้วสร้างตาราง method → processor (บรรทัด 23) เพิ่มวิธีชำระใหม่ (เช่น `CoinProcessor`) = เพิ่มคลาส `@Component` ใหม่ **โดยไม่แก้ Factory และ `PaymentServiceImpl`** |
+| `…/service/payment/PaymentProcessorFactory.java:21-27` | รับ `List<PaymentProcessor>` ทาง constructor แล้วสร้างตาราง method → processor (บรรทัด 23) เพิ่มวิธีชำระใหม่ = เพิ่มคลาส `@Component` ใหม่ **โดยไม่แก้ Factory และ `PaymentServiceImpl`** |
+| `…/service/payment/CoinProcessor.java:18` | ตัวอย่างจริงของการเพิ่มวิธีชำระใหม่ (หยอดเหรียญ) ที่เพิ่มเป็นคลาสใหม่ทั้งคลาส โดย Factory และ Service ไม่ถูกแก้ · เทสต์ `PaymentProcessorFactoryTest.addingNewProcessor_needsNoChangeToFactory` ยืนยัน |
 | `…/service/impl/PaymentServiceImpl.java:39` | เรียก `getProcessor(method).process(payment)` โดยไม่มี `if/switch` ตามวิธีชำระ |
 | `…/event/NotificationEventListener.java:25` | เพิ่มช่องทางแจ้งเตือนใหม่ = เพิ่ม listener ใหม่ ไม่แก้โมดูลที่ยิง event |
 
@@ -28,7 +29,7 @@
 
 | ไฟล์ : บรรทัด | หลักฐาน |
 |---|---|
-| `…/service/payment/CashProcessor.java:10` และ `…/service/payment/QrMockProcessor.java:10` | ทั้งสองแทน `PaymentProcessor` ได้เต็มรูปแบบ ทำตามสัญญาเดียวกัน (`method()` + `process()` คืน `PaymentStatus`) ไม่ throw `UnsupportedOperationException` |
+| `…/service/payment/CashProcessor.java:10`, `…/service/payment/QrMockProcessor.java:10` และ `…/service/payment/CoinProcessor.java:18` | ทั้งสามแทน `PaymentProcessor` ได้ ทำตามสัญญาเดียวกัน (`method()` + `process()` คืน `PaymentStatus`) ไม่ throw `UnsupportedOperationException` (`CoinProcessor` โยน `BusinessRuleException` บรรทัด 28 เมื่อใช้กับออเดอร์ฝากซัก ซึ่งเป็นการปฏิเสธข้อมูลที่ไม่ถูกต้องตามกฎธุรกิจ ไม่ใช่การไม่รองรับเมธอด) |
 | `test/java/com/laundryhub/service/payment/PaymentProcessorFactoryTest.java` | เทสต์ใช้ processor สองตัวสลับกันผ่าน Factory ได้โดยโค้ดฝั่งใช้ไม่ต้องรู้ชนิดจริง |
 
 ## I — Interface Segregation
