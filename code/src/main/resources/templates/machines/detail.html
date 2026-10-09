@@ -1,0 +1,24 @@
+<!DOCTYPE html>
+<html lang="th" xmlns:th="http://www.thymeleaf.org" xmlns:sec="http://www.thymeleaf.org/extras/spring-security">
+<head th:replace="~{fragments/layout :: head('รายละเอียดเครื่อง')}"></head>
+<body class="d-flex flex-column min-vh-100">
+<nav th:replace="~{fragments/layout :: navbar}"></nav>
+<main class="container py-4 flex-grow-1">
+    <h1 th:text="${machine.name}"></h1>
+    <p>สาขา <span th:text="${machine.branchId}"></span> · <span th:text="${machine.machineType}"></span></p>
+    <p>สถานะ: <strong th:text="${machine.status}"></strong></p>
+    <p>เริ่มต้น <span th:text="${machine.basePrice}"></span> บาท + <span th:text="${machine.pricePerMinute}"></span> บาท/นาที</p>
+    <a class="btn btn-outline-secondary" th:href="@{/machines}">รายการเครื่อง</a>
+    <a class="btn btn-primary" sec:authorize="hasRole('CUSTOMER')" th:if="${machine.status.name() != 'OUT_OF_SERVICE'}" th:href="@{/machines/{id}/book(id=${machine.id})}">จองเครื่องนี้</a>
+    <section sec:authorize="hasAnyRole('STAFF','ADMIN')" class="mt-4">
+        <h2 class="h4">รอบใช้งานของเครื่อง</h2>
+        <div th:replace="~{sessions/table :: table(${sessions}, true)}"></div>
+        <nav class="d-flex gap-3 mt-3" aria-label="หน้ารอบใช้งาน">
+            <a th:if="${sessions.hasPrevious()}" th:href="@{/machines/{id}(id=${machine.id},page=${sessions.number - 1})}">ก่อนหน้า</a>
+            <a th:if="${sessions.hasNext()}" th:href="@{/machines/{id}(id=${machine.id},page=${sessions.number + 1})}">ถัดไป</a>
+        </nav>
+    </section>
+</main>
+<footer th:replace="~{fragments/layout :: footer}"></footer>
+<script th:replace="~{fragments/layout :: scripts}"></script>
+</body></html>
