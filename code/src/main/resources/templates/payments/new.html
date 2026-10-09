@@ -1,0 +1,54 @@
+<!DOCTYPE html>
+<html lang="th" xmlns:th="http://www.thymeleaf.org"
+      xmlns:sec="http://www.thymeleaf.org/extras/spring-security">
+<head th:replace="~{fragments/layout :: head('ชำระเงิน')}"></head>
+<body class="d-flex flex-column min-vh-100">
+<nav th:replace="~{fragments/layout :: navbar}"></nav>
+
+<main class="container py-4 flex-grow-1">
+    <div th:replace="~{fragments/layout :: alert}"></div>
+
+    <h1 class="h4 mb-3">ชำระเงิน</h1>
+
+    <div class="card" style="max-width: 560px;">
+        <div class="card-body">
+            <p class="text-muted small">
+                จำนวนเงินคิดจากรายการที่เลือกโดยระบบ ไม่ต้องกรอกเอง
+                (เงินสดต้องรอพนักงานยืนยันรับเงิน, QR และเหรียญชำระสำเร็จทันที)
+            </p>
+            <form th:action="@{/payments}" th:object="${form}" method="post" novalidate>
+                <div class="mb-3">
+                    <label for="payableType" class="form-label">ชำระสำหรับ</label>
+                    <select id="payableType" th:field="*{payableType}" class="form-select"
+                            th:classappend="${#fields.hasErrors('payableType')} ? 'is-invalid'">
+                        <option value="">-- เลือกประเภท --</option>
+                        <option th:each="t : ${types}" th:value="${t}" th:text="${typeLabels.get(t)}">ออเดอร์</option>
+                    </select>
+                    <div class="invalid-feedback" th:errors="*{payableType}">error</div>
+                </div>
+                <div class="mb-3">
+                    <label for="payableId" class="form-label">เลขที่รายการ</label>
+                    <input type="number" id="payableId" th:field="*{payableId}" class="form-control" min="1"
+                           th:classappend="${#fields.hasErrors('payableId')} ? 'is-invalid'">
+                    <div class="invalid-feedback" th:errors="*{payableId}">error</div>
+                </div>
+                <div class="mb-3">
+                    <label for="method" class="form-label">วิธีชำระเงิน</label>
+                    <select id="method" th:field="*{method}" class="form-select"
+                            th:classappend="${#fields.hasErrors('method')} ? 'is-invalid'">
+                        <option value="">-- เลือกวิธีชำระ --</option>
+                        <option th:each="m : ${methods}" th:value="${m}" th:text="${methodOptionLabels.get(m)}">เงินสด</option>
+                    </select>
+                    <div class="invalid-feedback" th:errors="*{method}">error</div>
+                </div>
+                <button type="submit" class="btn btn-primary">ชำระเงิน</button>
+                <a th:href="@{/}" class="btn btn-outline-secondary">ยกเลิก</a>
+            </form>
+        </div>
+    </div>
+</main>
+
+<footer th:replace="~{fragments/layout :: footer}"></footer>
+<script th:replace="~{fragments/layout :: scripts}"></script>
+</body>
+</html>
