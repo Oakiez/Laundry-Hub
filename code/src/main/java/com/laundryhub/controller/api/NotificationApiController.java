@@ -7,6 +7,7 @@ import com.laundryhub.mapper.NotificationMapper;
 import com.laundryhub.service.NotificationService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
+import org.springdoc.core.annotations.ParameterObject;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 import org.springframework.data.web.PageableDefault;
@@ -46,7 +47,8 @@ public class NotificationApiController {
     public PagedModel<NotificationResponse> list(
             @PathVariable Long userId,
             @RequestParam(required = false) Boolean unread,
-            @PageableDefault(size = 10, sort = "createdAt", direction = Sort.Direction.DESC) Pageable pageable) {
+            @ParameterObject @PageableDefault(size = 10, sort = "createdAt", direction = Sort.Direction.DESC)
+            Pageable pageable) {
         PageableValidator.requireSortableBy(pageable, SORTABLE_FIELDS);
         return new PagedModel<>(notificationService.findByUser(userId, unread, pageable)
                 .map(notificationMapper::toResponse));
