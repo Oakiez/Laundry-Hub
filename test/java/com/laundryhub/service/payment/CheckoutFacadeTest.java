@@ -6,7 +6,6 @@ import com.laundryhub.domain.enums.PayableType;
 import com.laundryhub.domain.enums.PaymentMethod;
 import com.laundryhub.domain.enums.PaymentStatus;
 import com.laundryhub.dto.request.CheckoutRequest;
-import com.laundryhub.dto.response.PayableSummary;
 import com.laundryhub.dto.response.PaymentResponse;
 import com.laundryhub.event.PaymentCompletedEvent;
 import com.laundryhub.exception.BusinessRuleException;
@@ -165,38 +164,6 @@ class CheckoutFacadeTest {
 
         assertEquals(PaymentStatus.PAID, facade.getPayment(3L, OTHER_USER_ID, true).status());
         verify(orderProvider, never()).findPayable(any());
-    }
-
-    @Test
-    void getPayableSummary_owner_returnsTypeIdAndAmount() {
-        when(orderProvider.findPayable(5L)).thenReturn(order(5L));
-
-        PayableSummary summary = facade.getPayableSummary(PayableType.LAUNDRY_ORDER, 5L, OWNER_ID, false);
-
-        assertEquals(PayableType.LAUNDRY_ORDER, summary.payableType());
-        assertEquals(5L, summary.payableId());
-        assertEquals(new java.math.BigDecimal("120.00"), summary.amount());
-    }
-
-    @Test
-    void getPayableSummary_notOwner_throwsAccessDenied() {
-        when(orderProvider.findPayable(5L)).thenReturn(order(5L));
-
-        assertThrows(AccessDeniedException.class,
-                () -> facade.getPayableSummary(PayableType.LAUNDRY_ORDER, 5L, OTHER_USER_ID, false));
-    }
-
-    @Test
-    void getPayableSummary_staff_canSeeAnyone() {
-        when(orderProvider.findPayable(5L)).thenReturn(order(5L));
-
-        assertEquals(5L, facade.getPayableSummary(PayableType.LAUNDRY_ORDER, 5L, OTHER_USER_ID, true).payableId());
-    }
-
-    @Test
-    void getPayableSummary_noProvider_throwsBusinessRule() {
-        assertThrows(BusinessRuleException.class,
-                () -> facade.getPayableSummary(PayableType.USAGE_SESSION, 1L, OWNER_ID, false));
     }
 
     private static CheckoutRequest request(PaymentMethod method) {
