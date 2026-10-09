@@ -62,6 +62,15 @@ class MachineServiceImplTest {
     }
 
     @Test
+    void rejectsUnknownAndNestedSortBeforeRepositoryQuery() {
+        for (String field : List.of("unknown", "branch.address")) {
+            assertThrows(BusinessRuleException.class, () -> service.search(null, null, null,
+                    PageRequest.of(0, 10, Sort.by(field))));
+        }
+        verifyNoInteractions(machines);
+    }
+
+    @Test
     void createsAvailableMachineWithNormalizedNameAndPrices() {
         when(branches.findById(2L)).thenReturn(Optional.of(branch));
         when(machines.saveAndFlush(any())).thenAnswer(invocation -> {

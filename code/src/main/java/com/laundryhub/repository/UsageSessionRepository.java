@@ -5,11 +5,22 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
+import org.springframework.data.jpa.repository.Lock;
+import jakarta.persistence.LockModeType;
 import org.springframework.data.repository.query.Param;
 
 import java.time.LocalDateTime;
+import java.util.Optional;
 
 public interface UsageSessionRepository extends JpaRepository<UsageSession, Long> {
+
+    // Machine first, then session: all lifecycle operations share this lock order.
+    @Query("select s.machine.id from UsageSession s where s.id = :id")
+    Optional<Long> findMachineIdBySessionId(@Param("id") Long id);
+
+    @Lock(LockModeType.PESSIMISTIC_WRITE)
+    @Query("select s from UsageSession s where s.id = :id")
+    Optional<UsageSession> findByIdForUpdate(@Param("id") Long id);
 
     boolean existsByMachine_Id(Long machineId);
 

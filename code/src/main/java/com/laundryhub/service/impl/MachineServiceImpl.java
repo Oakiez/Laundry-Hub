@@ -25,6 +25,8 @@ import org.springframework.transaction.annotation.Transactional;
 import org.springframework.validation.annotation.Validated;
 
 import java.util.Objects;
+import java.util.Set;
+import com.laundryhub.common.PageableValidator;
 
 @Service
 @Validated
@@ -50,6 +52,8 @@ public class MachineServiceImpl implements MachineService {
 
     @Override
     public Page<MachineResponse> search(Long branchId, MachineStatus status, MachineType type, Pageable pageable) {
+        PageableValidator.requireSortableBy(pageable,
+                Set.of("id", "name", "machineType", "status", "basePrice", "pricePerMinute"));
         return machines.search(branchId, status, type, pageable).map(mapper::toResponse);
     }
 
