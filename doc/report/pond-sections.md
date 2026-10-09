@@ -99,7 +99,7 @@ SessionService.findPayable คืนข้อมูลตาม contract แล�
 
 ### ผลการรีวิวและข้อจำกัดของหลักฐาน
 
-PR #22 มี review และ approval จากโชกุนก่อน merge เข้า main แต่ใช้ base ผิดจาก workflow ของทีม จากนั้น PR #23 ส่งงานเข้า develop ที่ a21cb2a และ PR #25 ส่งหน้าเว็บ/diagrams เข้า develop ที่ 11fe6af โดยโชกุน approve และ CI Test + Docker build ผ่าน งานลิงก์ชำระเงินเพิ่มเติมหลัง PR #26 ต้องเปิด PR ใหม่ การผ่านเทสต์ในเครื่องที่เปิดฐานข้อมูลไม่เท่ากับ CI ทดสอบ PostgreSQL เพราะ workflow ไม่เปิด opt-in database suite รายละเอียดอยู่ใน doc/self-service-api.md และ doc/test-report/session-lifecycle-pond.md
+PR #22 มี review และ approval จากโชกุนก่อน merge เข้า main แต่ใช้ base ผิดจาก workflow ของทีม จากนั้น PR #23 ส่งงานเข้า develop ที่ a21cb2a และ PR #25 ส่งหน้าเว็บ/diagrams เข้า develop ที่ 11fe6af โดยโชกุน approve และ CI Test + Docker build ผ่าน งานลิงก์ชำระเงินเพิ่มเติม merge ผ่าน PR #28 ที่ 5070373 โดยโชกุน approve และ CI Test + Docker build ผ่าน การผ่านเทสต์ในเครื่องที่เปิดฐานข้อมูลไม่เท่ากับ CI ทดสอบ PostgreSQL เพราะ workflow ไม่เปิด opt-in database suite รายละเอียดอยู่ใน doc/self-service-api.md และ doc/test-report/session-lifecycle-pond.md
 
 ## บทที่ 5 สรุปผลและข้อเสนอแนะ
 
@@ -109,7 +109,7 @@ PR #22 มี review และ approval จากโชกุนก่อน mer
 
 ### งานที่ยังไม่ส่งมอบและแนวทางพัฒนาต่อ
 
-งานลิงก์ชำระเงินจากประวัติหลัง PR #26 พร้อมเทสต์และรายงานล่าสุดยังต้อง push เปิด PR ให้โชกุนรีวิวและผ่าน CI ส่วนหน้าเว็บและ diagrams ชุดหลัก merge แล้ว ยังไม่ได้ยืนยัน flow จอง/ชำระบน deployment ด้วยบัญชีจริง Start ตรวจสถานะแต่ไม่บังคับช่วงเวลาเริ่มหรือการชำระก่อนใช้งาน Machine event ยังไม่มี listener และ API อ่านเครื่องใช้ข้อกำหนดล็อกอินของทีม หน้าชำระเงินของโชกุนอยู่ใน develop ผ่าน PR #26 ลิงก์จากประวัติส่งเฉพาะประเภทกับเลขรอบและซ่อนสำหรับรอบยกเลิก เนื่องจาก SessionResponse ไม่มี payment status ลิงก์ยังอาจแสดงในรอบที่จ่ายแล้ว โดย PaymentService ตรวจและปฏิเสธการชำระซ้ำ
+งานลิงก์ชำระเงินจากประวัติพร้อมเทสต์และรายงานล่าสุด merge ผ่าน PR #28 ที่ 5070373 โดยโชกุน approve และ CI Test + Docker build ผ่าน ส่วนหน้าเว็บและ diagrams ชุดหลัก merge แล้ว ยังไม่ได้ยืนยัน flow จอง/ชำระบน deployment ด้วยบัญชีจริง Start ตรวจสถานะแต่ไม่บังคับช่วงเวลาเริ่มหรือการชำระก่อนใช้งาน Machine event ยังไม่มี listener และ API อ่านเครื่องใช้ข้อกำหนดล็อกอินของทีม หน้าชำระเงินของโชกุนอยู่ใน develop ผ่าน PR #26 ลิงก์จากประวัติส่งเฉพาะประเภทกับเลขรอบและซ่อนสำหรับรอบยกเลิก เนื่องจาก SessionResponse ไม่มี payment status ลิงก์ยังอาจแสดงในรอบที่จ่ายแล้ว โดย PaymentService ตรวจและปฏิเสธการชำระซ้ำ
 
 ก่อนปิดงานควรตกลง HTTP status ของ lifecycle ให้ตรง brief ทุกส่วน ตรวจ flow ผ่านหน้าเว็บจริง และปรับ diagrams/เอกสารรวมตาม branch ที่ส่งมอบล่าสุด แนวทางขยายคือกำหนดนโยบายเริ่มก่อน/หลังเวลาจองและ session เกินเวลา รวมทั้งเลือกผู้รับแจ้งเตือนเครื่องหยุดบริการก่อนเพิ่ม listener
 

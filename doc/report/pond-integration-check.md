@@ -1,6 +1,6 @@
 # ผลตรวจงานปอนด์กับทีม — 10 ตุลาคม 2569
 
-ตรวจหน้า GitHub ก่อนเริ่มงาน ยืนยัน PR #25 ของปอนด์ merge เข้า develop ที่ 11fe6af พร้อม approval และ Test/Docker build ผ่าน จากนั้น PR #26 ของโชกุน merge ที่ f7c82e1 เพิ่มหน้าเว็บชำระเงินและแจ้งเตือน รวม develop ล่าสุดเข้าสาขา Pathiphan_6733805892_03 โดยไม่มี conflict แล้วเพิ่มลิงก์ชำระเงินจากประวัติรอบใช้งาน งานลิงก์นี้ยังต้องส่ง PR ใหม่และยังไม่ยืนยัน flow บน deploy
+ตรวจหน้า GitHub ก่อนเริ่มงาน ยืนยัน PR #25 ของปอนด์ merge เข้า develop ที่ 11fe6af พร้อม approval และ Test/Docker build ผ่าน จากนั้น PR #26 ของโชกุน merge ที่ f7c82e1 เพิ่มหน้าเว็บชำระเงินและแจ้งเตือน รวม develop ล่าสุดเข้าสาขา Pathiphan_6733805892_03 โดยไม่มี conflict แล้วเพิ่มลิงก์ชำระเงินจากประวัติรอบใช้งาน งานลิงก์นี้ merge ผ่าน PR #28 ที่ 5070373 โดยโชกุน approve และ CI Test + Docker build ผ่าน แต่ยังไม่ยืนยัน flow บน deploy
 
 | จุดเชื่อมต่อ | ผลตรวจจากโค้ดจริง |
 |---|---|
@@ -37,10 +37,10 @@
 
 `mvn -f code/pom.xml test` โดยเปิด `LAUNDRY_DB_TESTS=true` ผ่าน **357 tests, 0 failures, 0 errors, 0 skipped** วันที่ 10 ตุลาคม 2569 หลังรวม develop f7c82e1 พร้อมเทสต์ลิงก์ชำระเงินหนึ่งข้อ ผลเป็นจำนวนทั้งโปรเจกต์ ฐานข้อมูลของเทสต์เป็น schema สุ่มแยกจาก public Log อยู่ใน code/target/pond-pr26-checkout-tests.log และไม่ได้ commit build output
 
-ผล 357 เป็นผลในเครื่องที่เปิด PostgreSQL suite ส่วน PR #25 และ #26 มี Test + Docker build ผ่านบน GitHub แล้ว CI ไม่เปิด opt-in PostgreSQL suite งานลิงก์เพิ่มเติมยังต้องผ่าน CI ของ PR ใหม่หลัง push ก่อน merge
+ผล 357 เป็นผลในเครื่องที่เปิด PostgreSQL suite ส่วน PR #25 และ #26 มี Test + Docker build ผ่านบน GitHub แล้ว CI ไม่เปิด opt-in PostgreSQL suite งานลิงก์เพิ่มเติม merge ผ่าน PR #28 แล้ว โดย Test + Docker build ผ่านทั้งสองรายการ
 
 ## สิ่งที่ส่งให้โชกุน
 
-- PR ใหม่ base develop เฉพาะลิงก์ชำระเงิน/เทสต์และการอัปเดตรายงาน งานหลักหน้าเว็บ/diagrams อยู่ใน develop ผ่าน PR #25 แล้ว
+- PR #28 base develop: ลิงก์ชำระเงิน/เทสต์และรายงาน merge แล้ว งานหลักหน้าเว็บ/diagrams อยู่ใน develop ผ่าน PR #25
 - `doc/report/pond-sections.md` สำหรับรวมรายงาน และไฟล์ sections ของปอนด์สำหรับให้โอ๊ครวม SOLID/Pattern
 - ให้ตรวจ trusted user/amount, CSRF/role, owner enforcement, transaction เดียวกับ API และเส้น diagram โดยเฉพาะ RESERVED ของ Machine ที่ไม่มี transition เข้าจาก booking
