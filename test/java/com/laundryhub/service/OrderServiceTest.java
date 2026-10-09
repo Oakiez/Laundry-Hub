@@ -11,6 +11,7 @@ import com.laundryhub.dto.request.CreateOrderRequest;
 import com.laundryhub.dto.request.OrderItemRequest;
 import com.laundryhub.dto.request.UpdateOrderRequest;
 import com.laundryhub.dto.response.OrderResponse;
+import com.laundryhub.dto.response.PageResponse;
 import com.laundryhub.event.OrderStatusChangedEvent;
 import com.laundryhub.exception.BusinessRuleException;
 import com.laundryhub.exception.ResourceNotFoundException;
@@ -27,6 +28,10 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.context.ApplicationEventPublisher;
+import org.springframework.data.domain.PageImpl;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
 
 import java.math.BigDecimal;
 import java.util.List;
@@ -172,6 +177,67 @@ class OrderServiceTest {
                 List.of(new OrderItemRequest(1L, "shirts", new BigDecimal("2"))))))
                 .isInstanceOf(BusinessRuleException.class);
         verify(orderRepository, never()).saveAndFlush(any());
+    }
+
+    @Test
+    void listForCustomer_withoutStatus_returnsPageOfThatCustomer() {
+        Pageable pageable = PageRequest.of(0, 2, Sort.by(Sort.Direction.DESC, "createdAt"));
+        when(orderRepository.findByUserId(CUSTOMER_ID, pageable))
+                .thenReturn(new PageImpl<>(List.of(order(OrderStatus.RECEIVED)), pageable, 5));
+
+        PageResponse<OrderResponse> page = orderService.listForCustomer(CUSTOMER_ID, null, pageable);
+
+        assertThat(page.content()).extracting(OrderResponse::id).containsExactly(ORDER_ID);
+        assertThat(page.page()).isZero();
+        assertThat(page.size()).isEqualTo(2);
+        assertThat(page.totalElements()).isEqualTo(5);
+        assertThat(page.totalPages()).isEqualTo(3);
+    }
+
+    @Test
+    void listForCustomer_withStatus_usesStatusFilter() {
+        Pageable pageable = PageRequest.of(0, 10);
+        when(orderRepository.findByUserIdAndStatus(CUSTOMER_ID, OrderStatus.WASHING, pageable))
+                .thenReturn(new PageImpl<>(List.of(order(OrderStatus.WASHING)), pageable, 1));
+
+        PageResponse<OrderResponse> page = orderService.listForCustomer(CUSTOMER_ID, OrderStatus.WASHING, pageable);
+
+        assertThat(page.content()).extracting(OrderResponse::status).containsExactly(OrderStatus.WASHING);
+        verify(orderRepository, never()).findByUserId(any(), any());
+    }
+
+    @Test
+    void listAll_unknownSortField_throwsBusinessRuleWithoutQuerying() {
+        Pageable pageable = PageRequest.of(0, 10, Sort.by("password"));
+
+        assertThatThrownBy(() -> orderService.listAll(null, pageable))
+                .isInstanceOf(BusinessRuleException.class)
+                .hasMessageContaining("password");
+        verify(orderRepository, never()).findAll(any(Pageable.class));
+    }
+
+    @Test
+    void update_whileReceived_replacesItemsAndRecalculatesTotals() {
+        LaundryOrder order = order(OrderStatus.RECEIVED);
+        when(orderRepository.findWithItemsById(ORDER_ID)).thenReturn(Optional.of(order));
+        when(serviceTypeRepository.findById(1L)).thenReturn(Optional.of(serviceType(true)));
+        when(orderRepository.saveAndFlush(order)).thenReturn(order);
+
+        // not express: 3 kg x 25 = 75.00
+        OrderResponse response = orderService.update(CUSTOMER_ID, ORDER_ID, new UpdateOrderRequest(false, "new note",
+                List.of(new OrderItemRequest(1L, "towels", new BigDecimal("3")))));
+
+        assertThat(response.items()).extracting(item -> item.itemName()).containsExactly("towels");
+        assertThat(response.totalAmount()).isEqualByComparingTo("75.00");
+        assertThat(response.note()).isEqualTo("new note");
+    }
+
+    @Test
+    void findPayable_unknownOrder_throwsNotFound() {
+        when(orderRepository.findById(99L)).thenReturn(Optional.empty());
+
+        assertThatThrownBy(() -> orderService.findPayable(99L))
+                .isInstanceOf(ResourceNotFoundException.class);
     }
 
     private User customer() {
