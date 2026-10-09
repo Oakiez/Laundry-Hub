@@ -33,9 +33,11 @@ import java.math.BigDecimal;
 import java.time.LocalDateTime;
 import java.util.List;
 
+import static org.hamcrest.Matchers.containsString;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.verifyNoInteractions;
 import static org.mockito.Mockito.when;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.patch;
@@ -137,6 +139,25 @@ class PaymentApiControllerTest {
                 .andExpect(jsonPath("$.content[0].status").value("PENDING"))
                 .andExpect(jsonPath("$.content[0].amount").value(120.00))
                 .andExpect(jsonPath("$.page.totalElements").value(1));
+    }
+
+    @Test
+    void list_unknownSortField_returns400_notFiveHundred() throws Exception {
+        loginAs(2L, Role.STAFF);
+
+        mockMvc.perform(get("/api/v1/payments").param("sort", "abc"))
+                .andExpect(status().isBadRequest())
+                .andExpect(jsonPath("$.message").value(containsString("abc")));
+        verifyNoInteractions(paymentService);
+    }
+
+    @Test
+    void list_allowedSortField_isAccepted() throws Exception {
+        loginAs(2L, Role.STAFF);
+        when(paymentService.findAll(eq(null), any())).thenReturn(new PageImpl<>(List.of()));
+
+        mockMvc.perform(get("/api/v1/payments").param("sort", "amount,asc"))
+                .andExpect(status().isOk());
     }
 
     @Test
