@@ -26,7 +26,13 @@ class SessionPayableProviderTest {
 
     @BeforeEach
     void setUp() {
-        provider = new SessionPayableProvider(new SessionServiceImpl(repository));
+        provider = new SessionPayableProvider(new SessionServiceImpl(repository,
+                mock(com.laundryhub.repository.MachineRepository.class),
+                mock(com.laundryhub.repository.UserRepository.class),
+                mock(BookingValidator.class), mock(com.laundryhub.service.pricing.SelfServicePricing.class),
+                mock(com.laundryhub.service.state.MachineStateFactory.class),
+                new com.laundryhub.mapper.SessionMapper(),
+                mock(org.springframework.context.ApplicationEventPublisher.class)));
     }
 
     @Test
