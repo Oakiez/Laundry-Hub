@@ -83,7 +83,7 @@ SessionService.findPayable คืนข้อมูลตาม contract แล�
 
 ### ผลการทดสอบโมดูล Self-Service
 
-ผลทดสอบล่าสุดวันที่ 10 ตุลาคม 2569 บนฐาน develop 6a877cd พร้อมหน้าเว็บใน branch ปอนด์ มี 335 รายการ Failures 0 Errors 0 Skipped 0 และ BUILD SUCCESS โดยเปิด LAUNDRY_DB_TESTS=true รอบก่อน revert ผ่าน 339 และลด 4 ข้อเพราะ PR #24 ลบเทสต์ getPayableSummary ตัวเลขเป็นจำนวนทั้งโปรเจกต์ ไม่ใช่จำนวนเทสต์ที่ปอนด์เขียนทั้งหมด Log รอบล่าสุดอยู่ใน code/target/pond-revert-sync-tests.log ซึ่งเป็น build output ไม่ได้ commit เข้ารายงาน
+ผลทดสอบล่าสุดวันที่ 10 ตุลาคม 2569 หลังรวม develop f7c82e1 (PR #26) พร้อมลิงก์ชำระเงินจากประวัติและเทสต์ใหม่ มี 357 รายการ Failures 0 Errors 0 Skipped 0 และ BUILD SUCCESS โดยเปิด LAUNDRY_DB_TESTS=true ตัวเลขเป็นจำนวนทั้งโปรเจกต์ ไม่ใช่จำนวนเทสต์ที่ปอนด์เขียนทั้งหมด Log อยู่ใน code/target/pond-pr26-checkout-tests.log ซึ่งเป็น build output ไม่ได้ commit เข้ารายงาน
 
 | ประเภท | หลักฐานที่ตรวจ |
 |---|---|
@@ -99,17 +99,17 @@ SessionService.findPayable คืนข้อมูลตาม contract แล�
 
 ### ผลการรีวิวและข้อจำกัดของหลักฐาน
 
-PR #22 มี review และ approval จากโชกุนก่อน merge เข้า main แต่ใช้ base ผิดจาก workflow ของทีม จากนั้น PR #23 ส่งงานเข้า develop แล้วที่ a21cb2a หน้าเว็บและ diagrams เป็นงานเพิ่มเติมใน branch ปอนด์ที่ต้องเปิด PR ไป develop และให้โชกุนตรวจอีกครั้ง การผ่านเทสต์ในเครื่องซึ่งเปิดฐานข้อมูลไม่เท่ากับ CI ทดสอบ PostgreSQL เพราะ workflow ปัจจุบันไม่ได้เปิด opt-in database suite รายละเอียดอยู่ใน doc/self-service-api.md และ doc/test-report/session-lifecycle-pond.md
+PR #22 มี review และ approval จากโชกุนก่อน merge เข้า main แต่ใช้ base ผิดจาก workflow ของทีม จากนั้น PR #23 ส่งงานเข้า develop ที่ a21cb2a และ PR #25 ส่งหน้าเว็บ/diagrams เข้า develop ที่ 11fe6af โดยโชกุน approve และ CI Test + Docker build ผ่าน งานลิงก์ชำระเงินเพิ่มเติมหลัง PR #26 ต้องเปิด PR ใหม่ การผ่านเทสต์ในเครื่องที่เปิดฐานข้อมูลไม่เท่ากับ CI ทดสอบ PostgreSQL เพราะ workflow ไม่เปิด opt-in database suite รายละเอียดอยู่ใน doc/self-service-api.md และ doc/test-report/session-lifecycle-pond.md
 
 ## บทที่ 5 สรุปผลและข้อเสนอแนะ
 
 ### สรุปโมดูลที่ทำแล้ว
 
-ส่งมอบ Entity/Repository, Strategy, State, BookingValidator, MachineService/SessionService, DTO/Mapper, REST API เครื่องและรอบใช้งาน, SessionPayableProvider และเทสต์กฎธุรกิจ/สิทธิ์/ฐานข้อมูล การจองคิดราคาและเวลาใน server ใช้ lock ป้องกันคำขอพร้อมกัน และเปลี่ยนสถานะเครื่องกับรอบใช้งานใน transaction เดียวกัน เพิ่มหน้าเว็บเครื่อง จอง ประวัติ และพนักงานเปลี่ยนสถานะ โดยใช้ layout ของทีมและ Service เดียวกับ API พร้อม Sequence Diagram สาม scenario และ State Diagram ของ Machine ใน branch ปอนด์
+ส่งมอบ Entity/Repository, Strategy, State, BookingValidator, MachineService/SessionService, DTO/Mapper, REST API เครื่องและรอบใช้งาน, SessionPayableProvider และเทสต์กฎธุรกิจ/สิทธิ์/ฐานข้อมูล การจองคิดราคาและเวลาใน server ใช้ lock ป้องกันคำขอพร้อมกัน และเปลี่ยนสถานะเครื่องกับรอบใช้งานใน transaction เดียวกัน หน้าเว็บเครื่อง จอง ประวัติ และพนักงานเปลี่ยนสถานะใช้ layout ของทีมและ Service เดียวกับ API พร้อม Sequence Diagram สาม scenario และ State Diagram ของ Machine ทั้งหมด merge เข้า develop แล้วผ่าน PR #25
 
 ### งานที่ยังไม่ส่งมอบและแนวทางพัฒนาต่อ
 
-หน้าเว็บและ diagrams ผ่านการตรวจใน branch แต่ยังต้อง push เปิด PR ให้โชกุนรีวิวและผ่าน CI ก่อน merge เข้า develop ยังไม่ได้ยืนยัน deployment ของงานชุดนี้ Start ปัจจุบันตรวจสถานะ แต่ไม่บังคับช่วงเวลาเริ่มหรือการชำระเงินก่อนใช้งาน Machine event ยังไม่มี listener และ API อ่านเครื่องใช้ข้อกำหนดล็อกอินของทีม หน้าชำระเงินเว็บอยู่นอกงานเว็บชุดนี้ ระบบชำระผ่าน API ของโชกุนได้ตามเทสต์ integration
+งานลิงก์ชำระเงินจากประวัติหลัง PR #26 พร้อมเทสต์และรายงานล่าสุดยังต้อง push เปิด PR ให้โชกุนรีวิวและผ่าน CI ส่วนหน้าเว็บและ diagrams ชุดหลัก merge แล้ว ยังไม่ได้ยืนยัน flow จอง/ชำระบน deployment ด้วยบัญชีจริง Start ตรวจสถานะแต่ไม่บังคับช่วงเวลาเริ่มหรือการชำระก่อนใช้งาน Machine event ยังไม่มี listener และ API อ่านเครื่องใช้ข้อกำหนดล็อกอินของทีม หน้าชำระเงินของโชกุนอยู่ใน develop ผ่าน PR #26 ลิงก์จากประวัติส่งเฉพาะประเภทกับเลขรอบและซ่อนสำหรับรอบยกเลิก เนื่องจาก SessionResponse ไม่มี payment status ลิงก์ยังอาจแสดงในรอบที่จ่ายแล้ว โดย PaymentService ตรวจและปฏิเสธการชำระซ้ำ
 
 ก่อนปิดงานควรตกลง HTTP status ของ lifecycle ให้ตรง brief ทุกส่วน ตรวจ flow ผ่านหน้าเว็บจริง และปรับ diagrams/เอกสารรวมตาม branch ที่ส่งมอบล่าสุด แนวทางขยายคือกำหนดนโยบายเริ่มก่อน/หลังเวลาจองและ session เกินเวลา รวมทั้งเลือกผู้รับแจ้งเตือนเครื่องหยุดบริการก่อนเพิ่ม listener
 

@@ -123,6 +123,20 @@ class SelfServiceWebSecurityTest {
         mvc.perform(get("/machines/5").with(user(customer))).andExpect(status().isOk());
         verify(sessions, never()).findForMachine(any(), anyBoolean(), any());
     }
+    @Test void historyLinksToSessionCheckoutExceptCancelledSessions() throws Exception {
+        for (SessionStatus sessionStatus : List.of(SessionStatus.RESERVED, SessionStatus.IN_USE, SessionStatus.COMPLETED)) {
+            when(sessions.findForUser(eq(3L), eq(3L), eq(false), any()))
+                    .thenReturn(new PageImpl<>(List.of(session(sessionStatus))));
+            mvc.perform(get("/sessions/history").with(user(customer)))
+                    .andExpect(status().isOk())
+                    .andExpect(content().string(containsString("/payments/new?type=USAGE_SESSION&amp;id=7")));
+        }
+        when(sessions.findForUser(eq(3L), eq(3L), eq(false), any()))
+                .thenReturn(new PageImpl<>(List.of(session(SessionStatus.CANCELLED))));
+        mvc.perform(get("/sessions/history").with(user(customer)))
+                .andExpect(status().isOk())
+                .andExpect(content().string(not(containsString("type=USAGE_SESSION"))));
+    }
     @Test void staffDetailRendersActiveSessionActions() throws Exception {
         mvc.perform(get("/machines/5").with(user(staff))).andExpect(status().isOk())
                 .andExpect(content().string(containsString("/sessions/7/finish")))
