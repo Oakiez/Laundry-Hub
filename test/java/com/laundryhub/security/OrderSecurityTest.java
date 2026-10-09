@@ -10,6 +10,7 @@ import com.laundryhub.dto.response.OrderResponse;
 import com.laundryhub.dto.response.PageResponse;
 import com.laundryhub.exception.BusinessRuleException;
 import com.laundryhub.exception.GlobalExceptionHandler;
+import com.laundryhub.exception.ResourceNotFoundException;
 import com.laundryhub.service.OrderService;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -32,6 +33,7 @@ import static org.springframework.test.web.servlet.request.MockMvcRequestBuilder
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.patch;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.put;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
@@ -47,6 +49,9 @@ class OrderSecurityTest {
     private static final String ORDER_JSON =
             "{\"branchId\":1,\"express\":false,\"items\":[{\"serviceTypeId\":1,\"itemName\":\"shirts\",\"weightKg\":2}]}";
     private static final String NEXT_JSON = "{\"action\":\"NEXT\"}";
+    private static final String CANCEL_JSON = "{\"action\":\"CANCEL\"}";
+    private static final String UPDATE_JSON =
+            "{\"express\":true,\"items\":[{\"serviceTypeId\":1,\"itemName\":\"towels\",\"weightKg\":3}]}";
 
     @Autowired
     private MockMvc mockMvc;
@@ -120,6 +125,36 @@ class OrderSecurityTest {
         verify(orderService, never()).create(any(), any());
     }
 
+    // ---------- read one / edit: owner (edit only while RECEIVED, checked in the service) ----------
+
+    @Test
+    void getOrder_otherCustomersOrderUnderOwnId_returns404() throws Exception {
+        // passes @PreAuthorize (own customerId) but the service hides orders that belong to someone else
+        when(orderService.getForCustomer(3L, 99L)).thenThrow(new ResourceNotFoundException("Order 99 not found"));
+
+        mockMvc.perform(get("/api/v1/customers/3/orders/99").with(user(customer)))
+                .andExpect(status().isNotFound())
+                .andExpect(jsonPath("$.message").value("Order 99 not found"));
+    }
+
+    @Test
+    void updateOrder_owner_returns200() throws Exception {
+        when(orderService.update(eq(3L), eq(9L), any())).thenReturn(order(OrderStatus.RECEIVED));
+
+        mockMvc.perform(put("/api/v1/customers/3/orders/9").with(user(customer))
+                        .contentType(MediaType.APPLICATION_JSON).content(UPDATE_JSON))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.id").value(9));
+    }
+
+    @Test
+    void updateOrder_ofAnotherCustomer_returns403() throws Exception {
+        mockMvc.perform(put("/api/v1/customers/1/orders/9").with(user(customer))
+                        .contentType(MediaType.APPLICATION_JSON).content(UPDATE_JSON))
+                .andExpect(status().isForbidden());
+        verify(orderService, never()).update(any(), any(), any());
+    }
+
     // ---------- list: owner or staff, paged ----------
 
     @Test
@@ -178,6 +213,16 @@ class OrderSecurityTest {
                         .contentType(MediaType.APPLICATION_JSON).content(NEXT_JSON))
                 .andExpect(status().isBadRequest())
                 .andExpect(jsonPath("$.message").value("Order 9 is already PICKED_UP and cannot move forward"));
+    }
+
+    @Test
+    void changeStatus_staffCancelsOrder() throws Exception {
+        when(orderService.changeStatus(9L, ChangeStatusRequest.Action.CANCEL)).thenReturn(order(OrderStatus.CANCELLED));
+
+        mockMvc.perform(patch("/api/v1/orders/9/status").with(user(staff))
+                        .contentType(MediaType.APPLICATION_JSON).content(CANCEL_JSON))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.status").value("CANCELLED"));
     }
 
     // ---------- cancel (DELETE): owner only ----------
