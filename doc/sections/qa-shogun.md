@@ -59,6 +59,7 @@
 3. **`UNIQUE` บน `order_id` และ `session_id`** → 1 ออเดอร์/1 รอบใช้เครื่อง มีใบชำระได้ **ใบเดียว** กันจ่ายซ้ำ (PostgreSQL ถือว่า `NULL` ไม่ซ้ำกัน ค่า NULL ของอีกฝั่งจึงไม่ชน)
 
 ทำไมต้องพึ่ง DB ไม่ใช่โค้ดอย่างเดียว: ถ้ามีสองคำขอพร้อมกัน ทั้งคู่ผ่านการเช็คในโค้ดได้ (check-then-act) แต่ `UNIQUE` กั้นไว้ที่ DB แล้ว `GlobalExceptionHandler` แปลง `DataIntegrityViolationException` เป็น 409 ส่วนการเช็คในโค้ด (`PaymentServiceImpl.alreadyHasPayment`) มีไว้ให้ข้อความ error ที่อ่านง่าย
+**หลักฐานจริง:** `PaymentRepositoryDbTest` (`test/java/com/laundryhub/repository/`) รันกับ PostgreSQL จริง 13 ข้อผ่าน: จ่ายซ้ำออเดอร์/รอบใช้เครื่อง → DB ปฏิเสธด้วย `payments_order_id_key` / `payments_session_id_key`, ผูกทั้ง order และ session หรือไม่ผูกเลย → ปฏิเสธด้วย `CHECK`, ออเดอร์ที่ไม่มีอยู่ → ปฏิเสธด้วย `fk_payment_order` (ดู `doc/test-report/test-report.md` หัวข้อ 3.6)
 ทางเลือกที่ไม่ใช้: สองตารางแยก (โค้ดซ้ำ) หรือ `payable_type + payable_id` แบบ polymorphic (ตั้ง FK จริงไม่ได้)
 
 ---
