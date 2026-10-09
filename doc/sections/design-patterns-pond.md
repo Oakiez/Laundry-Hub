@@ -5,8 +5,9 @@
 `SelfServicePricing` implements `PricingStrategy<SelfServicePricingInput>`.
 The algorithm is `basePrice + pricePerMinute * durationMinutes` using BigDecimal.
 It rejects missing/negative prices and durations outside 10–180 minutes.
-Tests exercise boundary values and pricing arithmetic. SessionService integration
-through the PricingStrategy interface remains the next step.
+Tests exercise boundary values and pricing arithmetic. SessionService receives
+PricingStrategy through constructor injection (`service/impl/SessionServiceImpl.java:42`)
+and persists a server-calculated amount when booking.
 
 ## State
 
@@ -44,12 +45,26 @@ the team along with the core brief requirements.
 
 ## Current limits
 
-SessionPayableProvider now adapts SessionService.findPayable to the shared
+SessionPayableProvider adapts SessionService.findPayable to the shared
 PayableProvider interface and declares USAGE_SESSION. Spring collects it into
 CheckoutFacade's provider registry through constructor injection. No checkout or
 processor code is changed to add this supported payable type. Missing sessions
 propagate ResourceNotFoundException; ownership remains CheckoutFacade's responsibility.
 
-No Machine/Session HTTP endpoints or UI are delivered yet. The existing overlap
-query and machine lock must be composed in SessionService and tested under
-concurrency before claiming simultaneous bookings are prevented end to end.
+SessionService now composes the overlap query and machine lock in one transaction.
+Booking remains RESERVED while the machine stays AVAILABLE. Start checks canStart,
+changes both states to IN_USE; finish checks canFinish and releases the machine.
+Cancel accepts RESERVED only and changes no machine status.
+
+Session and machine events are published after flushing changes
+(`service/impl/SessionServiceImpl.java:178`). The existing synchronous session
+notification listener joins the transaction. Integration tests deliberately reject
+a notification insert and verify session/machine changes roll back together.
+Machine events currently have no notification consumer.
+
+No Machine/Session HTTP endpoints or UI are delivered yet. Start follows the brief's
+session/machine status rules; it does not enforce a clock window or payment prerequisite.
+Wrong lifecycle states use BusinessRuleException (400), following the shared handler
+and the brief's unit-test contract; the API table's proposed 409 needs team agreement
+before an HTTP controller is added. Database concurrency tests are opt-in via
+LAUNDRY_DB_TESTS=true and run against an isolated generated PostgreSQL schema.
