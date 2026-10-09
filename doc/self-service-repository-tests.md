@@ -35,16 +35,40 @@ Coverage:
 - Machine/user session lookup, machine filters, pagination and sorting.
 - Duplicate machine names within a branch, excluding the current machine
   when checking an update.
+- Persisted Branch/User associations and deletion without cascading to shared entities.
+- Machine lock lookup and detection of session history (including completed sessions).
 
 The overlap query is a lookup, not a concurrency guarantee. The future booking
 service must validate inputs and perform the check and insert in one transaction.
 To prevent two concurrent requests passing the same check, all booking writers
 also need a common locking or equivalent database constraint strategy.
 
-The repositories currently follow the scalar `branchId`/`userId` mappings in
-the entity PR. Revisit those property paths when integrating Branch/User entities.
+The entities now reference Foundation's Branch/User through `ManyToOne LAZY`.
+Queries use `branch.id` / `user.id`; no schema migration is needed because the
+existing foreign-key columns are unchanged. MachineService maps responses inside
+its transaction. The test fixture filters its own branch so V2 seed machines do
+not change its expected counts.
 
-## Verified run
+MachineService acquires `findByIdForUpdate` before update/delete/status changes.
+The future SessionService must acquire the same lock before overlap checks and
+lifecycle changes. The lock lookup test alone is not a concurrent-booking test.
+
+## Verified run after Foundation and MachineService integration
+
+On 2026-10-09 at 21:38 (+07:00), after merging develop at `f95598f`:
+166 tests passed, with zero failures, errors, or skipped tests.
+This includes 19 PostgreSQL repository test invocations and 18 MachineService
+unit test invocations. The complete suite includes the team's Foundation and
+Payment tests. Both Flyway V1 and V2 ran in the isolated schema, followed by
+Hibernate mapping validation. The machine lock lookup is covered, but competing
+booking transactions still need a concurrency test when SessionService is added.
+
+The local execution log is `code/target/machine-service-full-tests.log` (ignored
+build output). The first attempt could not connect because Docker/DB was stopped;
+the verified result above is the rerun after starting the DB container. The same
+Mockito javaagent workaround described below was used.
+
+## Earlier verified run (before Foundation integration)
 
 On 2026-10-09, Java 17 / PostgreSQL 16: 83 tests passed (66 existing tests
 plus 17 repository integration cases), with no failures, errors or skips.

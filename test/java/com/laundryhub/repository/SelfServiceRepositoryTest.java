@@ -1,6 +1,8 @@
 package com.laundryhub.repository;
 
 import com.laundryhub.domain.entity.Machine;
+import com.laundryhub.domain.entity.Branch;
+import com.laundryhub.domain.entity.User;
 import com.laundryhub.domain.entity.UsageSession;
 import com.laundryhub.domain.enums.MachineStatus;
 import com.laundryhub.domain.enums.MachineType;
@@ -94,7 +96,7 @@ class SelfServiceRepositoryTest {
 
     private Machine saveMachine(String name, MachineType type) {
         var result = new Machine();
-        result.setBranchId(branchId);
+        result.setBranch(entityManager.getReference(Branch.class, branchId));
         result.setName(name);
         result.setMachineType(type);
         return machines.saveAndFlush(result);
@@ -103,7 +105,7 @@ class SelfServiceRepositoryTest {
     private UsageSession saveSession(SessionStatus status) {
         var session = new UsageSession();
         session.setMachine(machine);
-        session.setUserId(userId);
+        session.setUser(entityManager.getReference(User.class, userId));
         session.setStatus(status);
         session.setStartTime(BASE);
         session.setEndTime(BASE.plusMinutes(60));
@@ -147,19 +149,22 @@ class SelfServiceRepositoryTest {
         entityManager.clear();
         var loaded = sessions.findById(id).orElseThrow();
         assertEquals(userId, loaded.getOwnerUserId());
+        assertEquals("repository_test", loaded.getUser().getUsername());
+        assertEquals(branchId, loaded.getMachine().getBranch().getId());
+        assertEquals("Repository test branch", loaded.getMachine().getBranch().getName());
         assertEquals(PayableType.USAGE_SESSION, loaded.getPayableType());
         assertEquals(0, new BigDecimal("65.00").compareTo(loaded.getPayableAmount()));
         assertNotNull(loaded.getCreatedAt());
         assertEquals(machine.getId(), loaded.getMachine().getId());
-        assertEquals(1, sessions.findByUserId(userId, PageRequest.of(0, 10)).getTotalElements());
-        assertEquals(0, sessions.findByUserId(-1L, PageRequest.of(0, 10)).getTotalElements());
+        assertEquals(1, sessions.findByUser_Id(userId, PageRequest.of(0, 10)).getTotalElements());
+        assertEquals(0, sessions.findByUser_Id(-1L, PageRequest.of(0, 10)).getTotalElements());
         assertEquals(1, sessions.findByMachine_Id(machine.getId(), PageRequest.of(0, 10)).getTotalElements());
     }
 
     @Test
     void machineSearchSupportsFiltersPaginationAndSorting() {
         saveMachine("Dryer B", MachineType.DRYER);
-        var page = machines.search(null, null, null,
+        var page = machines.search(branchId, null, null,
                 PageRequest.of(0, 1, Sort.by("name")));
         assertEquals(2, page.getTotalElements());
         assertEquals("Dryer B", page.getContent().get(0).getName());
@@ -173,11 +178,35 @@ class SelfServiceRepositoryTest {
     }
 
     @Test
+    void machineLockLookupAndSessionHistoryQueryUsePersistedData() {
+        assertEquals(machine.getId(), machines.findByIdForUpdate(machine.getId()).orElseThrow().getId());
+        assertTrue(machines.findByIdForUpdate(-1L).isEmpty());
+        assertFalse(sessions.existsByMachine_Id(machine.getId()));
+        saveSession(SessionStatus.COMPLETED);
+        assertTrue(sessions.existsByMachine_Id(machine.getId()));
+    }
+
+    @Test
+    void deletingSessionAndMachineDoesNotCascadeToSharedUserOrBranch() {
+        UsageSession session = saveSession(SessionStatus.CANCELLED);
+        sessions.delete(session);
+        sessions.flush();
+        entityManager.clear();
+        assertTrue(machines.existsById(machine.getId()));
+        assertNotNull(entityManager.find(User.class, userId));
+        machines.deleteById(machine.getId());
+        machines.flush();
+        entityManager.clear();
+        assertNotNull(entityManager.find(Branch.class, branchId));
+        assertNotNull(entityManager.find(User.class, userId));
+    }
+
+    @Test
     void duplicateNameChecksExcludeCurrentMachineDuringUpdates() {
-        assertTrue(machines.existsByBranchIdAndName(branchId, "Washer A"));
-        assertFalse(machines.existsByBranchIdAndNameAndIdNot(branchId, "Washer A", machine.getId()));
+        assertTrue(machines.existsByBranch_IdAndName(branchId, "Washer A"));
+        assertFalse(machines.existsByBranch_IdAndNameAndIdNot(branchId, "Washer A", machine.getId()));
         var other = saveMachine("Washer B", MachineType.WASHER);
-        assertTrue(machines.existsByBranchIdAndNameAndIdNot(branchId, "Washer A", other.getId()));
-        assertFalse(machines.existsByBranchIdAndName(-1L, "Washer A"));
+        assertTrue(machines.existsByBranch_IdAndNameAndIdNot(branchId, "Washer A", other.getId()));
+        assertFalse(machines.existsByBranch_IdAndName(-1L, "Washer A"));
     }
 }

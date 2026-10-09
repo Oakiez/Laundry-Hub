@@ -9,6 +9,9 @@ import jakarta.persistence.Enumerated;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
+import jakarta.persistence.FetchType;
+import jakarta.persistence.JoinColumn;
+import jakarta.persistence.ManyToOne;
 import jakarta.persistence.Table;
 import jakarta.persistence.UniqueConstraint;
 import lombok.AccessLevel;
@@ -31,10 +34,10 @@ public class Machine {
     @Setter(AccessLevel.NONE)
     private Long id;
 
-    // The Branch entity is not yet available in the shared skeleton.
-    // The existing database foreign key still enforces the branch reference.
-    @Column(name = "branch_id", nullable = false)
-    private Long branchId;
+    // A shared branch must never be deleted through a machine.
+    @ManyToOne(fetch = FetchType.LAZY, optional = false)
+    @JoinColumn(name = "branch_id", nullable = false)
+    private Branch branch;
 
     @Column(nullable = false, length = 50)
     private String name;

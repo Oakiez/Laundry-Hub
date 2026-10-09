@@ -11,6 +11,8 @@ import java.time.LocalDateTime;
 
 public interface UsageSessionRepository extends JpaRepository<UsageSession, Long> {
 
+    boolean existsByMachine_Id(Long machineId);
+
     // Strict inequalities allow adjacent bookings: [10:00, 11:00), [11:00, 12:00).
     // A transaction/lock in the booking service is still needed for concurrent requests.
     @Query("""
@@ -28,5 +30,5 @@ public interface UsageSessionRepository extends JpaRepository<UsageSession, Long
 
     Page<UsageSession> findByMachine_Id(Long machineId, Pageable pageable);
 
-    Page<UsageSession> findByUserId(Long userId, Pageable pageable);
+    Page<UsageSession> findByUser_Id(Long userId, Pageable pageable);
 }
