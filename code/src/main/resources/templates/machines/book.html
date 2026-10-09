@@ -1,0 +1,29 @@
+<!DOCTYPE html>
+<html lang="th" xmlns:th="http://www.thymeleaf.org">
+<head th:replace="~{fragments/layout :: head('จองเครื่อง')}"></head>
+<body class="d-flex flex-column min-vh-100">
+<nav th:replace="~{fragments/layout :: navbar}"></nav>
+<main class="container py-4 flex-grow-1">
+    <h1>จอง <span th:text="${machine.name}"></span></h1>
+    <p>เริ่มต้น <span th:text="${machine.basePrice}"></span> บาท + <span th:text="${machine.pricePerMinute}"></span> บาท/นาที</p>
+    <p>เลือกเวลาเริ่มและระยะเวลา 10–180 นาที ระบบจะตรวจการจองซ้อนและคำนวณยอดเมื่อบันทึก</p>
+    <div th:if="${machine.status.name() == 'OUT_OF_SERVICE'}" class="alert alert-warning">เครื่องนี้ปิดซ่อม กรุณาเลือกเครื่องอื่น</div>
+    <form th:action="@{/machines/{id}/book(id=${machine.id})}" th:object="${form}" method="post" class="card p-4">
+        <div th:if="${#fields.hasGlobalErrors()}" class="alert alert-danger" role="alert">
+            <p th:each="err : ${#fields.globalErrors()}" th:text="${err}" class="mb-0"></p>
+        </div>
+        <div class="mb-3"><label for="startTime" class="form-label">เวลาเริ่ม</label>
+            <input id="startTime" type="datetime-local" th:field="*{startTime}" class="form-control" required>
+            <p class="text-danger" th:errors="*{startTime}"></p>
+        </div>
+        <div class="mb-3"><label for="durationMinutes" class="form-label">ระยะเวลา (นาที)</label>
+            <input id="durationMinutes" type="number" th:field="*{durationMinutes}" min="10" max="180" class="form-control" required>
+            <p class="text-danger" th:errors="*{durationMinutes}"></p>
+        </div>
+        <div><button class="btn btn-primary" th:disabled="${machine.status.name() == 'OUT_OF_SERVICE'}">ยืนยันจอง</button>
+            <a class="btn btn-outline-secondary" th:href="@{/machines}">กลับไปเลือกเครื่อง</a></div>
+    </form>
+</main>
+<footer th:replace="~{fragments/layout :: footer}"></footer>
+<script th:replace="~{fragments/layout :: scripts}"></script>
+</body></html>
