@@ -143,9 +143,11 @@ error ทุกแบบตอบเป็นรูปแบบ `ApiErrorRespons
 | การแมปตาราง | บันทึก `Payment` ของออเดอร์/รอบใช้เครื่องแล้วอ่านกลับ (ล้างแคชก่อนอ่าน ให้อ่านจาก DB จริง) · `existsByOrderId`/`existsBySessionId` · `findByStatus` แบ่งหน้า | ครบทุกคอลัมน์ ตรงกับ `V1__init_schema.sql` |
 | `UNIQUE` | จ่ายซ้ำออเดอร์เดียวกัน · จ่ายซ้ำรอบใช้เครื่องเดียวกัน | ถูกปฏิเสธ (`payments_order_id_key`, `payments_session_id_key`) |
 | `FK` | จ่ายให้ออเดอร์ที่ไม่มีอยู่ | ถูกปฏิเสธ (`fk_payment_order`) |
-| `CHECK chk_payment_target` | ผูกทั้ง order และ session พร้อมกัน · ไม่ผูกอะไรเลย | ถูกปฏิเสธทั้งสองกรณี |
-| `CHECK` อื่น | ยอดติดลบ · วิธีชำระที่ไม่อยู่ในรายการ | ถูกปฏิเสธ |
+| `CHECK chk_payment_target` | ผูกทั้ง order และ session พร้อมกัน · ไม่ผูกอะไรเลย | ถูกปฏิเสธทั้งสองกรณี (`chk_payment_target`) |
+| `CHECK` อื่น | ยอดติดลบ · วิธีชำระที่ไม่อยู่ในรายการ | ถูกปฏิเสธ (`payments_amount_check`, `chk_payment_method`) |
 | Notification | บันทึกแล้วกรองตาม `is_read` · แจ้งเตือนให้ผู้ใช้ที่ไม่มี | กรองถูกต้อง · ถูกปฏิเสธ (`fk_notification_user`) |
+
+เทสต์ทุกข้อที่ทดสอบ constraint ตรวจ **ชื่อ constraint ที่ PostgreSQL ตอบกลับ** (เมธอด `assertViolates`) ไม่ใช่แค่ตรวจว่ามี exception เกิดขึ้น เพื่อให้แน่ใจว่าถูกปฏิเสธเพราะกฎที่ตั้งใจจริง (ปรับตามข้อเสนอแนะจากการรีวิว)
 
 ผลรัน (9 ต.ค. 2569): `Tests run: 13, Failures: 0, Errors: 0, Skipped: 0` · `BUILD SUCCESS` บรรทัด `ERROR` ที่เห็นใน log ระหว่างรันเป็นข้อความที่ Hibernate บันทึกเมื่อ DB ปฏิเสธข้อมูลผิดที่เราตั้งใจส่งเข้าไป ไม่ใช่เทสต์ล้ม
 

@@ -11,6 +11,7 @@ import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.condition.EnabledIfEnvironmentVariable;
+import org.junit.jupiter.api.function.Executable;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.jdbc.AutoConfigureTestDatabase;
 import org.springframework.boot.test.autoconfigure.orm.jpa.DataJpaTest;
@@ -174,7 +175,7 @@ class PaymentRepositoryDbTest {
         payments.saveAndFlush(Payment.forPayable(
                 payable(PayableType.LAUNDRY_ORDER, orderId, "100.00"), PaymentMethod.CASH));
 
-        assertThrows(DataIntegrityViolationException.class, () -> payments.saveAndFlush(Payment.forPayable(
+        assertViolates("payments_order_id_key", () -> payments.saveAndFlush(Payment.forPayable(
                 payable(PayableType.LAUNDRY_ORDER, orderId, "100.00"), PaymentMethod.QR_MOCK)));
     }
 
@@ -183,38 +184,39 @@ class PaymentRepositoryDbTest {
         payments.saveAndFlush(Payment.forPayable(
                 payable(PayableType.USAGE_SESSION, sessionId, "40.00"), PaymentMethod.CASH));
 
-        assertThrows(DataIntegrityViolationException.class, () -> payments.saveAndFlush(Payment.forPayable(
+        assertViolates("payments_session_id_key", () -> payments.saveAndFlush(Payment.forPayable(
                 payable(PayableType.USAGE_SESSION, sessionId, "40.00"), PaymentMethod.COIN)));
     }
 
     @Test
     void paymentForNonexistentOrder_isRejectedByForeignKey() {
-        assertThrows(DataIntegrityViolationException.class, () -> payments.saveAndFlush(Payment.forPayable(
+        assertViolates("fk_payment_order", () -> payments.saveAndFlush(Payment.forPayable(
                 payable(PayableType.LAUNDRY_ORDER, 987654321L, "100.00"), PaymentMethod.CASH)));
     }
 
     @Test
     void paymentLinkedToBothOrderAndSession_isRejectedByCheckConstraint() {
-        assertThrows(DataIntegrityViolationException.class, () -> jdbc.update(
+        assertViolates("chk_payment_target", () -> jdbc.update(
                 "INSERT INTO payments(order_id, session_id, amount, method) VALUES (?, ?, 10.00, 'CASH')",
                 orderId, sessionId));
     }
 
     @Test
     void paymentLinkedToNeither_isRejectedByCheckConstraint() {
-        assertThrows(DataIntegrityViolationException.class, () -> jdbc.update(
+        assertViolates("chk_payment_target", () -> jdbc.update(
                 "INSERT INTO payments(order_id, session_id, amount, method) VALUES (NULL, NULL, 10.00, 'CASH')"));
     }
 
     @Test
     void negativeAmount_isRejectedByCheckConstraint() {
-        assertThrows(DataIntegrityViolationException.class, () -> jdbc.update(
+        // CHECK (amount >= 0) ใน V1 ไม่ได้ตั้งชื่อเอง PostgreSQL ตั้งให้อัตโนมัติเป็น <ตาราง>_<คอลัมน์>_check
+        assertViolates("payments_amount_check", () -> jdbc.update(
                 "INSERT INTO payments(order_id, amount, method) VALUES (?, -1.00, 'CASH')", orderId));
     }
 
     @Test
     void unknownMethod_isRejectedByCheckConstraint() {
-        assertThrows(DataIntegrityViolationException.class, () -> jdbc.update(
+        assertViolates("chk_payment_method", () -> jdbc.update(
                 "INSERT INTO payments(order_id, amount, method) VALUES (?, 10.00, 'BITCOIN')", orderId));
     }
 
@@ -239,8 +241,19 @@ class PaymentRepositoryDbTest {
 
     @Test
     void notificationForNonexistentUser_isRejectedByForeignKey() {
-        assertThrows(DataIntegrityViolationException.class,
+        assertViolates("fk_notification_user",
                 () -> notifications.saveAndFlush(new Notification(987654321L, "ไม่มีผู้ใช้")));
+    }
+
+    /**
+     * ยืนยันว่า DB ปฏิเสธเพราะ constraint ตัวที่ตั้งใจจริง ไม่ใช่แค่เกิด exception ใดๆ
+     * (ตรวจชื่อ constraint จากข้อความของสาเหตุที่ PostgreSQL ส่งกลับ)
+     */
+    private static void assertViolates(String constraintName, Executable action) {
+        DataIntegrityViolationException ex = assertThrows(DataIntegrityViolationException.class, action);
+        String message = String.valueOf(ex.getMostSpecificCause().getMessage());
+        assertTrue(message.contains(constraintName),
+                "Expected violation of '" + constraintName + "' but PostgreSQL said: " + message);
     }
 
     private static Payable payable(PayableType type, Long id, String amount) {
