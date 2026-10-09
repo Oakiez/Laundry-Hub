@@ -12,6 +12,7 @@ import com.laundryhub.dto.request.CreateOrderRequest;
 import com.laundryhub.dto.request.OrderItemRequest;
 import com.laundryhub.dto.request.UpdateOrderRequest;
 import com.laundryhub.dto.response.OrderResponse;
+import com.laundryhub.dto.response.PageResponse;
 import com.laundryhub.event.OrderStatusChangedEvent;
 import com.laundryhub.exception.BusinessRuleException;
 import com.laundryhub.exception.ResourceNotFoundException;
@@ -26,15 +27,22 @@ import com.laundryhub.service.pricing.PricingStrategy;
 import com.laundryhub.service.state.OrderState;
 import com.laundryhub.service.state.OrderStateFactory;
 import org.springframework.context.ApplicationEventPublisher;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.math.BigDecimal;
 import java.util.List;
+import java.util.Set;
 
 @Service
 @Transactional(readOnly = true)
 public class OrderServiceImpl implements OrderService {
+
+    
+    private static final Set<String> SORTABLE_FIELDS =
+            Set.of("id", "createdAt", "updatedAt", "status", "totalAmount", "totalWeightKg");
 
     private final LaundryOrderRepository orderRepository;
     private final ServiceTypeRepository serviceTypeRepository;
@@ -78,6 +86,25 @@ public class OrderServiceImpl implements OrderService {
     @Override
     public OrderResponse getForCustomer(Long customerId, Long orderId) {
         return orderMapper.toResponse(findOwnedOrder(customerId, orderId));
+    }
+
+    
+    @Override
+    public PageResponse<OrderResponse> listForCustomer(Long customerId, OrderStatus status, Pageable pageable) {
+        checkSortable(pageable);
+        Page<LaundryOrder> page = status == null
+                ? orderRepository.findByUserId(customerId, pageable)
+                : orderRepository.findByUserIdAndStatus(customerId, status, pageable);
+        return PageResponse.from(page.map(orderMapper::toResponse));
+    }
+
+    @Override
+    public PageResponse<OrderResponse> listAll(OrderStatus status, Pageable pageable) {
+        checkSortable(pageable);
+        Page<LaundryOrder> page = status == null
+                ? orderRepository.findAll(pageable)
+                : orderRepository.findByStatus(status, pageable);
+        return PageResponse.from(page.map(orderMapper::toResponse));
     }
 
     @Override
@@ -165,10 +192,22 @@ public class OrderServiceImpl implements OrderService {
         order.setTotalAmount(totalAmount);
     }
 
+        // an unknown sort field would fail deep inside Spring Data as a 500; reject it up front as a 400
+    private void checkSortable(Pageable pageable) {
+        pageable.getSort().forEach(order -> {
+            if (!SORTABLE_FIELDS.contains(order.getProperty())) {
+                throw new BusinessRuleException("Cannot sort orders by '" + order.getProperty() + "'");
+            }
+        });
+    }
+
+
     private User findCustomer(Long customerId) {
         return userRepository.findById(customerId)
                 .filter(user -> user.getRole() == Role.CUSTOMER)
                 .orElseThrow(() -> new ResourceNotFoundException("Customer " + customerId + " not found"));
+
+                
     }
 
     private ServiceType findActiveServiceType(Long serviceTypeId) {

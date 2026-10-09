@@ -20,6 +20,13 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestController;
+import com.laundryhub.domain.enums.OrderStatus;
+import com.laundryhub.dto.response.PageResponse;
+import org.springdoc.core.annotations.ParameterObject;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
+import org.springframework.data.web.PageableDefault;
+import org.springframework.web.bind.annotation.RequestParam;
 
 @RestController
 @RequestMapping("/api/v1")
@@ -49,6 +56,30 @@ public class OrderApiController {
     @Operation(summary = "Get an order with its items (owner or staff)")
     public OrderResponse get(@PathVariable Long customerId, @PathVariable Long orderId) {
         return orderService.getForCustomer(customerId, orderId);
+    }
+
+    
+    @GetMapping("/customers/{customerId}/orders")
+    @PreAuthorize(OWNER_OR_STAFF)
+    @Operation(summary = "List a customer's orders, paged and sorted (owner or staff)",
+            description = "Example: ?page=0&size=10&sort=createdAt,desc&status=WASHING")
+    public PageResponse<OrderResponse> listForCustomer(
+            @PathVariable Long customerId,
+            @RequestParam(required = false) OrderStatus status,
+            @ParameterObject @PageableDefault(size = 10, sort = "createdAt", direction = Sort.Direction.DESC)
+            Pageable pageable) {
+        return orderService.listForCustomer(customerId, status, pageable);
+    }
+
+    @GetMapping("/orders")
+    @PreAuthorize("hasAnyRole('STAFF','ADMIN')")
+    @Operation(summary = "Staff board: all orders, paged and sorted (staff)",
+            description = "Example: ?status=RECEIVED&page=0&size=20&sort=createdAt,asc")
+    public PageResponse<OrderResponse> listAll(
+            @RequestParam(required = false) OrderStatus status,
+            @ParameterObject @PageableDefault(size = 20, sort = "createdAt", direction = Sort.Direction.ASC)
+            Pageable pageable) {
+        return orderService.listAll(status, pageable);
     }
 
     @PutMapping("/customers/{customerId}/orders/{orderId}")
