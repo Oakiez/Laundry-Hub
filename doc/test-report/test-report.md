@@ -2,7 +2,7 @@
 
 ผู้รับผิดชอบ: ภีมเดช กลั่นกิ่ง (โชกุน) · Test Lead
 ขอบเขตของฉบับนี้: ผลรวมทั้งโปรเจค ([หัวข้อ 5](#5-ผลรวมทั้งโปรเจค)) และรายละเอียดกรณีทดสอบของโมดูลผู้เขียน คือ Payment, Notification และ API Quality (Exception handling) ([หัวข้อ 2–4](#2-สรุปผล-โมดูลของผู้เขียน))
-ผลทดสอบรอบล่าสุด: **346 ข้อ — ผ่าน 310, ข้ามโดยเจตนา 36, ล้มเหลว 0** · `BUILD SUCCESS` (เมื่อเปิดเทสต์ฐานข้อมูลจริง: **356 ข้อ ผ่านทั้งหมด ข้าม 0 ล้มเหลว 0**)
+ผลทดสอบรอบล่าสุด: **369 ข้อ — ผ่าน 333, ข้ามโดยเจตนา 36, ล้มเหลว 0** · `BUILD SUCCESS` (เมื่อเปิดเทสต์ฐานข้อมูลจริง: **379 ข้อ ผ่านทั้งหมด ข้าม 0 ล้มเหลว 0**)
 
 ## 1. สภาพแวดล้อมและวิธีรัน
 
@@ -44,9 +44,10 @@ mvn test -Dtest=GlobalExceptionHandlerTest      # รันคลาสเดี
 | Notification (REST) | `NotificationApiControllerTest` | 6 | 6 | 0 |
 | Web (หน้าเว็บ) | `PaymentWebControllerTest` | 14 | 14 | 0 |
 | Web (หน้าเว็บ) | `NotificationWebControllerTest` | 6 | 6 | 0 |
-| **รวม** | **15 คลาส** | **102** | **102** | **0** |
+| Security + render | `PaymentNotificationSecurityTest` | 13 | 13 | 0 |
+| **รวม** | **16 คลาส** | **115** | **115** | **0** |
 
-ผลของทั้งโปรเจคจาก Maven: `Tests run: 346, Failures: 0, Errors: 0, Skipped: 36` · `BUILD SUCCESS` (ตัวเลขของผู้เขียนข้างบนเป็นส่วนหนึ่งของ 346 ข้อ ดูหัวข้อ 5) ตารางข้างบนนับเฉพาะเทสต์ที่รันใน `mvn test` ปกติ (102 ข้อ) ยังมี `PaymentRepositoryDbTest` อีก 13 ข้อที่ข้ามในการรันปกติและรันเมื่อเปิด `LAUNDRY_DB_TESTS=true` (หัวข้อ 3.6) รวมเป็น 115 ข้อของโมดูลนี้
+ผลของทั้งโปรเจคจาก Maven: `Tests run: 369, Failures: 0, Errors: 0, Skipped: 36` · `BUILD SUCCESS` (ตัวเลขของผู้เขียนข้างบนเป็นส่วนหนึ่งของ 369 ข้อ ดูหัวข้อ 5) ตารางข้างบนนับเฉพาะเทสต์ที่รันใน `mvn test` ปกติ (115 ข้อ) ยังมี `PaymentRepositoryDbTest` อีก 13 ข้อที่ข้ามในการรันปกติและรันเมื่อเปิด `LAUNDRY_DB_TESTS=true` (หัวข้อ 3.6) รวมเป็น 128 ข้อของโมดูลนี้
 
 ## 3. รายละเอียดกรณีทดสอบ
 
@@ -252,16 +253,16 @@ error ทุกแบบตอบเป็นรูปแบบ `ApiErrorRespons
 
 | โมดูล | ผู้รับผิดชอบ | คลาสเทสต์ | จำนวนเทสต์ | ผ่าน | ข้าม | ล้มเหลว |
 |---|---|---:|---:|---:|---:|---:|
-| Payment / Notification / API Quality / Web | โชกุน | 16 | 115 | 102 | 13 | 0 |
+| Payment / Notification / API Quality / Web | โชกุน | 17 | 128 | 115 | 13 | 0 |
 | Auth / User / Branch / Security | โอ๊ค | 4 | 29 | 29 | 0 | 0 |
-| Full-Service Order (รวม Service Type) | พีช | 7 | 69 | 69 | 0 | 0 |
-| Self-Service Machine / Session | ปอนด์ | 12 | 133 | 110 | 23 | 0 |
-| **รวม** | | **39** | **346** | **310** | **36** | **0** |
+| Full-Service Order (รวม Service Type และหน้าเว็บ) | พีช | 8 | 78 | 78 | 0 | 0 |
+| Self-Service Machine / Session | ปอนด์ | 12 | 134 | 111 | 23 | 0 |
+| **รวม** | | **41** | **369** | **333** | **36** | **0** |
 
 รายคลาสของโมดูลอื่น (จากรายงานเดียวกัน)
 - โอ๊ค: `SecurityRulesTest` 13 · `BranchServiceTest` 8 · `UserServiceTest` 5 · `AuthServiceTest` 3
-- พีช: `OrderSecurityTest` 17 · `OrderStateTest` 15 · `OrderServiceTest` 14 · `ServiceTypeServiceTest` 7 · `ServiceTypeSecurityTest` 7 · `FullServicePricingTest` 6 · `OrderPayableProviderTest` 3
-- ปอนด์: `SessionServiceImplTest` 20 · `BookingValidatorTest` 19 · `MachineServiceImplTest` 19 · `SelfServiceWebSecurityTest` 13 · `SelfServicePricingTest` 11 · `SessionApiSecurityTest` 10 · `MachineApiSecurityTest` 8 · `MachineStateTest` 7 · `SessionPayableProviderTest` 3 · เทสต์ที่ต่อ PostgreSQL จริง (รอบ `mvn test` ปกติ Maven นับว่า**ข้ามโดยเจตนา 23**) ได้แก่ `SelfServiceRepositoryTest` 9 · `SessionLifecycleIntegrationTest` 7 · `SessionPaymentIntegrationTest` 7 เมื่อเปิดสวิตช์ให้ต่อ PostgreSQL จริง `SelfServiceRepositoryTest` รันได้ **19 ข้อ ผ่านทั้งหมด** ดูด้านล่าง
+- พีช: `OrderSecurityTest` 17 · `OrderStateTest` 15 · `OrderServiceTest` 14 · `OrderWebControllerTest` 9 · `ServiceTypeServiceTest` 7 · `ServiceTypeSecurityTest` 7 · `FullServicePricingTest` 6 · `OrderPayableProviderTest` 3
+- ปอนด์: `SessionServiceImplTest` 20 · `BookingValidatorTest` 19 · `MachineServiceImplTest` 19 · `SelfServiceWebSecurityTest` 14 · `SelfServicePricingTest` 11 · `SessionApiSecurityTest` 10 · `MachineApiSecurityTest` 8 · `MachineStateTest` 7 · `SessionPayableProviderTest` 3 · เทสต์ที่ต่อ PostgreSQL จริง (รอบ `mvn test` ปกติ Maven นับว่า**ข้ามโดยเจตนา 23**) ได้แก่ `SelfServiceRepositoryTest` 9 · `SessionLifecycleIntegrationTest` 7 · `SessionPaymentIntegrationTest` 7 เมื่อเปิดสวิตช์ให้ต่อ PostgreSQL จริง `SelfServiceRepositoryTest` รันได้ **19 ข้อ ผ่านทั้งหมด** ดูด้านล่าง
 
 **ผลรันแยกของ `SelfServiceRepositoryTest` กับฐานข้อมูลจริง** (9 ต.ค. 2569, PostgreSQL 16 ใน Docker พอร์ต 5433, ตั้ง `LAUNDRY_DB_TESTS=true`):
 
@@ -271,9 +272,9 @@ LAUNDRY_DB_TESTS=true mvn test -Dtest=SelfServiceRepositoryTest
 # Tests run: 19, Failures: 0, Errors: 0, Skipped: 0 · BUILD SUCCESS
 ```
 
-เทสต์นี้สร้าง schema ชั่วคราวของตัวเอง (ชื่อสุ่ม) รัน Flyway ในนั้นแล้วลบทิ้งตอนจบ จึงไม่แตะตารางจริง เมื่อรวมผลนี้กับผลรันแยกของ `PaymentRepositoryDbTest` (13 ข้อ ดูหัวข้อ 3.6) เมื่อเปิด `LAUNDRY_DB_TESTS=true` และรันทั้งโปรเจคครั้งเดียวกับ PostgreSQL 16 จริง (หลังเพิ่มหน้าเว็บ) ได้ **`Tests run: 356, Failures: 0, Errors: 0, Skipped: 0` · `BUILD SUCCESS`** (310 ข้อที่รันปกติ + 46 ข้อที่ต่อฐานข้อมูล คือ `PaymentRepositoryDbTest` 13 + `SelfServiceRepositoryTest` 19 + `SessionLifecycleIntegrationTest` 7 + `SessionPaymentIntegrationTest` 7) ข้อความ `ERROR ... test_block_notification` ในล็อกของ `SessionLifecycleIntegrationTest` เป็นความตั้งใจของเทสต์ที่ทดสอบการ rollback ธุรกรรมเมื่อบันทึกแจ้งเตือนล้มเหลว ไม่ใช่ข้อผิดพลาด
+เทสต์นี้สร้าง schema ชั่วคราวของตัวเอง (ชื่อสุ่ม) รัน Flyway ในนั้นแล้วลบทิ้งตอนจบ จึงไม่แตะตารางจริง เมื่อรวมผลนี้กับผลรันแยกของ `PaymentRepositoryDbTest` (13 ข้อ ดูหัวข้อ 3.6) เมื่อเปิด `LAUNDRY_DB_TESTS=true` และรันทั้งโปรเจคครั้งเดียวกับ PostgreSQL 16 จริง (หลังรวมงานทุกโมดูลและเพิ่มหน้าเว็บ ผลรัน 10 ต.ค. 2569 เวลา 17:21 น.) ได้ **`Tests run: 379, Failures: 0, Errors: 0, Skipped: 0` · `BUILD SUCCESS`** (333 ข้อที่รันปกติ + 46 ข้อที่ต่อฐานข้อมูล คือ `PaymentRepositoryDbTest` 13 + `SelfServiceRepositoryTest` 19 + `SessionLifecycleIntegrationTest` 7 + `SessionPaymentIntegrationTest` 7) ข้อความ `ERROR ... test_block_notification` ในล็อกของ `SessionLifecycleIntegrationTest` เป็นความตั้งใจของเทสต์ที่ทดสอบการ rollback ธุรกรรมเมื่อบันทึกแจ้งเตือนล้มเหลว ไม่ใช่ข้อผิดพลาด
 
-![ผลรัน mvn test ทั้งโปรเจคเมื่อเปิดเทสต์ฐานข้อมูลจริง (LAUNDRY_DB_TESTS=true) รอบก่อนเพิ่มหน้าเว็บ 321 ข้อ ผ่านทั้งหมด (ปัจจุบัน 356 ข้อ)](../../img/test-run-full-db.png)
+![ผลรัน mvn test ทั้งโปรเจคเมื่อเปิดเทสต์ฐานข้อมูลจริง (LAUNDRY_DB_TESTS=true) รอบก่อนเพิ่มหน้าเว็บ 321 ข้อ ผ่านทั้งหมด (ปัจจุบัน 379 ข้อ)](../../img/test-run-full-db.png)
 
 ## 6. ข้อจำกัดและสิ่งที่ยังไม่ได้ทดสอบ
 
@@ -282,7 +283,8 @@ LAUNDRY_DB_TESTS=true mvn test -Dtest=SelfServiceRepositoryTest
 - **เทสต์สิทธิ์ (`PaymentNotificationSecurityTest`, หัวข้อ 3.8) mock service** จึงไม่ได้ตรวจกฎ "เจ้าของ payable" ใน `CheckoutFacade` ร่วมกับฐานข้อมูลจริง (กฎนั้นตรวจด้วย `CheckoutFacadeTest` และการทดสอบ manual ในหัวข้อ 3.4)
 - **เทสต์ repository ของโมดูล Self-Service (`SelfServiceRepositoryTest`) ถูกข้ามโดยเจตนา** ในการรัน `mvn test` ปกติ (Maven นับเป็นข้าม 9) เพราะตั้งให้รันเฉพาะเมื่อกำหนด `LAUNDRY_DB_TESTS=true` และมี PostgreSQL พร้อม (ไม่ให้การรันเทสต์ทั่วไปต้องพึ่งฐานข้อมูล) จึงนับเป็น "ข้าม" ไม่ใช่ "ผ่าน" ในตารางหัวข้อ 5 แต่ได้ยืนยันแยกแล้วว่าผ่านครบ 19 ข้อกับ PostgreSQL จริง (ดูหัวข้อ 5) เทสต์ชุดนี้เป็นของโมดูลเครื่องซัก ไม่ได้ครอบคลุม `payments`/`notifications`
 - ตัวเลขในหัวข้อ 5 อ้างอิงการรัน ณ เวลาที่ระบุ หากมีการแก้โค้ดหลังจากนั้นต้องรันใหม่
-- **ฟอร์มชำระเงินให้ผู้ใช้พิมพ์เลขที่รายการเอง** ยังไม่มีปุ่มชำระเงินจากหน้าออเดอร์หรือหน้าประวัติรอบใช้งาน (หน้า `/payments/new` รองรับ prefill ผ่านพารามิเตอร์ `type` และ `id` แล้ว) และ 404 ของหน้าเว็บยังตอบเป็น JSON
+- **ฟอร์มชำระเงินผ่านเมนูยังให้ผู้ใช้พิมพ์เลขที่รายการเอง** (มีปุ่ม "ชำระเงิน" จากหน้ารายละเอียดออเดอร์ของพีชและหน้าประวัติรอบใช้งานของปอนด์แล้ว ซึ่งเติมค่าให้อัตโนมัติผ่านพารามิเตอร์ `type` และ `id`) และ 404 ของหน้าเว็บยังตอบเป็น JSON
+- **สัญญา `Payable` ไม่มีข้อมูลสถานะ** ทำให้ `CheckoutFacade` ตรวจไม่ได้ว่ารายการนั้นยกเลิกแล้วหรือไม่ ออเดอร์ที่ยกเลิกแล้วจึงยังชำระผ่าน API หรือฟอร์มได้ (หน้ารายละเอียดออเดอร์ซ่อนปุ่มไว้แล้ว) เป็นข้อจำกัดของสัญญาที่ใช้ร่วมกันหลายโมดูล พีชบันทึกไว้ในรายงานของโมดูลออเดอร์เช่นกัน
 - **ยังไม่ได้ตั้งค่า Jacoco** จึงยังไม่มีตัวเลข code coverage (รายการระดับ P2)
 - ไม่มีเทสต์การทำงานพร้อมกัน (race) ของการจ่ายซ้ำจริง (สองคำขอพร้อมกัน) ตัว `UNIQUE` ที่กันการจ่ายซ้ำพิสูจน์แล้วในหัวข้อ 3.6 แต่สถานการณ์สองคำขอแข่งกันยังไม่ได้ทดสอบ
 - **หมายเหตุตัวเลขหัวข้อ 2 และ 5:** อ้างอิงการรัน 10 ต.ค. 2569 หลังเพิ่มหน้าเว็บ หากมีการแก้โค้ดหลังจากนั้นต้องรันใหม่ก่อนส่งงาน
