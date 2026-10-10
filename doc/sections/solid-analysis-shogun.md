@@ -13,7 +13,7 @@
 | `…/service/payment/CheckoutFacade.java:29` | ประสานขั้นตอน checkout (หา payable → ตรวจสิทธิ์ → สร้าง payment → ยิง event) | ไม่มีกฎการเงินของตัวเอง ส่งต่อให้ service |
 | `…/mapper/PaymentMapper.java:9` | แปลง `Payment` → `PaymentResponse` | แยกจาก service เพื่อไม่ให้ Entity หลุดเป็น API contract |
 | `…/event/NotificationEventListener.java:17` | แปลงเหตุการณ์เป็นข้อความแจ้งเตือน | ไม่รู้วิธีบันทึก (ให้ `NotificationService` ทำ) |
-| `…/exception/GlobalExceptionHandler.java:30` | แปลง exception เป็น `ApiErrorResponse` จุดเดียว | service/controller ไม่ต้องจัดรูปแบบ error เอง |
+| `…/exception/GlobalExceptionHandler.java:31` | แปลง exception เป็น `ApiErrorResponse` จุดเดียว | service/controller ไม่ต้องจัดรูปแบบ error เอง |
 
 ## O — Open/Closed
 
