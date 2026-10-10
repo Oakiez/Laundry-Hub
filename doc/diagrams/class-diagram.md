@@ -270,6 +270,19 @@ classDiagram
 classDiagram
     direction TB
 
+    class MachineApiController {
+        <<RestController>>
+    }
+    class SessionApiController {
+        <<RestController>>
+    }
+    class SelfServiceWebController {
+        <<Controller>>
+    }
+    class BranchService {
+        <<interface>>
+    }
+
     class MachineService {
         <<interface>>
         +search(branchId, status, type, Pageable) Page
@@ -303,6 +316,7 @@ classDiagram
         <<interface>>
     }
     class MachineMapper
+    class SessionMapper
     class BookingValidator {
         +validate(Machine, startTime, durationMinutes) LocalDateTime
     }
@@ -317,6 +331,13 @@ classDiagram
 
     class SessionService {
         <<interface>>
+        +book(machineId, currentUserId, staff, BookSessionRequest) SessionResponse
+        +start(sessionId, currentUserId, staff) SessionResponse
+        +finish(sessionId, currentUserId, staff) SessionResponse
+        +cancel(sessionId, currentUserId, staff) SessionResponse
+        +findById(sessionId, currentUserId, staff) SessionResponse
+        +findForUser(userId, currentUserId, staff, Pageable) Page
+        +findForMachine(machineId, staff, Pageable) Page
         +findPayable(sessionId) Payable
     }
     class SessionServiceImpl
@@ -328,7 +349,18 @@ classDiagram
     class MachineStatusChangedEvent {
         <<record>>
     }
+    class SessionStatusChangedEvent {
+        <<record>>
+    }
+    class NotificationEventListener {
+        +on(SessionStatusChangedEvent)
+    }
 
+    MachineApiController --> MachineService
+    SessionApiController --> SessionService
+    SelfServiceWebController --> MachineService
+    SelfServiceWebController --> SessionService
+    SelfServiceWebController --> BranchService
     MachineService <|.. MachineServiceImpl
     MachineServiceImpl --> MachineRepository : «Repository»
     MachineServiceImpl --> UsageSessionRepository : «Repository»
@@ -344,12 +376,23 @@ classDiagram
     PricingStrategy <|.. SelfServicePricing
     SessionService <|.. SessionServiceImpl
     SessionServiceImpl --> UsageSessionRepository : «Repository»
+    SessionServiceImpl --> MachineRepository : «Repository»
+    SessionServiceImpl --> SessionMapper : «DTO + Mapper»
+    SessionServiceImpl --> BookingValidator : validate booking
+    SessionServiceImpl --> PricingStrategy : constructor injection «Strategy»
+    SessionServiceImpl --> MachineStateFactory : «State»
+    SessionServiceImpl ..> SessionStatusChangedEvent : publishEvent «Observer»
+    SessionServiceImpl ..> MachineStatusChangedEvent : publishEvent «Observer»
+    NotificationEventListener ..> SessionStatusChangedEvent : @EventListener
     PayableProvider <|.. SessionPayableProvider
     SessionPayableProvider --> SessionService
 ```
 
 - `MachineStateFactory` ได้ state ทุกตัวจาก Spring (`List<MachineState>`) แล้วเก็บใน `EnumMap` ต่างจาก `OrderStateFactory` ที่ใช้ `switch` แบบ static ทั้งคู่ทำหน้าที่เดียวกันคือแปลง enum ในฐานข้อมูลเป็นคลาส State
-- ณ วันที่ปรับรูปนี้ `BookingValidator` และ `SelfServicePricing` ยังไม่มี Service ตัวไหนเรียกใช้ (มีเทสต์ของตัวเองแล้ว) ส่วน `MachineStatusChangedEvent` ยังไม่มี listener รูปนี้จึงไม่ได้วางเส้นจาก Service ไปหาคลาสเหล่านั้น
+- `SessionServiceImpl` เรียก `BookingValidator` ตอนจอง (`book`) เพื่อเช็กเวลาซ้อนและสถานะเครื่อง และรับ `PricingStrategy<SelfServicePricingInput>` ผ่าน constructor (Spring ฉีด `SelfServicePricing` ให้) ใช้คิดค่ารอบใช้งาน
+- `SessionServiceImpl` ยิง `SessionStatusChangedEvent` ทุกครั้งที่ book / start / finish / cancel และ `NotificationEventListener` รับไปสร้างแจ้งเตือน ส่วน `MachineStatusChangedEvent` ถูกยิงจาก `MachineServiceImpl.changeStatus` และจาก `SessionServiceImpl` เมื่อสถานะเครื่องเปลี่ยน แต่ยังไม่มี listener
+- `SessionServiceImpl` ยังใช้ `UserRepository` หาเจ้าของรอบใช้งานด้วย (ไม่ได้วาดเส้นเพื่อไม่ให้รูปรก)
+- Controller ทั้ง 3 ตัวพึ่งแค่ interface ของ Service (DIP) ไม่เรียก Repository ตรง
 
 ## 4. Payment / Notification (Strategy + Factory, Facade, Observer)
 
@@ -425,7 +468,7 @@ classDiagram
 |---|---|---|---|---|
 | Strategy | Behavioral | `PricingStrategy` ← `FullServicePricing`, `SelfServicePricing` · `PaymentProcessor` ← `Cash/QrMock/CoinProcessor` | `service/pricing/`, `service/payment/` | พีช, ปอนด์, โชกุน |
 | State | Behavioral | `OrderState` ← 7 สถานะ + `OrderStateFactory` · `MachineState` ← 4 สถานะ + `MachineStateFactory` | `service/state/` | พีช, ปอนด์ |
-| Observer | Behavioral | `OrderStatusChangedEvent`, `SessionStatusChangedEvent`, `PaymentCompletedEvent` → `NotificationEventListener` (`MachineStatusChangedEvent` ถูกยิงแล้วแต่ยังไม่มี listener · `SessionStatusChangedEvent` มี listener แต่ยังไม่มีผู้ยิง) | `event/` | พีช (ยิง Order), ปอนด์ (ยิง Machine), โชกุน (ยิง Payment / ฟังทั้งหมด) |
+| Observer | Behavioral | `OrderStatusChangedEvent`, `SessionStatusChangedEvent`, `PaymentCompletedEvent` → `NotificationEventListener` (`SessionStatusChangedEvent` ยิงจาก `SessionServiceImpl` ตอน book/start/finish/cancel · `MachineStatusChangedEvent` ยิงจาก `MachineServiceImpl` และ `SessionServiceImpl` แต่ยังไม่มี listener) | `event/` | พีช (ยิง Order), ปอนด์ (ยิง Machine / Session), โชกุน (ยิง Payment / ฟังทั้งหมด) |
 | Factory (Simple Factory แบบ registry) | Creational | `PaymentProcessorFactory` → `PaymentProcessor` | `service/payment/` | โชกุน |
 | Facade | Structural | `CheckoutFacade` | `service/payment/CheckoutFacade.java` | โชกุน |
 | Builder | Creational | `OrderResponse.builder()` (Lombok `@Builder`) | `dto/response/OrderResponse.java` | พีช |
@@ -435,4 +478,4 @@ classDiagram
 | DTO + Mapper | Enterprise | `dto/request`, `dto/response`, `mapper/*Mapper` | `dto/`, `mapper/` | ทุกคน |
 | Dependency Injection | Enterprise | constructor injection ทุก `@Service` / `@RestController` | ทั้งระบบ | ทุกคน |
 
-> รูปนี้สะท้อนโค้ดใน `develop` ณ วันที่ 10 ต.ค. 2569 (หลัง merge PR #17 และ #18) ถ้าเพิ่มคลาสใหม่ (เช่น controller ของเครื่อง/รอบใช้งาน) ให้เจ้าของโมดูลเติมลงในรูปที่ 3 และตาราง
+> รูปนี้สะท้อนโค้ดใน `develop` ณ วันที่ 10 ต.ค. 2569 (หลัง merge PR #34) ถ้าเพิ่มคลาสใหม่ ให้เจ้าของโมดูลเติมลงในรูปที่เกี่ยวข้องและตาราง
