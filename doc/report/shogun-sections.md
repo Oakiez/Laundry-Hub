@@ -74,10 +74,22 @@ JUnit 5 และ Mockito สำหรับ Unit Test, Spring MockMvc (standalo
 | `NotificationEventListener`, `NotificationServiceImpl` | `…/event/`, `…/service/impl/` | Observer สร้างแจ้งเตือนจาก event |
 | `GlobalExceptionHandler`, `ApiErrorResponse` | `…/exception/`, `…/dto/response/` | แปลง exception เป็นรูปแบบ error มาตรฐาน |
 
-ดูแผนภาพประกอบที่ `doc/diagrams/activity-checkout.md` (Activity Diagram) และ `doc/design-patterns.md` (Class Diagram ตำแหน่ง Pattern)
+ขั้นตอนชำระเงินแสดงเป็น Activity Diagram สองส่วน ส่วนแรกคือการตรวจข้อมูลและสิทธิ์ก่อนสร้างรายการ (ตรวจข้อมูล → มี provider ของประเภทนี้ → พบรายการ → เป็นเจ้าของหรือพนักงาน → ยังไม่เคยชำระ) ส่วนที่สองคือการสร้าง Payment เลือก processor ตามวิธีชำระ แล้วยิง event ให้ผู้ฟังสร้างแจ้งเตือน เส้นสีแดงคือกรณีผิดพลาดและรหัส HTTP ที่ตอบกลับ
+
+![Activity Diagram ของ checkout ส่วนที่ 1: ตรวจข้อมูลและสิทธิ์](../../img/activity-checkout-1.png)
+
+![Activity Diagram ของ checkout ส่วนที่ 2: สร้าง Payment เลือก processor และยิง event](../../img/activity-checkout-2.png)
+
+พนักงานยืนยันรับเงินสดมีขั้นตอนสั้นกว่า โดยตรวจสถานะปัจจุบันก่อน (จ่ายแล้วได้ 409, ล้มเหลวได้ 400, รอยืนยันจึงดำเนินการต่อ)
+
+![Activity Diagram ของการยืนยันรับเงินสดโดยพนักงาน](../../img/activity-confirm.png)
+
+ตำแหน่ง Design Pattern ของโมดูลนี้ดูที่ `doc/design-patterns.md` และรายละเอียดต้นฉบับของแผนภาพอยู่ที่ `doc/diagrams/activity-checkout.md`
 
 ### 3.x การออกแบบฐานข้อมูล
-ตาราง `payments` และ `notifications` อยู่ใน `V1__init_schema.sql` (ดู ER Diagram `doc/diagrams/er-diagram.md` และ `doc/data-dictionary.md`)
+ตาราง `payments` และ `notifications` อยู่ใน `V1__init_schema.sql` (ดู ER Diagram ฉบับเต็ม 10 ตารางที่ `doc/diagrams/er-diagram.md` และ `doc/data-dictionary.md`) ภาพด้านล่างแสดงเฉพาะส่วนที่เกี่ยวกับการชำระเงินและแจ้งเตือน
+
+![ER Diagram ของตาราง payments และ notifications พร้อมความสัมพันธ์กับออเดอร์ รอบใช้เครื่อง และผู้ใช้](../../img/er-payment-notification.png)
 - `payments` มี FK สองตัว (`order_id`, `session_id`) ที่ nullable ทั้งคู่ เพราะหนึ่งรายการจ่ายให้ออเดอร์**หรือ**รอบใช้เครื่องอย่างใดอย่างหนึ่ง จึงควบคุมด้วย `CHECK chk_payment_target` (ต้องมีค่าเพียงตัวเดียว) และ `UNIQUE` บนทั้งสองคอลัมน์ (หนึ่งรายการมีการชำระได้ครั้งเดียว)
 - `Payment` และ `Notification` เก็บ FK เป็นค่า `Long` ไม่ผูก `@OneToOne`/`@ManyToOne` กับ entity ของโมดูลอื่น เพื่อไม่ให้ขึ้นกับโมดูลเหล่านั้นโดยตรง (Dependency Inversion) ขณะที่ฐานข้อมูลยังบังคับ FK
 
