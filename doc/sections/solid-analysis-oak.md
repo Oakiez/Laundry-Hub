@@ -46,5 +46,5 @@
 | `…/service/impl/AuthServiceImpl.java:23` | รับ `UserRepository`, `PasswordEncoder`, `UserMapper` ผ่าน **constructor** (ไม่มี `@Autowired` บน field) เป็น interface/ตัวแปลงที่เปลี่ยนได้ เทสต์ส่ง mock เข้าไปตรงๆ (`test/java/com/laundryhub/service/AuthServiceTest.java:41`) |
 | `…/service/impl/UserServiceImpl.java:23`, `BranchServiceImpl.java:22` | รูปแบบเดียวกัน: ขึ้นกับ Repository interface ผ่าน constructor |
 | `…/controller/api/AuthApiController.java:23`, `UserApiController.java:28`, `BranchApiController.java:31` | Controller ขึ้นกับ Service **interface** (`AuthService`, `UserService`, `BranchService`) ไม่รู้จัก `*Impl` และไม่ import Repository |
-| `…/controller/web/AuthWebController.java:20`, `ProfileWebController.java:23`, `BranchWebController.java:29` | ฝั่งหน้าเว็บทำแบบเดียวกัน ใช้ Service interface เดียวกับฝั่ง API จึงไม่มีตรรกะซ้ำ |
+| `…/controller/web/AuthWebController.java:21`, `ProfileWebController.java:23`, `BranchWebController.java:29` | ฝั่งหน้าเว็บทำแบบเดียวกัน ใช้ Service interface เดียวกับฝั่ง API จึงไม่มีตรรกะซ้ำ |
 | `…/security/AppUserDetailsService.java:10` | ขึ้นกับ `UserRepository` (interface) ไม่ผูกกับ JPA โดยตรง |

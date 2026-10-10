@@ -10,7 +10,7 @@
             <td><span th:text="${#temporals.format(s.startTime, 'dd/MM/yyyy HH:mm')}"></span><br><span th:text="${#temporals.format(s.endTime, 'dd/MM/yyyy HH:mm')}"></span></td>
             <td th:text="${s.amount}"></td><td><span th:replace="~{fragments/badges :: sessionStatus(${s.status})}"></span></td>
             <td><div class="d-flex gap-2">
-                <span th:if="${s.status.name() != 'CANCELLED' and paidSessionIds != null and paidSessionIds.contains(s.id)}" class="badge text-bg-success align-self-center">มีการชำระเงินแล้ว</span>
+                <span th:if="${s.status.name() != 'CANCELLED' and paidSessionIds != null and paidSessionIds.contains(s.id)}" class="badge text-bg-success align-self-center">ส่งรายการชำระเงินแล้ว</span>
                 <a th:if="${s.status.name() != 'CANCELLED' and (paidSessionIds == null or !paidSessionIds.contains(s.id))}" th:href="@{/payments/new(type='USAGE_SESSION',id=${s.id})}" class="btn btn-outline-primary btn-sm">ชำระเงิน</a>
                 <form th:if="${s.status.name() == 'RESERVED'}" th:action="@{/sessions/{id}/start(id=${s.id})}" method="post"><button class="btn btn-success btn-sm">เริ่มใช้</button></form>
                 <form th:if="${s.status.name() == 'RESERVED'}" th:action="@{/sessions/{id}/cancel(id=${s.id})}" method="post"><button class="btn btn-outline-danger btn-sm">ยกเลิก</button></form>
