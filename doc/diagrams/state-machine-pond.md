@@ -9,13 +9,13 @@ stateDiagram-v2
     IN_USE --> AVAILABLE: finish IN_USE session / owner or staff
     AVAILABLE --> OUT_OF_SERVICE: manual maintenance / STAFF or ADMIN
     OUT_OF_SERVICE --> AVAILABLE: reopen / STAFF or ADMIN
+    RESERVED --> AVAILABLE: manual reset / STAFF or ADMIN
+    RESERVED --> OUT_OF_SERVICE: manual maintenance / STAFF or ADMIN
     note right of RESERVED
         enum และ State class รองรับไว้
         การจองปัจจุบันไม่เปลี่ยน Machine เป็น RESERVED
         ไม่มี transition ปกติเข้าสถานะนี้
     end note
-    RESERVED --> AVAILABLE: manual reset / STAFF or ADMIN
-    RESERVED --> OUT_OF_SERVICE: manual maintenance / STAFF or ADMIN
     note right of IN_USE
         ปิดซ่อม/เปลี่ยนสถานะด้วยมือไม่ได้
         ต้อง finish ผ่าน SessionService

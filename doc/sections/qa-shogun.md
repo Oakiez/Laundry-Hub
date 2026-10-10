@@ -79,7 +79,7 @@
 | เทสต์อะไรบ้าง | Unit test (Mockito) ของ Factory, Processor, Service, Facade, Listener, Controller (MockMvc standalone) + ทดสอบจริงกับ Postgres แบบ manual ดู `doc/test-report/test-report.md` |
 | บั๊กที่เจอระหว่างทำ | advice scope ผิด, 405 กลายเป็น 500, `markPaid` เขียนทับเวลา, `notifyUser` ไม่ตรวจ input, `sort` ผิดชื่อได้ 500, Swagger แสดงพารามิเตอร์ผิด (ดูหัวข้อ 4 ของ test report) |
 | ถ้าเพิ่มวิธีชำระใหม่ต้องทำอะไร | เพิ่มคลาส `@Component` implement `PaymentProcessor` (เช่น `CoinProcessor`) ไม่แก้ Factory/Service |
-| ข้อจำกัดที่รู้ | integration test กับ DB จริง (`PaymentRepositoryDbTest` 13 ข้อ) เป็นแบบ opt-in ต้องตั้ง `LAUNDRY_DB_TESTS=true` และ CI ยังไม่รัน, `@PreAuthorize` ยังไม่มีเทสต์อัตโนมัติ, notification เป็น sync (กระทบธุรกรรมหลักถ้าพัง) |
+| ข้อจำกัดที่รู้ | integration test กับ DB จริง (`PaymentRepositoryDbTest` 13 ข้อ) เป็นแบบ opt-in ต้องตั้ง `LAUNDRY_DB_TESTS=true` และ CI ยังไม่รัน, สัญญา `Payable` ไม่มีสถานะ ออเดอร์ที่ยกเลิกแล้วจึงยังชำระผ่าน API ได้, ฟอร์มชำระเงินผ่านเมนูต้องพิมพ์เลขที่รายการเอง (มีปุ่มจากหน้าออเดอร์/ประวัติรอบใช้งานแล้ว), notification เป็น sync (กระทบธุรกรรมหลักถ้าพัง) |
 
 ## ไฟล์ที่ต้องอธิบายได้ทีละไฟล์ (เรียงตามความสำคัญ)
 1. `…/service/payment/CheckoutFacade.java` — ลำดับ 4 ขั้นตอน, ตรวจเจ้าของ, ยิง event

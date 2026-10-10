@@ -20,7 +20,7 @@ import re
 from collections import OrderedDict
 
 from docx import Document
-from docx.enum.section import WD_ORIENT  # noqa: F401
+from docx.enum.section import WD_ORIENT, WD_SECTION  # noqa: F401
 from docx.enum.text import WD_ALIGN_PARAGRAPH, WD_COLOR_INDEX
 from docx.oxml import OxmlElement
 from docx.oxml.ns import qn
@@ -39,7 +39,20 @@ CHAPTERS = OrderedDict([
 ])
 
 # ลำดับการรวมเนื้อหาในแต่ละหัวข้อ + ชื่อสั้นที่ใช้เมื่อมีหลายคนเขียนหัวข้อเดียวกัน
-AUTHORS = OrderedDict([("oak", "โอ๊ค"), ("peach", "พีช"), ("pond", "ปอนด์"), ("shogun", "โชกุน")])
+# ชื่อจริงที่ใช้ในเล่ม (ไม่ใช้ชื่อเล่น)
+UPDATE_FIELDS = True   # --no-update-fields ปิดการให้ Word ถามอัปเดตสารบัญตอนเปิดไฟล์
+
+AUTHORS = OrderedDict([("oak", "วงศธร ธน.ยอด"), ("peach", "คมชาญ น้อยเนียม"),
+                       ("pond", "ปฏิภาณ มะนิลทิพย์"), ("shogun", "ภีมเดช กลั่นกิ่ง")])
+# ชื่อเล่นที่อาจหลุดมาในเนื้อหาของไฟล์ <ชื่อ>-sections.md จะถูกแทนด้วยชื่อจริงตอนสร้างเล่ม
+NICKNAMES = [("โอ๊ค", AUTHORS["oak"]), ("พีช", AUTHORS["peach"]), ("ปอนด์", AUTHORS["pond"]), ("โชกุน", AUTHORS["shogun"])]
+
+
+def real_names(text):
+    for nick, real in NICKNAMES:
+        text = text.replace(nick, real)
+    return text
+
 # ใครต้องส่งบทไหน (ถ้าไม่มี จะแทรกข้อความเตือนสีเหลืองให้เห็น)
 EXPECTED = {"oak": [1, 2, 3, 4, 5], "peach": [2, 3, 4, 5], "pond": [2, 3, 4, 5], "shogun": [2, 3, 4, 5]}
 
@@ -51,9 +64,9 @@ META = {
         "673380589-2   ปฏิภาณ มะนิลทิพย์",
         "673380420-2   ภีมเดช กลั่นกิ่ง",
     ],
-    "advisor": "อาจารย์ประจำวิชา: *(ใส่ชื่ออาจารย์ประจำวิชา CP353002)*",
-    "course": "รายงานนี้เป็นส่วนหนึ่งของการศึกษาวิชา CP353002 Principles of Software Design and Development",
-    "term": "ภาคเรียน 1 ปีการศึกษา 2569 *(ตรวจสอบสาขาวิชา)*",
+    "advisor": "อาจารย์ประจำวิชา: รศ. ดร.ปัญญาพล หอระตะ",
+    "course": "รายงานนี้เป็นส่วนหนึ่งของการศึกษาวิชา CP353002 หลักการพัฒนาซอฟต์แวร์ (Principles of Software Development)",
+    "term": "สาขาวิชาวิทยาการคอมพิวเตอร์ ภาคเรียน 1 ปีการศึกษา 2569",
     "college": "วิทยาลัยการคอมพิวเตอร์ มหาวิทยาลัยขอนแก่น",
 }
 
@@ -92,6 +105,7 @@ def fmt_run(run, size, bold=False, italic=False, mono=False, highlight=False):
 
 
 def add_inline(par, text, size=16, bold=False):
+    text = real_names(text)
     for part in TOKEN.split(text):
         if not part:
             continue
@@ -162,13 +176,14 @@ def shade(cell, fill):
 # ---------------------------------------------------------------- อ่าน Markdown
 def norm_key(title):
     t = re.sub(r"\((?:ส่วน)[^)]*\)", "", title)
+    t = re.sub(r"^\s*\d+(?:\.(?:\d+|x))*\s+", "", t)   # "5.x ข้อจำกัด" กับ "ข้อจำกัด" ต้องรวมเป็นหัวข้อเดียวกัน
     return re.sub(r"\s+", " ", t).strip().lower()
 
 
 def clean_title(title):
     t = re.sub(r"\s*\((?:ส่วน)[^)]*\)", "", title)
     t = re.sub(r"^\d+(?:\.(?:\d+|x))*\s+", "", t)
-    return re.sub(r"\s+", " ", t).strip()
+    return real_names(re.sub(r"\s+", " ", t).strip())
 
 
 def split_file(path):
@@ -268,25 +283,48 @@ class Book:
         for name in ("Heading 2", "Heading 3"):
             pf = d.styles[name].paragraph_format
             pf.space_before, pf.space_after = Pt(10), Pt(4)
-        fp = sec.footer.paragraphs[0]
-        fp.alignment = WD_ALIGN_PARAGRAPH.RIGHT
-        r = fp.add_run()
-        fmt_run(r, 16)
-        for kind in ("begin", None, "end"):
-            if kind:
-                fc = OxmlElement("w:fldChar")
-                fc.set(qn("w:fldCharType"), kind)
-                r._r.append(fc)
-            else:
-                it = OxmlElement("w:instrText")
-                it.set(qn("xml:space"), "preserve")
-                it.text = "PAGE"
-                r._r.append(it)
-        upd = OxmlElement("w:updateFields")
-        upd.set(qn("w:val"), "true")
-        d.settings.element.append(upd)
+        if UPDATE_FIELDS:
+            upd = OxmlElement("w:updateFields")
+            upd.set(qn("w:val"), "true")
+            d.settings.element.append(upd)
         d.core_properties.title = META["title"]
         d.core_properties.author = "กลุ่ม LaundryHub"
+
+    # ---- เลขหน้า: ส่วนหน้า (บทคัดย่อ-สารบัญ) เป็นอักษรไทย ก ข ค ... ส่วนเนื้อหาตั้งแต่บทที่ 1 เป็นเลขอารบิกเริ่มที่ 1
+    def start_section(self, fmt):
+        """New page + new Word section whose page numbers use `fmt` ("thaiLetters" or "decimal") and restart at 1.
+        The number sits at the top right (header). The cover (first section) has no number."""
+        sec = self.doc.add_section(WD_SECTION.NEW_PAGE)
+        sect_pr = sec._sectPr
+        for old in sect_pr.findall(qn("w:pgNumType")):
+            sect_pr.remove(old)
+        pg = OxmlElement("w:pgNumType")
+        pg.set(qn("w:fmt"), fmt)
+        pg.set(qn("w:start"), "1")
+        # schema order matters to Word: pgNumType comes before cols/docGrid etc.
+        after = [qn("w:" + t) for t in ("cols", "formProt", "vAlign", "noEndnote", "titlePg", "textDirection", "bidi", "rtlGutter", "docGrid", "printerSettings")]
+        anchor = next((el for el in sect_pr if el.tag in after), None)
+        if anchor is not None:
+            anchor.addprevious(pg)
+        else:
+            sect_pr.append(pg)
+        if fmt == "thaiLetters":          # first numbered section creates the header; the next one inherits it
+            sec.header.is_linked_to_previous = False
+            hp = sec.header.paragraphs[0]
+            hp.alignment = WD_ALIGN_PARAGRAPH.RIGHT
+            run = hp.add_run()
+            fmt_run(run, 16)
+            for kind in ("begin", None, "end"):
+                if kind:
+                    fc = OxmlElement("w:fldChar")
+                    fc.set(qn("w:fldCharType"), kind)
+                    run._r.append(fc)
+                else:
+                    it = OxmlElement("w:instrText")
+                    it.set(qn("xml:space"), "preserve")
+                    it.text = "PAGE"
+                    run._r.append(it)
+        return sec
 
     # ---- ส่วนหน้า
     def cover(self):
@@ -304,9 +342,9 @@ class Book:
         para(d, META["term"], 16, False, c)
         para(d, META["college"], 16, False, c)
 
-    def front_block(self, heading, blocks, base_dir):
+    def front_block(self, heading, blocks, base_dir, page_break=True):
         p = self.doc.add_paragraph()
-        p.paragraph_format.page_break_before = True
+        p.paragraph_format.page_break_before = page_break
         p.alignment = WD_ALIGN_PARAGRAPH.CENTER
         p.paragraph_format.space_after = Pt(12)
         fmt_run(p.add_run(heading), 20, True)
@@ -433,18 +471,23 @@ def front_matter():
 def main():
     ap = argparse.ArgumentParser()
     ap.add_argument("--out", default=os.path.join(HERE, "LaundryHub-report-draft.docx"))
+    ap.add_argument("--no-update-fields", action="store_true", help="ไม่ใส่ updateFields (ใช้ตอนให้ Word อัปเดตสารบัญเอง)")
     args = ap.parse_args()
+    global UPDATE_FIELDS
+    UPDATE_FIELDS = not args.no_update_fields
 
     authors = load_all()
     book = Book()
     book.cover()
+    book.start_section("thaiLetters")          # บทคัดย่อ - สารบัญ: ก ข ค ... (มุมบนขวา)
     fm = front_matter()
-    for name in ("บทคัดย่อ", "คำนำ"):
+    for i, name in enumerate(("บทคัดย่อ", "คำนำ")):
         if name in fm:
-            book.front_block(name, fm[name], HERE)
+            book.front_block(name, fm[name], HERE, page_break=(i > 0))
         else:
-            book.front_block(name, [("para", f"*(ยังไม่มีเนื้อหา {name} ใน front-matter.md)*")], HERE)
+            book.front_block(name, [("para", f"*(ยังไม่มีเนื้อหา {name} ใน front-matter.md)*")], HERE, page_break=(i > 0))
     book.toc()
+    book.start_section("decimal")              # บทที่ 1 เป็นต้นไป: 1 2 3 ... (มุมบนขวา)
 
     for ch in CHAPTERS:
         intro, merged = [], OrderedDict()

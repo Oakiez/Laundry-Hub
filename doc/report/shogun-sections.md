@@ -74,10 +74,22 @@ JUnit 5 และ Mockito สำหรับ Unit Test, Spring MockMvc (standalo
 | `NotificationEventListener`, `NotificationServiceImpl` | `…/event/`, `…/service/impl/` | Observer สร้างแจ้งเตือนจาก event |
 | `GlobalExceptionHandler`, `ApiErrorResponse` | `…/exception/`, `…/dto/response/` | แปลง exception เป็นรูปแบบ error มาตรฐาน |
 
-ดูแผนภาพประกอบที่ `doc/diagrams/activity-checkout.md` (Activity Diagram) และ `doc/design-patterns.md` (Class Diagram ตำแหน่ง Pattern)
+ขั้นตอนชำระเงินแสดงเป็น Activity Diagram สองส่วน ส่วนแรกคือการตรวจข้อมูลและสิทธิ์ก่อนสร้างรายการ (ตรวจข้อมูล → มี provider ของประเภทนี้ → พบรายการ → เป็นเจ้าของหรือพนักงาน → ยังไม่เคยชำระ) ส่วนที่สองคือการสร้าง Payment เลือก processor ตามวิธีชำระ แล้วยิง event ให้ผู้ฟังสร้างแจ้งเตือน เส้นสีแดงคือกรณีผิดพลาดและรหัส HTTP ที่ตอบกลับ
+
+![Activity Diagram ของ checkout ส่วนที่ 1: ตรวจข้อมูลและสิทธิ์](../../img/activity-checkout-1.png)
+
+![Activity Diagram ของ checkout ส่วนที่ 2: สร้าง Payment เลือก processor และยิง event](../../img/activity-checkout-2.png)
+
+พนักงานยืนยันรับเงินสดมีขั้นตอนสั้นกว่า โดยตรวจสถานะปัจจุบันก่อน (จ่ายแล้วได้ 409, ล้มเหลวได้ 400, รอยืนยันจึงดำเนินการต่อ)
+
+![Activity Diagram ของการยืนยันรับเงินสดโดยพนักงาน](../../img/activity-confirm.png)
+
+ตำแหน่ง Design Pattern ของโมดูลนี้ดูที่ `doc/design-patterns.md` และรายละเอียดต้นฉบับของแผนภาพอยู่ที่ `doc/diagrams/activity-checkout.md`
 
 ### 3.x การออกแบบฐานข้อมูล
-ตาราง `payments` และ `notifications` อยู่ใน `V1__init_schema.sql` (ดู ER Diagram `doc/diagrams/er-diagram.md` และ `doc/data-dictionary.md`)
+ตาราง `payments` และ `notifications` อยู่ใน `V1__init_schema.sql` (ดู ER Diagram ฉบับเต็ม 10 ตารางที่ `doc/diagrams/er-diagram.md` และ `doc/data-dictionary.md`) ภาพด้านล่างแสดงเฉพาะส่วนที่เกี่ยวกับการชำระเงินและแจ้งเตือน
+
+![ER Diagram ของตาราง payments และ notifications พร้อมความสัมพันธ์กับออเดอร์ รอบใช้เครื่อง และผู้ใช้](../../img/er-payment-notification.png)
 - `payments` มี FK สองตัว (`order_id`, `session_id`) ที่ nullable ทั้งคู่ เพราะหนึ่งรายการจ่ายให้ออเดอร์**หรือ**รอบใช้เครื่องอย่างใดอย่างหนึ่ง จึงควบคุมด้วย `CHECK chk_payment_target` (ต้องมีค่าเพียงตัวเดียว) และ `UNIQUE` บนทั้งสองคอลัมน์ (หนึ่งรายการมีการชำระได้ครั้งเดียว)
 - `Payment` และ `Notification` เก็บ FK เป็นค่า `Long` ไม่ผูก `@OneToOne`/`@ManyToOne` กับ entity ของโมดูลอื่น เพื่อไม่ให้ขึ้นกับโมดูลเหล่านั้นโดยตรง (Dependency Inversion) ขณะที่ฐานข้อมูลยังบังคับ FK
 
@@ -115,8 +127,8 @@ JUnit 5 และ Mockito สำหรับ Unit Test, Spring MockMvc (standalo
 ### 4.x ผล Unit Test
 | โมดูล | จำนวน | ผ่าน | ล้มเหลว |
 |---|---:|---:|---:|
-| Payment / Notification / API Quality / หน้าเว็บ (ของโมดูลนี้) | 102 | 102 | 0 |
-| รอบเต็มทั้งโปรเจค (รันบน `develop`) | 332 | 297 | 0 (ข้าม 35 เทสต์ที่ต้องต่อฐานข้อมูล; เมื่อเปิดเทสต์เหล่านั้นรันได้ 342 ข้อ ผ่านทั้งหมด) |
+| Payment / Notification / API Quality / หน้าเว็บ (ของโมดูลนี้) | 115 | 115 | 0 |
+| รอบเต็มทั้งโปรเจค (รันบน `develop`) | 369 | 333 | 0 (ข้าม 36 เทสต์ที่ต้องต่อฐานข้อมูล; เมื่อเปิดเทสต์เหล่านั้นรันได้ 379 ข้อ ผ่านทั้งหมด) |
 
 รายละเอียดรายคลาสดู `doc/test-report/test-report.md` หัวข้อ 2 และ 5
 
@@ -162,7 +174,7 @@ JUnit 5 และ Mockito สำหรับ Unit Test, Spring MockMvc (standalo
 ### 5.x อภิปรายผล
 - **Observer แบบ synchronous:** เลือกเพราะต้องการความสอดคล้องของข้อมูล ข้อแลกเปลี่ยนคือแจ้งเตือนที่ล้มเหลวกระทบการชำระเงิน หากต้องแยกขาด ต้องใช้ `@TransactionalEventListener(AFTER_COMMIT)` ร่วมกับธุรกรรมใหม่
 - **Factory แบบ registry:** เพิ่ม `CoinProcessor` ได้เป็นคลาสเดียวโดยไม่แก้ Factory/Service (Open/Closed) พิสูจน์ด้วยเทสต์ แต่ไม่ใช่ GoF Factory Method แท้
-- **ข้อจำกัดของเทสต์ standalone:** `@PreAuthorize` ไม่ทำงานใน MockMvc แบบ standalone จึงตรวจด้วยการทดสอบจริงแทน
+- **ข้อจำกัดของเทสต์ standalone:** `@PreAuthorize` ไม่ทำงานใน MockMvc แบบ standalone จึงมีเทสต์แยก `PaymentNotificationSecurityTest` (13 ข้อ) ที่เปิด Spring Security และ Thymeleaf จริง (service เป็น mock) ครอบสิทธิ์ของ REST และหน้าเว็บ รวมทั้งตรวจว่า dropdown ทุกอันมีข้อความ
 
 ### 5.x ผลลัพธ์การเรียนรู้
 การทดสอบและการรีวิวโค้ดโดยเพื่อนช่วยจับบั๊กที่มองไม่เห็นเอง (เช่น พฤติกรรมของ `@RestControllerAdvice` กับ error ที่เกิดก่อนเลือก controller) และการพิสูจน์กฎกับฐานข้อมูลจริงให้ความมั่นใจมากกว่าการทดสอบด้วย mock เพียงอย่างเดียว
@@ -172,9 +184,11 @@ JUnit 5 และ Mockito สำหรับ Unit Test, Spring MockMvc (standalo
 
 ### 5.x ข้อจำกัด
 - ไม่มีเทสต์การชำระซ้ำพร้อมกันจริง (race) ตัว `UNIQUE` ที่กันไว้พิสูจน์แล้ว แต่สถานการณ์แข่งกันยังไม่ได้ทดสอบ
-- สิทธิ์ `@PreAuthorize` ยืนยันแบบ manual ยังไม่มีเทสต์อัตโนมัติ
+- เทสต์สิทธิ์ mock service จึงไม่ได้ตรวจกฎเจ้าของใน `CheckoutFacade` ร่วมกับฐานข้อมูลจริง (ตรวจด้วย `CheckoutFacadeTest` และการทดสอบ manual)
 - เทสต์ที่ต่อฐานข้อมูลจริงเป็นแบบ opt-in และ CI ปัจจุบันไม่ได้รัน
-- หน้าเว็บยังไม่มีเทสต์อัตโนมัติที่ render template (ตรวจด้วยการเรียกหน้าจริง), ยังไม่มีรายงานยอดขาย และยังไม่ได้วัด code coverage
+- ข้อความผิดพลาดบนหน้าเว็บชำระเงินบางกรณี (จ่ายซ้ำ, ไม่พบรายการ) ยังเป็นภาษาอังกฤษ เพราะแสดงข้อความจาก service ตรงๆ
+- สัญญา `Payable` ไม่มีข้อมูลสถานะ `CheckoutFacade` จึงตรวจไม่ได้ว่ารายการยกเลิกแล้วหรือไม่ ออเดอร์ที่ยกเลิกแล้วยังชำระผ่าน API ได้ (ข้อจำกัดของสัญญาที่ใช้ร่วมกันหลายโมดูล)
+- ฟอร์มชำระเงินผ่านเมนูยังให้พิมพ์เลขที่รายการเอง (มีปุ่มชำระเงินจากหน้าออเดอร์และหน้าประวัติรอบใช้งานแล้ว), ยังไม่มีรายงานยอดขาย และยังไม่ได้วัด code coverage
 
 ### 5.x ข้อเสนอแนะและแนวทางพัฒนาต่อ
 เพิ่มบริการ PostgreSQL ใน CI เพื่อรันเทสต์ฐานข้อมูลทุก PR, ตั้งชื่อ `CHECK` ใน migration ถัดไปให้ชัด, ดึงโค้ดตั้งค่า schema ชั่วคราวของเทสต์เป็นคลาสแม่, จำกัด `max-page-size` ของการแบ่งหน้า, ทำหน้าเว็บ และเชื่อมวิธีชำระด้วยเหรียญกับรอบใช้เครื่องให้ครบวงจร
