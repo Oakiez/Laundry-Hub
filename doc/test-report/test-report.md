@@ -2,7 +2,7 @@
 
 ผู้รับผิดชอบ: ภีมเดช กลั่นกิ่ง (โชกุน) · Test Lead
 ขอบเขตของฉบับนี้: ผลรวมทั้งโปรเจค ([หัวข้อ 5](#5-ผลรวมทั้งโปรเจค)) และรายละเอียดกรณีทดสอบของโมดูลผู้เขียน คือ Payment, Notification และ API Quality (Exception handling) ([หัวข้อ 2–4](#2-สรุปผล-โมดูลของผู้เขียน))
-ผลทดสอบรอบล่าสุด: **332 ข้อ — ผ่าน 297, ข้ามโดยเจตนา 35, ล้มเหลว 0** · `BUILD SUCCESS` (เมื่อเปิดเทสต์ฐานข้อมูลจริง: **342 ข้อ ผ่านทั้งหมด ข้าม 0 ล้มเหลว 0**)
+ผลทดสอบรอบล่าสุด: **356 ข้อ — ผ่าน 320, ข้ามโดยเจตนา 36, ล้มเหลว 0** · `BUILD SUCCESS` (เมื่อเปิดเทสต์ฐานข้อมูลจริง: **366 ข้อ ผ่านทั้งหมด ข้าม 0 ล้มเหลว 0**)
 
 ## 1. สภาพแวดล้อมและวิธีรัน
 
@@ -46,7 +46,7 @@ mvn test -Dtest=GlobalExceptionHandlerTest      # รันคลาสเดี
 | Web (หน้าเว็บ) | `NotificationWebControllerTest` | 6 | 6 | 0 |
 | **รวม** | **15 คลาส** | **102** | **102** | **0** |
 
-ผลของทั้งโปรเจคจาก Maven: `Tests run: 332, Failures: 0, Errors: 0, Skipped: 35` · `BUILD SUCCESS` (ตัวเลขของผู้เขียนข้างบนเป็นส่วนหนึ่งของ 332 ข้อ ดูหัวข้อ 5) ตารางข้างบนนับเฉพาะเทสต์ที่รันใน `mvn test` ปกติ (102 ข้อ) ยังมี `PaymentRepositoryDbTest` อีก 13 ข้อที่ข้ามในการรันปกติและรันเมื่อเปิด `LAUNDRY_DB_TESTS=true` (หัวข้อ 3.6) รวมเป็น 115 ข้อของโมดูลนี้
+ผลของทั้งโปรเจคจาก Maven: `Tests run: 356, Failures: 0, Errors: 0, Skipped: 36` · `BUILD SUCCESS` (ตัวเลขของผู้เขียนข้างบนเป็นส่วนหนึ่งของ 356 ข้อ ดูหัวข้อ 5) ตารางข้างบนนับเฉพาะเทสต์ที่รันใน `mvn test` ปกติ (102 ข้อ) ยังมี `PaymentRepositoryDbTest` อีก 13 ข้อที่ข้ามในการรันปกติและรันเมื่อเปิด `LAUNDRY_DB_TESTS=true` (หัวข้อ 3.6) รวมเป็น 115 ข้อของโมดูลนี้
 
 ## 3. รายละเอียดกรณีทดสอบ
 
@@ -236,20 +236,20 @@ error ทุกแบบตอบเป็นรูปแบบ `ApiErrorRespons
 
 ## 5. ผลรวมทั้งโปรเจค
 
-ที่มา: รายงาน Maven Surefire ของการรัน `mvn test` บน `develop` รวมงานของทุกคน เมื่อ 10 ต.ค. 2569 หลังเพิ่มหน้าเว็บ (รันซ้ำก่อนส่งงานจริงเพื่อยืนยัน)
+ที่มา: รายงาน Maven Surefire ของการรัน `mvn test` บน `develop` รวมงานของทุกคน เมื่อ 10 ต.ค. 2569 หลังเพิ่มหน้าเว็บ อัปเดตรอบ 16:30 น. หลังเพิ่มหน้าเว็บออเดอร์ (PR #30) (รันซ้ำก่อนส่งงานจริงเพื่อยืนยัน)
 
 | โมดูล | ผู้รับผิดชอบ | คลาสเทสต์ | จำนวนเทสต์ | ผ่าน | ข้าม | ล้มเหลว |
 |---|---|---:|---:|---:|---:|---:|
 | Payment / Notification / API Quality / Web | โชกุน | 16 | 115 | 102 | 13 | 0 |
 | Auth / User / Branch / Security | โอ๊ค | 4 | 29 | 29 | 0 | 0 |
-| Full-Service Order (รวม Service Type) | พีช | 7 | 69 | 69 | 0 | 0 |
-| Self-Service Machine / Session | ปอนด์ | 11 | 119 | 97 | 22 | 0 |
-| **รวม** | | **38** | **332** | **297** | **35** | **0** |
+| Full-Service Order (รวม Service Type และหน้าเว็บ) | พีช | 8 | 78 | 78 | 0 | 0 |
+| Self-Service Machine / Session | ปอนด์ | 12 | 134 | 111 | 23 | 0 |
+| **รวม** | | **40** | **356** | **320** | **36** | **0** |
 
 รายคลาสของโมดูลอื่น (จากรายงานเดียวกัน)
 - โอ๊ค: `SecurityRulesTest` 13 · `BranchServiceTest` 8 · `UserServiceTest` 5 · `AuthServiceTest` 3
-- พีช: `OrderSecurityTest` 17 · `OrderStateTest` 15 · `OrderServiceTest` 14 · `ServiceTypeServiceTest` 7 · `ServiceTypeSecurityTest` 7 · `FullServicePricingTest` 6 · `OrderPayableProviderTest` 3
-- ปอนด์: `SessionServiceImplTest` 20 · `BookingValidatorTest` 19 · `MachineServiceImplTest` 19 · `SelfServicePricingTest` 11 · `SessionApiSecurityTest` 10 · `MachineApiSecurityTest` 8 · `MachineStateTest` 7 · `SessionPayableProviderTest` 3 · เทสต์ที่ต่อ PostgreSQL จริง (รอบ `mvn test` ปกติ Maven นับว่า**ข้ามโดยเจตนา 22**) ได้แก่ `SelfServiceRepositoryTest` 9 · `SessionLifecycleIntegrationTest` 7 · `SessionPaymentIntegrationTest` 6 เมื่อเปิดสวิตช์ให้ต่อ PostgreSQL จริง `SelfServiceRepositoryTest` รันได้ **19 ข้อ ผ่านทั้งหมด** ดูด้านล่าง
+- พีช: `OrderSecurityTest` 17 · `OrderStateTest` 15 · `OrderServiceTest` 14 · `OrderWebControllerTest` 9 · `ServiceTypeServiceTest` 7 · `ServiceTypeSecurityTest` 7 · `FullServicePricingTest` 6 · `OrderPayableProviderTest` 3
+- ปอนด์: `SessionServiceImplTest` 20 · `BookingValidatorTest` 19 · `MachineServiceImplTest` 19 · `SelfServiceWebSecurityTest` 14 · `SelfServicePricingTest` 11 · `SessionApiSecurityTest` 10 · `MachineApiSecurityTest` 8 · `MachineStateTest` 7 · `SessionPayableProviderTest` 3 · เทสต์ที่ต่อ PostgreSQL จริง (รอบ `mvn test` ปกติ Maven นับว่า**ข้ามโดยเจตนา 23**) ได้แก่ `SelfServiceRepositoryTest` 9 · `SessionLifecycleIntegrationTest` 7 · `SessionPaymentIntegrationTest` 7 เมื่อเปิดสวิตช์ให้ต่อ PostgreSQL จริง `SelfServiceRepositoryTest` รันได้ **19 ข้อ ผ่านทั้งหมด** ดูด้านล่าง
 
 **ผลรันแยกของ `SelfServiceRepositoryTest` กับฐานข้อมูลจริง** (9 ต.ค. 2569, PostgreSQL 16 ใน Docker พอร์ต 5433, ตั้ง `LAUNDRY_DB_TESTS=true`):
 
@@ -259,7 +259,7 @@ LAUNDRY_DB_TESTS=true mvn test -Dtest=SelfServiceRepositoryTest
 # Tests run: 19, Failures: 0, Errors: 0, Skipped: 0 · BUILD SUCCESS
 ```
 
-เทสต์นี้สร้าง schema ชั่วคราวของตัวเอง (ชื่อสุ่ม) รัน Flyway ในนั้นแล้วลบทิ้งตอนจบ จึงไม่แตะตารางจริง เมื่อรวมผลนี้กับผลรันแยกของ `PaymentRepositoryDbTest` (13 ข้อ ดูหัวข้อ 3.6) เมื่อเปิด `LAUNDRY_DB_TESTS=true` และรันทั้งโปรเจคครั้งเดียวกับ PostgreSQL 16 จริง (หลังเพิ่มหน้าเว็บ) ได้ **`Tests run: 342, Failures: 0, Errors: 0, Skipped: 0` · `BUILD SUCCESS`** (297 ข้อที่รันปกติ + 45 ข้อที่ต่อฐานข้อมูล คือ `PaymentRepositoryDbTest` 13 + `SelfServiceRepositoryTest` 19 + `SessionLifecycleIntegrationTest` 7 + `SessionPaymentIntegrationTest` 6) ข้อความ `ERROR ... test_block_notification` ในล็อกของ `SessionLifecycleIntegrationTest` เป็นความตั้งใจของเทสต์ที่ทดสอบการ rollback ธุรกรรมเมื่อบันทึกแจ้งเตือนล้มเหลว ไม่ใช่ข้อผิดพลาด
+เทสต์นี้สร้าง schema ชั่วคราวของตัวเอง (ชื่อสุ่ม) รัน Flyway ในนั้นแล้วลบทิ้งตอนจบ จึงไม่แตะตารางจริง เมื่อรวมผลนี้กับผลรันแยกของ `PaymentRepositoryDbTest` (13 ข้อ ดูหัวข้อ 3.6) เมื่อเปิด `LAUNDRY_DB_TESTS=true` และรันทั้งโปรเจคครั้งเดียวกับ PostgreSQL 16 จริง (หลังเพิ่มหน้าเว็บ) ได้ **`Tests run: 366, Failures: 0, Errors: 0, Skipped: 0` · `BUILD SUCCESS`** (320 ข้อที่รันปกติ + 46 ข้อที่ต่อฐานข้อมูล คือ `PaymentRepositoryDbTest` 13 + `SelfServiceRepositoryTest` 19 + `SessionLifecycleIntegrationTest` 7 + `SessionPaymentIntegrationTest` 7) ข้อความ `ERROR ... test_block_notification` ในล็อกของ `SessionLifecycleIntegrationTest` เป็นความตั้งใจของเทสต์ที่ทดสอบการ rollback ธุรกรรมเมื่อบันทึกแจ้งเตือนล้มเหลว ไม่ใช่ข้อผิดพลาด
 
 ![ผลรัน mvn test ทั้งโปรเจคเมื่อเปิดเทสต์ฐานข้อมูลจริง (LAUNDRY_DB_TESTS=true) รอบก่อนเพิ่มหน้าเว็บ 321 ข้อ ผ่านทั้งหมด (ปัจจุบัน 342 ข้อ)](../../img/test-run-full-db.png)
 
