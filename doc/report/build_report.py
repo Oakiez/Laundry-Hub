@@ -48,6 +48,28 @@ AUTHORS = OrderedDict([("oak", "วงศธร ธน.ยอด"), ("peach", "�
 NICKNAMES = [("โอ๊ค", AUTHORS["oak"]), ("พีช", AUTHORS["peach"]), ("ปอนด์", AUTHORS["pond"]), ("โชกุน", AUTHORS["shogun"])]
 
 
+# ภาพประกอบเพิ่มเติมท้ายส่วนของปอนด์ (ภาคผนวก): แผนภาพที่ใส่ในเล่มได้ และภาพเดโมบน Render
+# ถ้าไฟล์ภาพยังไม่มี จะข้ามไปและแจ้งในรายการ "สิ่งที่ยังขาด" (ไม่ใส่ข้อความสีเหลืองในเล่ม)
+EXTRA_FIGURES = {
+    "pond": [
+        ("State Diagram ของเครื่อง (Machine)", "pond-state-machine.png"),
+        ("State Diagram ของรอบใช้งาน (Session)", "pond-state-session.png"),
+        ("Sequence Diagram: สร้างออเดอร์ฝากซัก", "pond-sequence-order-create.png"),
+        ("Sequence Diagram: จอง เริ่ม และจบรอบใช้งาน", "pond-sequence-session-booking.png"),
+        ("Sequence Diagram: ชำระเงินของรอบใช้งาน (Checkout)", "pond-sequence-checkout.png"),
+        ("เดโมบน Render: จองสำเร็จ", "pond-demo-01-booked.png"),
+        ("เดโมบน Render: ชำระ QR จำลองสำเร็จ", "pond-demo-02-paid.png"),
+        ("เดโมบน Render: รอบกำลังใช้งาน", "pond-demo-03-session-in-use.png"),
+        ("เดโมบน Render: เครื่องกำลังใช้งาน", "pond-demo-04-machine-in-use.png"),
+        ("เดโมบน Render: รอบเสร็จสิ้น", "pond-demo-05-completed.png"),
+        ("เดโมบน Render: เครื่องกลับมาว่าง", "pond-demo-06-machine-available.png"),
+        ("เดโมบน Render: แจ้งเตือนครบทุกเหตุการณ์", "pond-demo-07-notifications.png"),
+        ("เดโมบน Render: ปุ่มชำระเงินหายหลังชำระแล้ว", "pond-demo-08-paid-button-hidden.png"),
+    ],
+}
+PROJECT_ROOT = os.path.normpath(os.path.join(os.path.dirname(os.path.abspath(__file__)), "..", ".."))
+
+
 def real_names(text):
     for nick, real in NICKNAMES:
         text = text.replace(nick, real)
@@ -414,6 +436,18 @@ class Book:
             self.warnings.append(f"ไม่พบภาพ: {path}")
             para(self.doc, f"*(ไม่พบไฟล์ภาพ {os.path.basename(path)})*", justify=False)
 
+    def extra_figures(self, author):
+        figs = EXTRA_FIGURES.get(author, [])
+        present = [(alt, os.path.join(PROJECT_ROOT, "img", f)) for alt, f in figs if os.path.exists(os.path.join(PROJECT_ROOT, "img", f))]
+        for alt, f in figs:
+            if not os.path.exists(os.path.join(PROJECT_ROOT, "img", f)):
+                self.warnings.append(f"ยังไม่มีภาพของ{AUTHORS[author]} (ข้ามในเล่ม): img/{f}")
+        if not present:
+            return
+        para(self.doc, f"แผนภาพและภาพหลักฐานเพิ่มเติมของ{AUTHORS[author]}", 16, True, justify=False, space_after=6)
+        for alt, path in present:
+            self.image(alt, path)
+
     def placeholder(self, text):
         self.warnings.append(text)
         para(self.doc, f"*({text})*", justify=False)
@@ -526,6 +560,7 @@ def main():
                 any_app = True
                 para(book.doc, f"ส่วนของ{AUTHORS[author]}", 16, True, justify=False, space_after=3)
                 book.render(blocks, HERE)
+        book.extra_figures(author)
     if not any_app:
         book.placeholder("ยังไม่มีภาคผนวก")
 

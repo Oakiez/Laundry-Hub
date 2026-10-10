@@ -2,7 +2,7 @@
 
 ผู้รับผิดชอบ: ภีมเดช กลั่นกิ่ง (โชกุน) · Test Lead
 ขอบเขตของฉบับนี้: ผลรวมทั้งโปรเจค ([หัวข้อ 5](#5-ผลรวมทั้งโปรเจค)) และรายละเอียดกรณีทดสอบของโมดูลผู้เขียน คือ Payment, Notification และ API Quality (Exception handling) ([หัวข้อ 2–4](#2-สรุปผล-โมดูลของผู้เขียน))
-ผลทดสอบรอบล่าสุด: **369 ข้อ — ผ่าน 333, ข้ามโดยเจตนา 36, ล้มเหลว 0** · `BUILD SUCCESS` (เมื่อเปิดเทสต์ฐานข้อมูลจริง: **379 ข้อ ผ่านทั้งหมด ข้าม 0 ล้มเหลว 0**)
+ผลทดสอบรอบล่าสุด: **380 ข้อ — ผ่าน 343, ข้ามโดยเจตนา 37, ล้มเหลว 0** · `BUILD SUCCESS` (เมื่อเปิดเทสต์ฐานข้อมูลจริง: **390 ข้อ ผ่านทั้งหมด ข้าม 0 ล้มเหลว 0**)
 
 ## 1. สภาพแวดล้อมและวิธีรัน
 
@@ -36,7 +36,7 @@ mvn test -Dtest=GlobalExceptionHandlerTest      # รันคลาสเดี
 | Payment (strategy) | `QrMockProcessorTest` | 2 | 2 | 0 |
 | Payment (strategy) | `CoinProcessorTest` | 3 | 3 | 0 |
 | Payment (factory) | `PaymentProcessorFactoryTest` | 5 | 5 | 0 |
-| Payment (service) | `PaymentServiceImplTest` | 9 | 9 | 0 |
+| Payment (service) | `PaymentServiceImplTest` | 12 | 12 | 0 |
 | Payment (facade) | `CheckoutFacadeTest` | 10 | 10 | 0 |
 | Payment (REST) | `PaymentApiControllerTest` | 10 | 10 | 0 |
 | Notification (service) | `NotificationServiceImplTest` | 10 | 10 | 0 |
@@ -45,9 +45,9 @@ mvn test -Dtest=GlobalExceptionHandlerTest      # รันคลาสเดี
 | Web (หน้าเว็บ) | `PaymentWebControllerTest` | 14 | 14 | 0 |
 | Web (หน้าเว็บ) | `NotificationWebControllerTest` | 6 | 6 | 0 |
 | Security + render | `PaymentNotificationSecurityTest` | 13 | 13 | 0 |
-| **รวม** | **16 คลาส** | **115** | **115** | **0** |
+| **รวม** | **16 คลาส** | **118** | **118** | **0** |
 
-ผลของทั้งโปรเจคจาก Maven: `Tests run: 369, Failures: 0, Errors: 0, Skipped: 36` · `BUILD SUCCESS` (ตัวเลขของผู้เขียนข้างบนเป็นส่วนหนึ่งของ 369 ข้อ ดูหัวข้อ 5) ตารางข้างบนนับเฉพาะเทสต์ที่รันใน `mvn test` ปกติ (115 ข้อ) ยังมี `PaymentRepositoryDbTest` อีก 13 ข้อที่ข้ามในการรันปกติและรันเมื่อเปิด `LAUNDRY_DB_TESTS=true` (หัวข้อ 3.6) รวมเป็น 128 ข้อของโมดูลนี้
+ผลของทั้งโปรเจคจาก Maven: `Tests run: 380, Failures: 0, Errors: 0, Skipped: 37` · `BUILD SUCCESS` (ตัวเลขของผู้เขียนข้างบนเป็นส่วนหนึ่งของ 380 ข้อ ดูหัวข้อ 5) ตารางข้างบนนับเฉพาะเทสต์ที่รันใน `mvn test` ปกติ (118 ข้อ) ยังมี `PaymentRepositoryDbTest` อีก 13 ข้อที่ข้ามในการรันปกติและรันเมื่อเปิด `LAUNDRY_DB_TESTS=true` (หัวข้อ 3.6) รวมเป็น 132 ข้อของโมดูลนี้
 
 ## 3. รายละเอียดกรณีทดสอบ
 
@@ -253,11 +253,11 @@ error ทุกแบบตอบเป็นรูปแบบ `ApiErrorRespons
 
 | โมดูล | ผู้รับผิดชอบ | คลาสเทสต์ | จำนวนเทสต์ | ผ่าน | ข้าม | ล้มเหลว |
 |---|---|---:|---:|---:|---:|---:|
-| Payment / Notification / API Quality / Web | โชกุน | 17 | 128 | 115 | 13 | 0 |
-| Auth / User / Branch / Security | โอ๊ค | 4 | 29 | 29 | 0 | 0 |
-| Full-Service Order (รวม Service Type และหน้าเว็บ) | พีช | 8 | 78 | 78 | 0 | 0 |
-| Self-Service Machine / Session | ปอนด์ | 12 | 134 | 111 | 23 | 0 |
-| **รวม** | | **41** | **369** | **333** | **36** | **0** |
+| Payment / Notification / API Quality / Web | โชกุน | 17 | 132 | 118 | 14 | 0 |
+| Auth / User / Branch / Security | โอ๊ค | 5 | 32 | 32 | 0 | 0 |
+| Full-Service Order (รวม Service Type และหน้าเว็บ) | พีช | 8 | 79 | 79 | 0 | 0 |
+| Self-Service Machine / Session | ปอนด์ | 12 | 137 | 114 | 23 | 0 |
+| **รวม** | | **42** | **380** | **343** | **37** | **0** |
 
 รายคลาสของโมดูลอื่น (จากรายงานเดียวกัน)
 - โอ๊ค: `SecurityRulesTest` 13 · `BranchServiceTest` 8 · `UserServiceTest` 5 · `AuthServiceTest` 3
@@ -272,9 +272,9 @@ LAUNDRY_DB_TESTS=true mvn test -Dtest=SelfServiceRepositoryTest
 # Tests run: 19, Failures: 0, Errors: 0, Skipped: 0 · BUILD SUCCESS
 ```
 
-เทสต์นี้สร้าง schema ชั่วคราวของตัวเอง (ชื่อสุ่ม) รัน Flyway ในนั้นแล้วลบทิ้งตอนจบ จึงไม่แตะตารางจริง เมื่อรวมผลนี้กับผลรันแยกของ `PaymentRepositoryDbTest` (13 ข้อ ดูหัวข้อ 3.6) เมื่อเปิด `LAUNDRY_DB_TESTS=true` และรันทั้งโปรเจคครั้งเดียวกับ PostgreSQL 16 จริง (หลังรวมงานทุกโมดูลและเพิ่มหน้าเว็บ ผลรัน 10 ต.ค. 2569 เวลา 17:21 น.) ได้ **`Tests run: 379, Failures: 0, Errors: 0, Skipped: 0` · `BUILD SUCCESS`** (333 ข้อที่รันปกติ + 46 ข้อที่ต่อฐานข้อมูล คือ `PaymentRepositoryDbTest` 13 + `SelfServiceRepositoryTest` 19 + `SessionLifecycleIntegrationTest` 7 + `SessionPaymentIntegrationTest` 7) ข้อความ `ERROR ... test_block_notification` ในล็อกของ `SessionLifecycleIntegrationTest` เป็นความตั้งใจของเทสต์ที่ทดสอบการ rollback ธุรกรรมเมื่อบันทึกแจ้งเตือนล้มเหลว ไม่ใช่ข้อผิดพลาด
+เทสต์นี้สร้าง schema ชั่วคราวของตัวเอง (ชื่อสุ่ม) รัน Flyway ในนั้นแล้วลบทิ้งตอนจบ จึงไม่แตะตารางจริง เมื่อรวมผลนี้กับผลรันแยกของ `PaymentRepositoryDbTest` (13 ข้อ ดูหัวข้อ 3.6) เมื่อเปิด `LAUNDRY_DB_TESTS=true` และรันทั้งโปรเจคครั้งเดียวกับ PostgreSQL 16 จริง (หลังรวมงานทุกโมดูลและเพิ่มหน้าเว็บ ผลรัน 10 ต.ค. 2569 เวลา 17:21 น.) ได้ **`Tests run: 390, Failures: 0, Errors: 0, Skipped: 0` · `BUILD SUCCESS`** (343 ข้อที่รันปกติ + 47 ข้อที่ต่อฐานข้อมูล คือ `PaymentRepositoryDbTest` 13 + `SelfServiceRepositoryTest` 19 + `SessionLifecycleIntegrationTest` 7 + `SessionPaymentIntegrationTest` 7) ข้อความ `ERROR ... test_block_notification` ในล็อกของ `SessionLifecycleIntegrationTest` เป็นความตั้งใจของเทสต์ที่ทดสอบการ rollback ธุรกรรมเมื่อบันทึกแจ้งเตือนล้มเหลว ไม่ใช่ข้อผิดพลาด
 
-![ผลรัน mvn test ทั้งโปรเจคเมื่อเปิดเทสต์ฐานข้อมูลจริง (LAUNDRY_DB_TESTS=true) รอบก่อนเพิ่มหน้าเว็บ 321 ข้อ ผ่านทั้งหมด (ปัจจุบัน 379 ข้อ)](../../img/test-run-full-db.png)
+![ผลรัน mvn test ทั้งโปรเจคเมื่อเปิดเทสต์ฐานข้อมูลจริง (LAUNDRY_DB_TESTS=true) รอบก่อนเพิ่มหน้าเว็บ 321 ข้อ ผ่านทั้งหมด (ปัจจุบัน 390 ข้อ)](../../img/test-run-full-db.png)
 
 ## 6. ข้อจำกัดและสิ่งที่ยังไม่ได้ทดสอบ
 
