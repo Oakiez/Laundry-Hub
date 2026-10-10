@@ -29,6 +29,24 @@
         <div class="col-md-4" sec:authorize="hasRole('CUSTOMER')">
             <div class="card h-100">
                 <div class="card-body">
+                    <h2 class="h5 card-title">ฝากซัก</h2>
+                    <p class="card-text text-muted">สร้างออเดอร์ฝากซักและติดตามสถานะผ้า</p>
+                    <a th:href="@{/orders}" class="btn btn-primary btn-sm">ออเดอร์ของฉัน</a>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-4" sec:authorize="hasAnyRole('STAFF','ADMIN')">
+            <div class="card h-100">
+                <div class="card-body">
+                    <h2 class="h5 card-title">บอร์ดออเดอร์</h2>
+                    <p class="card-text text-muted">เลื่อนสถานะออเดอร์ฝากซักทีละขั้น</p>
+                    <a th:href="@{/staff/orders}" class="btn btn-primary btn-sm">เปิดบอร์ด</a>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-4" sec:authorize="hasRole('CUSTOMER')">
+            <div class="card h-100">
+                <div class="card-body">
                     <h2 class="h5 card-title">ชำระเงิน</h2>
                     <p class="card-text text-muted">จ่ายค่าออเดอร์หรือรอบใช้เครื่อง</p>
                     <a th:href="@{/payments/new}" class="btn btn-primary btn-sm">ไปหน้าชำระเงิน</a>

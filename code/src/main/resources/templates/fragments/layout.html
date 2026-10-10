@@ -49,6 +49,9 @@
 
                 <!-- CUSTOMER links: add yours here (Peach: orders, Pond: machines, Shogun: payments/notifications) -->
                 <li class="nav-item" sec:authorize="hasRole('CUSTOMER')">
+                    <a class="nav-link" th:href="@{/orders}">ฝากซัก</a>
+                </li>
+                <li class="nav-item" sec:authorize="hasRole('CUSTOMER')">
                     <a class="nav-link" th:href="@{/machines}">จองเครื่อง</a>
                 </li>
                 <li class="nav-item" sec:authorize="hasRole('CUSTOMER')">
@@ -63,6 +66,9 @@
                 <li sec:authorize="hasRole('CUSTOMER')" th:remove="tag"></li>
 
                 <!-- STAFF links: add yours here (Peach: order board, Pond: machine status) -->
+                <li class="nav-item" sec:authorize="hasAnyRole('STAFF','ADMIN')">
+                    <a class="nav-link" th:href="@{/staff/orders}">บอร์ดออเดอร์</a>
+                </li>
                 <li class="nav-item" sec:authorize="hasAnyRole('STAFF','ADMIN')">
                     <a class="nav-link" th:href="@{/staff/machines}">สถานะเครื่อง</a>
                 </li>
