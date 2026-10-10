@@ -15,11 +15,12 @@
             </select></div>
         <div class="col-md-3"><label for="type" class="form-label">ประเภท</label>
             <select id="type" name="type" class="form-select"><option value="">ทุกประเภท</option>
-                <option th:each="t : ${types}" th:value="${t}" th:selected="${t == selectedType}" th:text="${t.name() == 'WASHER' ? 'เครื่องซัก' : 'เครื่องอบ'}"></option>
+                <option th:each="t : ${types}" th:value="${t}" th:selected="${t == selectedType}" th:text="${t.name() == 'WASHER' ? '🧺 เครื่องซัก' : '🌬️ เครื่องอบ'}"></option>
             </select></div>
         <div class="col-md-3"><label for="status" class="form-label">สถานะ</label>
             <select id="status" name="status" class="form-select"><option value="">ทุกสถานะ</option>
-                <option th:each="s : ${statuses}" th:value="${s}" th:text="${s}" th:selected="${s == selectedStatus}"></option>
+                <option th:each="s : ${statuses}" th:value="${s}" th:selected="${s == selectedStatus}"
+                        th:text="${{'AVAILABLE':'ว่าง','RESERVED':'ถูกจองแล้ว','IN_USE':'กำลังใช้งาน','OUT_OF_SERVICE':'ปิดซ่อม'}[s.name()]}"></option>
             </select></div>
         <div class="col-md-2 d-flex align-items-end"><button class="btn btn-primary w-100">ค้นหา</button></div>
     </form>
@@ -28,8 +29,8 @@
         <div class="col-md-6 col-lg-4" th:each="m : ${machines.content}">
             <article class="card h-100"><div class="card-body">
                 <h2 class="h5" th:text="${m.name}"></h2>
-                <p><span th:text="${m.machineType.name() == 'WASHER' ? 'เครื่องซัก' : 'เครื่องอบ'}"></span> · สาขา <span th:text="${m.branchId}"></span></p>
-                <p>สถานะ: <strong th:text="${m.status}"></strong></p>
+                <p><span th:replace="~{fragments/badges :: machineType(${m.machineType})}"></span> · สาขา <span th:text="${m.branchId}"></span></p>
+                <p>สถานะ: <span th:replace="~{fragments/badges :: machineStatus(${m.status})}"></span></p>
                 <p>เริ่มต้น <span th:text="${m.basePrice}"></span> บาท + <span th:text="${m.pricePerMinute}"></span> บาท/นาที</p>
                 <a class="btn btn-outline-primary" th:href="@{/machines/{id}(id=${m.id})}">รายละเอียด</a>
                 <a sec:authorize="hasRole('CUSTOMER')" th:if="${m.status.name() != 'OUT_OF_SERVICE'}" class="btn btn-primary" th:href="@{/machines/{id}/book(id=${m.id})}">จอง</a>

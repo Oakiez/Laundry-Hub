@@ -62,6 +62,8 @@ class OrderWebControllerTest {
     private BranchService branchService;
     @MockitoBean
     private ServiceTypeService serviceTypeService;
+    @MockitoBean
+    private com.laundryhub.service.PaymentService paymentService;
 
     private static AppUserDetails principal(long id, Role role) {
         User user = new User();
@@ -140,6 +142,17 @@ class OrderWebControllerTest {
                 .andExpect(status().isOk())
                 .andExpect(content().string(containsString("ยกเลิกออเดอร์")))
                 .andExpect(content().string(containsString("/payments/new?type=LAUNDRY_ORDER&amp;id=9")));
+    }
+
+    @Test
+    void detail_orderAlreadyPaid_hidesPayButtonToPreventDoublePayment() throws Exception {
+        when(orderService.getForCustomer(3L, 9L)).thenReturn(order(OrderStatus.RECEIVED));
+        when(paymentService.orderHasPayment(9L)).thenReturn(true);
+
+        mockMvc.perform(get("/orders/9").with(user(customer)))
+                .andExpect(status().isOk())
+                .andExpect(content().string(containsString("มีการชำระเงินแล้ว")))
+                .andExpect(content().string(org.hamcrest.Matchers.not(containsString("/payments/new?type=LAUNDRY_ORDER"))));
     }
 
     @Test

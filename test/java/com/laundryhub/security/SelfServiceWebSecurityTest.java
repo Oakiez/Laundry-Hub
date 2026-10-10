@@ -36,6 +36,7 @@ class SelfServiceWebSecurityTest {
     @MockitoBean MachineService machines;
     @MockitoBean SessionService sessions;
     @MockitoBean BranchService branches;
+    @MockitoBean com.laundryhub.service.PaymentService payments;
     private final AppUserDetails customer = principal(Role.CUSTOMER);
     private final AppUserDetails staff = principal(Role.STAFF);
     private final MachineResponse machine = new MachineResponse(5L, 1L, "Washer A", MachineType.WASHER,
@@ -156,5 +157,26 @@ class SelfServiceWebSecurityTest {
         when(machines.changeStatus(5L, MachineStatus.OUT_OF_SERVICE)).thenThrow(new BookingConflictException("In use"));
         mvc.perform(post("/staff/machines/5/status").with(user(staff)).with(csrf()).param("status", "OUT_OF_SERVICE"))
                 .andExpect(redirectedUrl("/staff/machines")).andExpect(flash().attributeExists("error"));
+    }
+    @Test void historyShowsThaiStatusAndPayButtonWhenNotPaid() throws Exception {
+        mvc.perform(get("/sessions/history").with(user(customer)))
+                .andExpect(status().isOk())
+                .andExpect(content().string(containsString("จองแล้ว")))
+                .andExpect(content().string(not(containsString(">RESERVED<"))))
+                .andExpect(content().string(containsString("/payments/new?type=USAGE_SESSION&amp;id=7")));
+    }
+    @Test void historyHidesPayButtonWhenSessionAlreadyHasPayment() throws Exception {
+        when(payments.sessionIdsWithPayment(any())).thenReturn(java.util.Set.of(7L));
+        mvc.perform(get("/sessions/history").with(user(customer)))
+                .andExpect(status().isOk())
+                .andExpect(content().string(containsString("มีการชำระเงินแล้ว")))
+                .andExpect(content().string(not(containsString("/payments/new?type=USAGE_SESSION"))));
+    }
+    @Test void machineBoardShowsThaiStatusAndTypeIcon() throws Exception {
+        mvc.perform(get("/machines").with(user(customer)))
+                .andExpect(status().isOk())
+                .andExpect(content().string(containsString("ว่าง")))
+                .andExpect(content().string(containsString("🧺")))
+                .andExpect(content().string(not(containsString(">AVAILABLE<"))));
     }
 }
