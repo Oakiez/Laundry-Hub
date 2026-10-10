@@ -44,3 +44,7 @@
 - PR #28 base develop: ลิงก์ชำระเงิน/เทสต์และรายงาน merge แล้ว งานหลักหน้าเว็บ/diagrams อยู่ใน develop ผ่าน PR #25
 - `doc/report/pond-sections.md` สำหรับรวมรายงาน และไฟล์ sections ของปอนด์สำหรับให้โอ๊ครวม SOLID/Pattern
 - ให้ตรวจ trusted user/amount, CSRF/role, owner enforcement, transaction เดียวกับ API และเส้น diagram โดยเฉพาะ RESERVED ของ Machine ที่ไม่มี transition เข้าจาก booking
+
+## ตรวจ UI ซ้ำหลัง PR #37
+
+รวม develop bf9d636; demo Session 5/Payment 4 ผ่านครบวงจร สถานะรอบ/เครื่องเป็นไทย และ payment link หายหลังสร้างรายการชำระ ใช้ PaymentService ผ่าน controller constructor (บรรทัด 34/43) ไม่มีการข้ามไป repository ภาพใน pond-deploy-demo.md เป็น UI ใหม่ ผล Maven 376/ผ่าน340/ข้าม36/ไม่มีfailหรือerror; ไม่เปิด DB suite

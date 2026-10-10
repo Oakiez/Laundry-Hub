@@ -1,7 +1,7 @@
 # Design patterns — Pond: Self-service module
 
 Paths below are relative to `code/src/main/java/com/laundryhub/`.
-Citation audit: 10 October 2026, develop `9a11daa`; see `doc/report/pond-citation-check.md`.
+Citation audit: 10 October 2026, develop `bf9d636` (after PR #37); see `doc/report/pond-citation-check.md`.
 
 ## Strategy
 

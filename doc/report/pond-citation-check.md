@@ -21,3 +21,7 @@ Path Java ในตารางต่อไปนี้อยู่ใต้ `co
 > ตรวจ citation ส่วนผมกับ develop 9a11daa แล้วครับ รบกวนรวม solid-analysis-pond.md และ design-patterns-pond.md ใหม่ มี 5 จุดในไฟล์รวมที่เลขเก่า: MachineService class 32→34, constructor 40→42, SessionMapper 7→6 และ SessionService constructor 42→41 ทั้ง SOLID กับ Patterns เพิ่ม publisher/consumer ของ Session Observer พร้อมหลักฐานเดโมแล้ว ผมไม่ได้แก้ไฟล์รวมโดยตรงครับ หลังรันรวมรบกวนตรวจเลขอีกรอบถ้าโค้ดเปลี่ยน
 
 ข้อจำกัด: เลขบรรทัดถูก ณ revision ที่ระบุ การแก้โค้ดหรือเพิ่ม import ภายหลังต้องตรวจใหม่
+
+## ตรวจเพิ่มหลัง PR #37
+
+รวม develop bf9d636 แล้ว SelfServiceWebController constructor เลื่อน 30→34 และเพิ่ม PaymentService; addPaidSessionIds อยู่บรรทัด 43 อ่าน payment IDs รวมต่อหน้า ไฟล์ section/rehearsal และ notes สไลด์ปรับตามแล้ว โอ๊คควรรวม section ใหม่และตรวจ citation ไฟล์รวมอีกครั้ง ตารางด้านบนเป็น audit ที่ revision 9a11daa ไม่ใช่การยืนยันไฟล์รวมปัจจุบัน

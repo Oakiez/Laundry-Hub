@@ -1,13 +1,14 @@
 # บทซ้อมอธิบาย Self-Service ของปอนด์ (ประมาณ 5 นาที)
 
-Path Java ด้านล่างอยู่ใต้ `code/src/main/java/com/laundryhub/` ตรวจเทียบ develop `9a11daa`
+Path Java ด้านล่างอยู่ใต้ `code/src/main/java/com/laundryhub/` ตรวจเทียบ develop `bf9d636` หลัง PR #37
 ใช้เป็นเนื้อหาสไลด์และบทพูด ต้องเปิดโค้ดและลองอธิบายด้วยคำของตัวเองก่อนนำเสนอ
 
 ## 0:00–0:40 ขอบเขตและเส้นทางข้อมูล
 
 “ผมทำเครื่องกับรอบใช้งาน ลูกค้าจอง/ดูประวัติ/เริ่ม/จบ/ยกเลิก พนักงานจัดการเครื่อง
 REST กับหน้าเว็บเรียก MachineService และ SessionService ร่วมกัน จึงใช้กฎราคาและสถานะชุดเดียวกัน”
-เปิด `controller/web/SelfServiceWebController.java:30` อธิบาย constructor injection และ DTO
+เปิด `controller/web/SelfServiceWebController.java:34` อธิบาย constructor injection และ DTO
+PaymentService อ่าน payment IDs รวมครั้งเดียวต่อหน้าที่บรรทัด 43 เพื่อซ่อนปุ่มชำระซ้ำ
 
 ## 0:40–1:40 การจองและราคา
 
@@ -38,9 +39,10 @@ Machine event ยังไม่มี listener จึงไม่อ้าง�
 
 ## 3:30–4:30 เดโมและหลักฐาน
 
-ใช้ลำดับใน `pond-deploy-demo.md`: จอง → QR จำลอง → start → finish → เครื่องพร้อมใช้/แจ้งเตือน
-ถ้า deployment รอโหลด ให้ใช้ภาพหลักฐานที่มี Session 1, Payment 1, Machine 2 แทนและระบุว่าเป็นภาพทดสอบก่อนหน้า
-ผล Maven รอบล่าสุดที่บันทึก: 369 รายการ ผ่าน 333 ข้าม 36, ไม่มี failure/error;
+ใช้ลำดับใน `pond-deploy-demo.md`: จอง → QR จำลอง → ตรวจปุ่มชำระหาย → start → finish → เครื่องพร้อมใช้/แจ้งเตือน
+UI แสดง “จองแล้ว” → “กำลังใช้งาน” → “เสร็จสิ้น”; เครื่องกลับ “ว่าง” หลังจบ
+ถ้า deployment รอโหลด ให้ใช้ภาพหลักฐานที่มี Session 5, Payment 4, Machine 2 แทนและระบุว่าเป็นภาพทดสอบก่อนหน้า
+ผล Maven รอบล่าสุดที่บันทึก: 376 รายการ ผ่าน 340 ข้าม 36, ไม่มี failure/error;
 36 ข้อเป็น opt-in PostgreSQL suite จึงไม่กล่าวว่ารอบล่าสุดทดสอบ DB ครบ
 ผล DB 357/0 skipped เป็นหลักฐานรอบก่อน ไม่ใช่จำนวนล่าสุด
 
@@ -48,7 +50,7 @@ Machine event ยังไม่มี listener จึงไม่อ้าง�
 
 “start ตรวจสถานะและเจ้าของ แต่ไม่บังคับเวลาเริ่มหรือชำระก่อนใช้งาน QR เป็นการจำลอง
 ยังรอทีมยืนยัน lifecycle 400 เทียบ brief 409 และการอ่านเครื่องต้องล็อกอิน
-Class Diagram ให้พีชปรับตามโค้ด และ citation ไฟล์รวมให้โอ๊ครวมจาก section ล่าสุด”
+Class Diagram ของพีชอยู่ใน develop แล้ว และ citation ไฟล์รวมให้โอ๊ครวมจาก section ล่าสุด”
 
 ## คำถามที่ควรตอบได้
 
