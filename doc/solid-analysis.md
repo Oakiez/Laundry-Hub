@@ -52,7 +52,7 @@
 | ไฟล์ : บรรทัด | หน้าที่เดียว | เหตุผล |
 |---|---|---|
 | `…/service/payment/PaymentProcessorFactory.java:17` | เลือก processor ตามวิธีชำระ | ไม่คำนวณเงิน ไม่บันทึกข้อมูล |
-| `…/service/impl/PaymentServiceImpl.java:21` | กฎการสร้างและยืนยันการชำระเงิน (กันจ่ายซ้ำ, เปลี่ยนสถานะ, บันทึก) | ไม่ตรวจสิทธิ์ ไม่ยิง event ไม่แปลงเป็น DTO |
+| `…/service/impl/PaymentServiceImpl.java:25` | กฎการสร้างและยืนยันการชำระเงิน (กันจ่ายซ้ำ, เปลี่ยนสถานะ, บันทึก) | ไม่ตรวจสิทธิ์ ไม่ยิง event ไม่แปลงเป็น DTO |
 | `…/service/payment/CheckoutFacade.java:29` | ประสานขั้นตอน checkout (หา payable → ตรวจสิทธิ์ → สร้าง payment → ยิง event) | ไม่มีกฎการเงินของตัวเอง ส่งต่อให้ service |
 | `…/mapper/PaymentMapper.java:9` | แปลง `Payment` → `PaymentResponse` | แยกจาก service เพื่อไม่ให้ Entity หลุดเป็น API contract |
 | `…/event/NotificationEventListener.java:17` | แปลงเหตุการณ์เป็นข้อความแจ้งเตือน | ไม่รู้วิธีบันทึก (ให้ `NotificationService` ทำ) |
@@ -89,7 +89,7 @@
 | `…/service/payment/PaymentProcessor.java:8` | interface ที่ทุกวิธีชำระ implement |
 | `…/service/payment/PaymentProcessorFactory.java:21-27` | รับ `List<PaymentProcessor>` ทาง constructor แล้วสร้างตาราง method → processor (บรรทัด 23) เพิ่มวิธีชำระใหม่ = เพิ่มคลาส `@Component` ใหม่ **โดยไม่แก้ Factory และ `PaymentServiceImpl`** |
 | `…/service/payment/CoinProcessor.java:18` | ตัวอย่างจริงของการเพิ่มวิธีชำระใหม่ (หยอดเหรียญ) ที่เพิ่มเป็นคลาสใหม่ทั้งคลาส โดย Factory และ Service ไม่ถูกแก้ · เทสต์ `PaymentProcessorFactoryTest.addingNewProcessor_needsNoChangeToFactory` ยืนยัน |
-| `…/service/impl/PaymentServiceImpl.java:39` | เรียก `getProcessor(method).process(payment)` โดยไม่มี `if/switch` ตามวิธีชำระ |
+| `…/service/impl/PaymentServiceImpl.java:43` | เรียก `getProcessor(method).process(payment)` โดยไม่มี `if/switch` ตามวิธีชำระ |
 | `…/event/NotificationEventListener.java:25` | เพิ่มช่องทางแจ้งเตือนใหม่ = เพิ่ม listener ใหม่ ไม่แก้โมดูลที่ยิง event |
 
 ## L — Liskov Substitution (คลาสลูกใช้แทนคลาสแม่ได้ ไม่ throw `UnsupportedOperationException`)
@@ -154,7 +154,7 @@
 | `…/domain/Payable.java:7` | interface เล็ก 4 เมธอด (`getId`, `getPayableAmount`, `getPayableType`, `getOwnerUserId`) Payment ขอข้อมูลเท่าที่ต้องใช้ ไม่ต้องรับ `LaundryOrder`/`UsageSession` ทั้งก้อน |
 | `…/service/payment/PayableProvider.java:6` | 2 เมธอด (`supports`, `findPayable`) |
 | `…/service/payment/PaymentProcessor.java:8` | 2 เมธอด |
-| `…/service/PaymentService.java:10` และ `…/service/NotificationService.java:7` | แยกเป็นคนละ interface ตามหน้าที่ ผู้ใช้ไม่ถูกบังคับให้พึ่งเมธอดที่ไม่เกี่ยวข้อง |
+| `…/service/PaymentService.java:13` และ `…/service/NotificationService.java:7` | แยกเป็นคนละ interface ตามหน้าที่ ผู้ใช้ไม่ถูกบังคับให้พึ่งเมธอดที่ไม่เกี่ยวข้อง |
 
 ## D — Dependency Inversion (พึ่ง interface + Constructor Injection)
 
@@ -165,7 +165,7 @@
 | `…/service/impl/AuthServiceImpl.java:23` | รับ `UserRepository`, `PasswordEncoder`, `UserMapper` ผ่าน **constructor** (ไม่มี `@Autowired` บน field) เป็น interface/ตัวแปลงที่เปลี่ยนได้ เทสต์ส่ง mock เข้าไปตรงๆ (`test/java/com/laundryhub/service/AuthServiceTest.java:41`) |
 | `…/service/impl/UserServiceImpl.java:23`, `BranchServiceImpl.java:22` | รูปแบบเดียวกัน: ขึ้นกับ Repository interface ผ่าน constructor |
 | `…/controller/api/AuthApiController.java:23`, `UserApiController.java:28`, `BranchApiController.java:31` | Controller ขึ้นกับ Service **interface** (`AuthService`, `UserService`, `BranchService`) ไม่รู้จัก `*Impl` และไม่ import Repository |
-| `…/controller/web/AuthWebController.java:20`, `ProfileWebController.java:23`, `BranchWebController.java:29` | ฝั่งหน้าเว็บทำแบบเดียวกัน ใช้ Service interface เดียวกับฝั่ง API จึงไม่มีตรรกะซ้ำ |
+| `…/controller/web/AuthWebController.java:21`, `ProfileWebController.java:23`, `BranchWebController.java:29` | ฝั่งหน้าเว็บทำแบบเดียวกัน ใช้ Service interface เดียวกับฝั่ง API จึงไม่มีตรรกะซ้ำ |
 | `…/security/AppUserDetailsService.java:10` | ขึ้นกับ `UserRepository` (interface) ไม่ผูกกับ JPA โดยตรง |
 
 ### พีช
@@ -190,7 +190,7 @@
 |---|---|
 | `…/service/payment/CheckoutFacade.java:36` | รับ `List<PayableProvider>`, `PaymentService` (interface), `ApplicationEventPublisher` ผ่าน **constructor** ไม่ผูกกับ `OrderService`/`SessionService` ตรงๆ |
 | `…/service/payment/CheckoutFacade.java:92` | เลือก provider จาก `PayableType` ผ่าน interface |
-| `…/service/impl/PaymentServiceImpl.java:26` | รับ `PaymentRepository` และ `PaymentProcessorFactory` ทาง constructor |
+| `…/service/impl/PaymentServiceImpl.java:30` | รับ `PaymentRepository` และ `PaymentProcessorFactory` ทาง constructor |
 | `…/domain/entity/Payment.java:35` | เก็บ `orderId` เป็น `Long` ไม่ import `LaundryOrder`/`UsageSession` ทำให้โมดูล Payment ไม่ขึ้นกับโมดูลอื่น |
 | `…/event/NotificationEventListener.java:21` | พึ่ง `NotificationService` (interface) ผ่าน constructor |
 

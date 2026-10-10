@@ -169,7 +169,7 @@ class SelfServiceWebSecurityTest {
         when(payments.sessionIdsWithPayment(any())).thenReturn(java.util.Set.of(7L));
         mvc.perform(get("/sessions/history").with(user(customer)))
                 .andExpect(status().isOk())
-                .andExpect(content().string(containsString("มีการชำระเงินแล้ว")))
+                .andExpect(content().string(containsString("ส่งรายการชำระเงินแล้ว")))
                 .andExpect(content().string(not(containsString("/payments/new?type=USAGE_SESSION"))));
     }
     @Test void machineBoardShowsThaiStatusAndTypeIcon() throws Exception {

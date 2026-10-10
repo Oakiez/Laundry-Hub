@@ -151,7 +151,7 @@ class OrderWebControllerTest {
 
         mockMvc.perform(get("/orders/9").with(user(customer)))
                 .andExpect(status().isOk())
-                .andExpect(content().string(containsString("มีการชำระเงินแล้ว")))
+                .andExpect(content().string(containsString("ส่งรายการชำระเงินแล้ว")))
                 .andExpect(content().string(org.hamcrest.Matchers.not(containsString("/payments/new?type=LAUNDRY_ORDER"))));
     }
 

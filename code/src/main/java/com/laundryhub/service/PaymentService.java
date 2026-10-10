@@ -30,10 +30,10 @@ public interface PaymentService {
 
     Payment getById(Long paymentId);
 
-    /** true ถ้าออเดอร์นี้มีการชำระเงินแล้ว (PENDING/PAID) ใช้ซ่อนปุ่มชำระเงินในหน้าเว็บ */
+    /** true ถ้าออเดอร์นี้มีแถว payment แล้ว (ทุกสถานะ รวม PENDING และ FAILED) ใช้ซ่อนปุ่มชำระเงินในหน้าเว็บ */
     boolean orderHasPayment(Long orderId);
 
-    /** รหัสรอบใช้งานในชุดที่ส่งมาซึ่งมีการชำระเงินแล้ว (ถามครั้งเดียวต่อหน้า ไม่ query ทีละแถว) */
+    /** รหัสรอบใช้งานในชุดที่ส่งมาซึ่งมีแถว payment แล้ว (ทุกสถานะ) ถามครั้งเดียวต่อหน้า ไม่ query ทีละแถว */
     Set<Long> sessionIdsWithPayment(Collection<Long> sessionIds);
 
     /** @param status null = ทุกสถานะ */

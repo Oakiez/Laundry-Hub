@@ -49,7 +49,7 @@ The MVC tests check role denial before service invocation and identity spoofing;
 the PostgreSQL HTTP test verifies actual ownership enforcement across layers.
 
 SelfServiceWebController uses constructor injection of MachineService, SessionService
-and BranchService (`controller/web/SelfServiceWebController.java:30`). SessionBookingForm
+and BranchService (`controller/web/SelfServiceWebController.java:34`). SessionBookingForm
 has no userId/amount fields; the controller derives the owner from SecurityUtils.
 SecurityConfig's existing web CSRF protection applies to all POST forms. Thymeleaf
 renders DTOs; the controller never accesses an entity's LAZY association.
