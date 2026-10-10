@@ -2,6 +2,10 @@
 
 ที่มา: `code/src/main/resources/db/migration/V1__init_schema.sql` (PostgreSQL 16, 10 ตาราง)
 
+ภาพที่เรนเดอร์แล้วของส่วนชำระเงิน/แจ้งเตือน (ใช้ในรายงาน):
+
+![ER ของ payments และ notifications](../../img/er-payment-notification.png)
+
 ## ความสัมพันธ์
 
 ```mermaid

@@ -1,0 +1,18 @@
+<!DOCTYPE html>
+<html lang="th" xmlns:th="http://www.thymeleaf.org">
+<head th:replace="~{fragments/layout :: head('รอบใช้งานของฉัน')}"></head>
+<body class="d-flex flex-column min-vh-100">
+<nav th:replace="~{fragments/layout :: navbar}"></nav>
+<main class="container py-4 flex-grow-1">
+    <div th:replace="~{fragments/layout :: alert}"></div>
+    <div class="d-flex justify-content-between align-items-center mb-3"><h1>รอบใช้งานของฉัน</h1><a class="btn btn-primary" th:href="@{/machines}">จองเพิ่ม</a></div>
+    <div th:replace="~{sessions/table :: table(${sessions}, false)}"></div>
+    <nav class="d-flex gap-3 mt-3" aria-label="หน้าประวัติ">
+        <a th:if="${sessions.hasPrevious()}" th:href="@{/sessions/history(page=${sessions.number - 1})}">ก่อนหน้า</a>
+        <span th:text="${'หน้า ' + (sessions.number + 1)}"></span>
+        <a th:if="${sessions.hasNext()}" th:href="@{/sessions/history(page=${sessions.number + 1})}">ถัดไป</a>
+    </nav>
+</main>
+<footer th:replace="~{fragments/layout :: footer}"></footer>
+<script th:replace="~{fragments/layout :: scripts}"></script>
+</body></html>

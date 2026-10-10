@@ -27,6 +27,7 @@ import java.math.BigDecimal;
 import java.sql.DriverManager;
 import java.sql.SQLException;
 import java.time.LocalDateTime;
+import java.util.List;
 import java.util.UUID;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
@@ -150,6 +151,16 @@ class PaymentRepositoryDbTest {
 
         assertTrue(payments.existsByOrderId(orderId));
         assertFalse(payments.existsBySessionId(sessionId));
+    }
+
+    @Test
+    void findSessionIdsWithPayment_returnsOnlySessionsThatHaveAPaymentOfAnyStatus() {
+        assertTrue(payments.findSessionIdsWithPayment(List.of(sessionId)).isEmpty());
+
+        payments.saveAndFlush(Payment.forPayable(
+                payable(PayableType.USAGE_SESSION, sessionId, "40.00"), PaymentMethod.CASH)); // PENDING
+
+        assertEquals(List.of(sessionId), payments.findSessionIdsWithPayment(List.of(sessionId, 987654321L)));
     }
 
     @Test

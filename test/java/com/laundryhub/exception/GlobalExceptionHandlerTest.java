@@ -5,6 +5,7 @@ import jakarta.validation.constraints.NotBlank;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.dao.DataIntegrityViolationException;
+import org.springframework.http.HttpMethod;
 import org.springframework.http.MediaType;
 import org.springframework.security.access.AccessDeniedException;
 import org.springframework.test.web.servlet.MockMvc;
@@ -14,6 +15,7 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.servlet.resource.NoResourceFoundException;
 
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
@@ -101,6 +103,14 @@ class GlobalExceptionHandlerTest {
     }
 
     @Test
+    void unknownUrl_returns404_notFiveHundred() throws Exception {
+        mockMvc.perform(get("/t/no-such-page"))
+                .andExpect(status().isNotFound())
+                .andExpect(jsonPath("$.status").value(404))
+                .andExpect(jsonPath("$.message").value("Resource not found"));
+    }
+
+    @Test
     void missingRequiredParam_returns400() throws Exception {
         mockMvc.perform(get("/t/param"))
                 .andExpect(status().isBadRequest())
@@ -146,6 +156,11 @@ class GlobalExceptionHandlerTest {
         @GetMapping("/t/denied")
         void denied() {
             throw new AccessDeniedException("nope");
+        }
+
+        @GetMapping("/t/no-such-page")
+        void noSuchPage() throws NoResourceFoundException {
+            throw new NoResourceFoundException(HttpMethod.GET, "/t/no-such-page");
         }
 
         @GetMapping("/t/boom")

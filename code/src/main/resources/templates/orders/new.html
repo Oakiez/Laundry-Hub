@@ -1,0 +1,100 @@
+<!DOCTYPE html>
+<html lang="th" xmlns:th="http://www.thymeleaf.org"
+      xmlns:sec="http://www.thymeleaf.org/extras/spring-security">
+<head th:replace="~{fragments/layout :: head('ฝากซักใหม่')}"></head>
+<body class="d-flex flex-column min-vh-100">
+<nav th:replace="~{fragments/layout :: navbar}"></nav>
+
+<main class="container py-4 flex-grow-1">
+    <div th:replace="~{fragments/layout :: alert}"></div>
+
+    <h1 class="h4 mb-3">ฝากซักใหม่</h1>
+
+    <div class="alert alert-danger" th:if="${errors}">
+        <ul class="mb-0">
+            <li th:each="e : ${errors}" th:text="${e}">error</li>
+        </ul>
+    </div>
+
+    <div class="row g-3">
+        <div class="col-lg-8">
+            <div class="card">
+                <div class="card-body">
+                    <form th:action="@{/orders}" th:object="${form}" method="post" novalidate>
+                        <div class="row g-3 mb-3">
+                            <div class="col-md-6">
+                                <label for="branchId" class="form-label">สาขา</label>
+                                <select id="branchId" th:field="*{branchId}" class="form-select">
+                                    <option value="">-- เลือกสาขา --</option>
+                                    <option th:each="b : ${branches}" th:value="${b.id}" th:text="${b.name}">สาขา</option>
+                                </select>
+                            </div>
+                            <div class="col-md-6 d-flex align-items-end">
+                                <div class="form-check">
+                                    <input type="checkbox" id="express" th:field="*{express}" class="form-check-input">
+                                    <label for="express" class="form-check-label">งานด่วน (บวกค่าด่วนต่อกิโล)</label>
+                                </div>
+                            </div>
+                        </div>
+
+                        <h2 class="h6">รายการผ้า <span class="text-muted small fw-normal">(เว้นแถวที่ไม่ใช้ไว้ได้)</span></h2>
+                        <div class="row g-2 mb-2" th:each="item, row : *{items}">
+                            <div class="col-md-4">
+                                <select th:field="*{items[__${row.index}__].serviceTypeId}" class="form-select"
+                                        th:attr="aria-label='ประเภทบริการ แถว ' + ${row.count}">
+                                    <option value="">-- ประเภทบริการ --</option>
+                                    <option th:each="t : ${serviceTypes}" th:value="${t.id}" th:text="${t.name}">ซัก</option>
+                                </select>
+                            </div>
+                            <div class="col-md-5">
+                                <input type="text" th:field="*{items[__${row.index}__].itemName}" class="form-control"
+                                       placeholder="ชื่อรายการ เช่น เสื้อเชิ้ต 5 ตัว" maxlength="100"
+                                       th:attr="aria-label='ชื่อรายการ แถว ' + ${row.count}">
+                            </div>
+                            <div class="col-md-3">
+                                <div class="input-group">
+                                    <input type="number" th:field="*{items[__${row.index}__].weightKg}" class="form-control"
+                                           min="0.01" step="0.01" placeholder="น้ำหนัก"
+                                           th:attr="aria-label='น้ำหนัก แถว ' + ${row.count}">
+                                    <span class="input-group-text">กก.</span>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="mb-3 mt-3">
+                            <label for="note" class="form-label">หมายเหตุ (ไม่บังคับ)</label>
+                            <input type="text" id="note" th:field="*{note}" class="form-control" maxlength="255">
+                        </div>
+
+                        <button type="submit" class="btn btn-primary">สร้างออเดอร์</button>
+                        <a th:href="@{/orders}" class="btn btn-outline-secondary">ยกเลิก</a>
+                    </form>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-lg-4">
+            <div class="card">
+                <div class="card-body">
+                    <h2 class="h6">อัตราค่าบริการ</h2>
+                    <table class="table table-sm mb-2">
+                        <thead><tr><th>บริการ</th><th class="text-end">บาท/กก.</th><th class="text-end">ด่วน +</th></tr></thead>
+                        <tbody>
+                        <tr th:each="t : ${serviceTypes}">
+                            <td th:text="${t.name}">ซัก</td>
+                            <td class="text-end" th:text="${#numbers.formatDecimal(t.pricePerKg, 1, 2)}">25.00</td>
+                            <td class="text-end" th:text="${#numbers.formatDecimal(t.expressSurcharge, 1, 2)}">10.00</td>
+                        </tr>
+                        </tbody>
+                    </table>
+                    <p class="text-muted small mb-0">ราคาต่อรายการ = น้ำหนัก × (ราคาต่อกก. + ค่าด่วนต่อกก. ถ้าเลือกงานด่วน) ระบบคำนวณให้ตอนสร้างออเดอร์</p>
+                </div>
+            </div>
+        </div>
+    </div>
+</main>
+
+<footer th:replace="~{fragments/layout :: footer}"></footer>
+<script th:replace="~{fragments/layout :: scripts}"></script>
+</body>
+</html>

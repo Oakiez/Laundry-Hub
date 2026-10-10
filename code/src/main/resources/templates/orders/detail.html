@@ -1,0 +1,81 @@
+<!DOCTYPE html>
+<html lang="th" xmlns:th="http://www.thymeleaf.org"
+      xmlns:sec="http://www.thymeleaf.org/extras/spring-security">
+<head th:replace="~{fragments/layout :: head('ออเดอร์ #' + ${order.id})}"></head>
+<body class="d-flex flex-column min-vh-100">
+<nav th:replace="~{fragments/layout :: navbar}"></nav>
+
+<main class="container py-4 flex-grow-1">
+    <div th:replace="~{fragments/layout :: alert}"></div>
+
+    <div class="d-flex flex-wrap justify-content-between align-items-center gap-2 mb-3">
+        <h1 class="h4 mb-0">ออเดอร์ #<span th:text="${order.id}">1</span>
+            <span th:replace="~{orders/fragments :: statusBadge(${order.status})}"></span>
+            <span th:if="${order.express}" class="badge text-bg-warning">ด่วน</span>
+        </h1>
+        <a th:href="@{/orders}" class="btn btn-outline-secondary btn-sm">&laquo; ออเดอร์ทั้งหมด</a>
+    </div>
+
+    <!-- progress: every step up to the current one is highlighted -->
+    <div class="card mb-3" th:if="${order.status.name() != 'CANCELLED'}">
+        <div class="card-body">
+            <div class="d-flex flex-wrap gap-2">
+                <span th:each="step, it : ${flow}" class="badge rounded-pill p-2"
+                      th:classappend="${it.index <= currentStep} ? 'text-bg-success' : 'text-bg-light border'"
+                      th:text="${it.count} + '. ' + ${statusLabels.get(step)}">1. รับผ้าแล้ว</span>
+            </div>
+        </div>
+    </div>
+    <div class="alert alert-secondary" th:if="${order.status.name() == 'CANCELLED'}">ออเดอร์นี้ถูกยกเลิกแล้ว</div>
+
+    <div class="card mb-3">
+        <div class="table-responsive">
+            <table class="table align-middle mb-0">
+                <thead class="table-light">
+                <tr>
+                    <th>รายการ</th>
+                    <th>ประเภทบริการ</th>
+                    <th class="text-end">น้ำหนัก (กก.)</th>
+                    <th class="text-end">ราคา (บาท)</th>
+                </tr>
+                </thead>
+                <tbody>
+                <tr th:each="i : ${order.items}">
+                    <td th:text="${i.itemName}">เสื้อ</td>
+                    <td th:text="${i.serviceTypeName}">ซักธรรมดา</td>
+                    <td class="text-end" th:text="${#numbers.formatDecimal(i.weightKg, 1, 2)}">1.00</td>
+                    <td class="text-end" th:text="${#numbers.formatDecimal(i.subtotal, 1, 'COMMA', 2, 'POINT')}">0.00</td>
+                </tr>
+                </tbody>
+                <tfoot>
+                <tr class="fw-bold">
+                    <td colspan="2">รวม</td>
+                    <td class="text-end" th:text="${#numbers.formatDecimal(order.totalWeightKg, 1, 2)}">0.00</td>
+                    <td class="text-end" th:text="${#numbers.formatDecimal(order.totalAmount, 1, 'COMMA', 2, 'POINT')}">0.00</td>
+                </tr>
+                </tfoot>
+            </table>
+        </div>
+    </div>
+
+    <p class="text-muted small">
+        สร้างเมื่อ <span th:text="${#temporals.format(order.createdAt, 'dd/MM/yyyy HH:mm')}">-</span>
+        · อัปเดตล่าสุด <span th:text="${#temporals.format(order.updatedAt, 'dd/MM/yyyy HH:mm')}">-</span>
+        <span th:if="${!#strings.isEmpty(order.note)}"> · หมายเหตุ: <span th:text="${order.note}">-</span></span>
+    </p>
+
+    <div class="d-flex gap-2">
+        <span th:if="${order.status.name() != 'CANCELLED' and hasPayment}" class="badge text-bg-success align-self-center p-2">ส่งรายการชำระเงินแล้ว</span>
+        <a th:if="${order.status.name() != 'CANCELLED' and !hasPayment}"
+           th:href="@{/payments/new(type='LAUNDRY_ORDER',id=${order.id})}" class="btn btn-primary">ชำระเงิน</a>
+        <form th:if="${order.status.name() == 'RECEIVED'}" th:action="@{/orders/{id}/cancel(id=${order.id})}"
+              method="post" onsubmit="return confirm('ยืนยันยกเลิกออเดอร์นี้?');">
+            <button type="submit" class="btn btn-outline-danger">ยกเลิกออเดอร์</button>
+        </form>
+    </div>
+</main>
+
+<footer th:replace="~{fragments/layout :: footer}"></footer>
+<script th:replace="~{fragments/layout :: scripts}"></script>
+</body>
+</html>

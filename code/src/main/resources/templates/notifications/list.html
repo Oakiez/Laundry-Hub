@@ -1,0 +1,54 @@
+<!DOCTYPE html>
+<html lang="th" xmlns:th="http://www.thymeleaf.org"
+      xmlns:sec="http://www.thymeleaf.org/extras/spring-security">
+<head th:replace="~{fragments/layout :: head('แจ้งเตือน')}"></head>
+<body class="d-flex flex-column min-vh-100">
+<nav th:replace="~{fragments/layout :: navbar}"></nav>
+
+<main class="container py-4 flex-grow-1">
+    <div th:replace="~{fragments/layout :: alert}"></div>
+
+    <div class="d-flex justify-content-between align-items-center mb-3">
+        <h1 class="h4 mb-0">แจ้งเตือนของฉัน</h1>
+        <div class="btn-group btn-group-sm" role="group" aria-label="กรองแจ้งเตือน">
+            <a th:href="@{/notifications}" class="btn btn-outline-primary"
+               th:classappend="${!unread} ? 'active'">ทั้งหมด</a>
+            <a th:href="@{/notifications(unread=true)}" class="btn btn-outline-primary"
+               th:classappend="${unread} ? 'active'">ยังไม่อ่าน</a>
+        </div>
+    </div>
+
+    <div class="list-group">
+        <div th:each="n : ${notifications.content}"
+             class="list-group-item d-flex justify-content-between align-items-start"
+             th:classappend="${!n.read} ? 'list-group-item-primary'">
+            <div>
+                <div th:classappend="${!n.read} ? 'fw-semibold'" th:text="${n.message}">ข้อความ</div>
+                <small class="text-muted" th:text="${#temporals.format(n.createdAt, 'dd/MM/yyyy HH:mm')}">-</small>
+            </div>
+            <form th:if="${!n.read}" th:action="@{/notifications/{id}/read(id=${n.id})}" method="post">
+                <input type="hidden" name="unread" th:value="${unread}">
+                <button type="submit" class="btn btn-outline-secondary btn-sm">ทำเครื่องหมายว่าอ่านแล้ว</button>
+            </form>
+            <span th:if="${n.read}" class="badge text-bg-light">อ่านแล้ว</span>
+        </div>
+        <div th:if="${notifications.empty}" class="list-group-item text-center text-muted py-4">
+            ไม่มีแจ้งเตือน
+        </div>
+    </div>
+
+    <nav class="d-flex justify-content-between align-items-center mt-3" th:if="${notifications.totalPages > 1}">
+        <a class="btn btn-outline-secondary btn-sm" th:classappend="${notifications.first} ? 'disabled'"
+           th:href="@{/notifications(unread=${unread},page=${notifications.number - 1})}">&laquo; ก่อนหน้า</a>
+        <span class="text-muted small">
+            หน้า <span th:text="${notifications.number + 1}">1</span> / <span th:text="${notifications.totalPages}">1</span>
+        </span>
+        <a class="btn btn-outline-secondary btn-sm" th:classappend="${notifications.last} ? 'disabled'"
+           th:href="@{/notifications(unread=${unread},page=${notifications.number + 1})}">ถัดไป &raquo;</a>
+    </nav>
+</main>
+
+<footer th:replace="~{fragments/layout :: footer}"></footer>
+<script th:replace="~{fragments/layout :: scripts}"></script>
+</body>
+</html>

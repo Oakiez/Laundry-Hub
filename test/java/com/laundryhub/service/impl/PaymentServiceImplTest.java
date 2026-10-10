@@ -21,10 +21,13 @@ import org.mockito.junit.jupiter.MockitoExtension;
 import java.math.BigDecimal;
 import java.util.List;
 import java.util.Optional;
+import java.util.Set;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
@@ -130,6 +133,29 @@ class PaymentServiceImplTest {
         when(paymentRepository.findById(99L)).thenReturn(Optional.empty());
 
         assertThrows(ResourceNotFoundException.class, () -> service.getById(99L));
+    }
+
+    @Test
+    void orderHasPayment_asksRepositoryByOrderId() {
+        when(paymentRepository.existsByOrderId(5L)).thenReturn(true);
+        when(paymentRepository.existsByOrderId(6L)).thenReturn(false);
+
+        assertTrue(service.orderHasPayment(5L));
+        assertFalse(service.orderHasPayment(6L));
+    }
+
+    @Test
+    void sessionIdsWithPayment_emptyInput_doesNotCallRepository() {
+        assertEquals(Set.of(), service.sessionIdsWithPayment(List.of()));
+
+        verify(paymentRepository, never()).findSessionIdsWithPayment(any());
+    }
+
+    @Test
+    void sessionIdsWithPayment_returnsOnlyIdsReportedByRepository() {
+        when(paymentRepository.findSessionIdsWithPayment(List.of(1L, 2L, 3L))).thenReturn(List.of(2L));
+
+        assertEquals(Set.of(2L), service.sessionIdsWithPayment(List.of(1L, 2L, 3L)));
     }
 
     private static Payable order(Long id, String amount) {

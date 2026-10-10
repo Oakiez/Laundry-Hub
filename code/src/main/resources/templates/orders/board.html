@@ -1,0 +1,92 @@
+<!DOCTYPE html>
+<html lang="th" xmlns:th="http://www.thymeleaf.org"
+      xmlns:sec="http://www.thymeleaf.org/extras/spring-security">
+<head th:replace="~{fragments/layout :: head('บอร์ดออเดอร์')}"></head>
+<body class="d-flex flex-column min-vh-100">
+<nav th:replace="~{fragments/layout :: navbar}"></nav>
+
+<main class="container py-4 flex-grow-1">
+    <div th:replace="~{fragments/layout :: alert}"></div>
+
+    <div class="d-flex flex-wrap justify-content-between align-items-center gap-2 mb-3">
+        <h1 class="h4 mb-0">บอร์ดออเดอร์ฝากซัก</h1>
+        <form th:action="@{/staff/orders}" method="get">
+            <select name="status" class="form-select form-select-sm" onchange="this.form.submit()">
+                <option value="">ทุกสถานะ</option>
+                <option th:each="s : ${statuses}" th:value="${s}" th:text="${statusLabels.get(s)}"
+                        th:selected="${s == status}">สถานะ</option>
+            </select>
+        </form>
+    </div>
+    <p class="text-muted small">เรียงจากออเดอร์ที่รอนานที่สุด · เลื่อนสถานะได้ทีละขั้นตามลำดับ · ยกเลิกได้เฉพาะออเดอร์ที่ยัง "รับผ้าแล้ว"</p>
+
+    <div class="card">
+        <div class="table-responsive">
+            <table class="table table-hover align-middle mb-0">
+                <thead class="table-light">
+                <tr>
+                    <th>#</th>
+                    <th>ลูกค้า</th>
+                    <th>สร้างเมื่อ</th>
+                    <th>รายการผ้า</th>
+                    <th class="text-end">ยอดรวม (บาท)</th>
+                    <th>สถานะ</th>
+                    <th class="text-end">จัดการ</th>
+                </tr>
+                </thead>
+                <tbody>
+                <tr th:each="o : ${orders.content}">
+                    <td th:text="${o.id}">1</td>
+                    <td>#<span th:text="${o.customerId}">3</span></td>
+                    <td th:text="${#temporals.format(o.createdAt, 'dd/MM HH:mm')}">-</td>
+                    <td class="small">
+                        <div th:each="i : ${o.items}">
+                            <span th:text="${i.itemName}">เสื้อ</span>
+                            (<span th:text="${i.serviceTypeName}">ซัก</span>,
+                            <span th:text="${#numbers.formatDecimal(i.weightKg, 1, 2)}">1</span> กก.)
+                        </div>
+                        <span th:if="${o.express}" class="badge text-bg-warning">ด่วน</span>
+                        <div th:if="${!#strings.isEmpty(o.note)}" class="text-muted" th:text="'หมายเหตุ: ' + ${o.note}">หมายเหตุ</div>
+                    </td>
+                    <td class="text-end" th:text="${#numbers.formatDecimal(o.totalAmount, 1, 'COMMA', 2, 'POINT')}">0.00</td>
+                    <td><span th:replace="~{orders/fragments :: statusBadge(${o.status})}"></span></td>
+                    <td class="text-end table-actions text-nowrap">
+                        <form th:if="${nextStatus.containsKey(o.status)}"
+                              th:action="@{/staff/orders/{id}/status(id=${o.id})}" method="post">
+                            <input type="hidden" name="action" value="NEXT">
+                            <input type="hidden" name="filter" th:value="${status}">
+                            <button type="submit" class="btn btn-primary btn-sm"
+                                    th:text="'→ ' + ${statusLabels.get(nextStatus.get(o.status))}">ขั้นถัดไป</button>
+                        </form>
+                        <form th:if="${o.status.name() == 'RECEIVED'}"
+                              th:action="@{/staff/orders/{id}/status(id=${o.id})}" method="post"
+                              onsubmit="return confirm('ยืนยันยกเลิกออเดอร์นี้?');">
+                            <input type="hidden" name="action" value="CANCEL">
+                            <input type="hidden" name="filter" th:value="${status}">
+                            <button type="submit" class="btn btn-outline-danger btn-sm">ยกเลิก</button>
+                        </form>
+                    </td>
+                </tr>
+                <tr th:if="${#lists.isEmpty(orders.content)}">
+                    <td colspan="7" class="text-center text-muted py-4">ไม่มีออเดอร์</td>
+                </tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    <nav class="d-flex justify-content-between align-items-center mt-3" th:if="${orders.totalPages > 1}">
+        <a class="btn btn-outline-secondary btn-sm" th:classappend="${orders.page == 0} ? 'disabled'"
+           th:href="@{/staff/orders(status=${status},page=${orders.page - 1})}">&laquo; ก่อนหน้า</a>
+        <span class="text-muted small">หน้า <span th:text="${orders.page + 1}">1</span> /
+            <span th:text="${orders.totalPages}">1</span></span>
+        <a class="btn btn-outline-secondary btn-sm" th:classappend="${orders.page + 1 >= orders.totalPages} ? 'disabled'"
+           th:href="@{/staff/orders(status=${status},page=${orders.page + 1})}">ถัดไป &raquo;</a>
+    </nav>
+</main>
+
+<footer th:replace="~{fragments/layout :: footer}"></footer>
+<script th:replace="~{fragments/layout :: scripts}"></script>
+
+</body>
+</html>

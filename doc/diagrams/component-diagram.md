@@ -53,8 +53,8 @@ flowchart TB
     SF --> API
     API -.->|exception| GEH
 
-    WEB --> AUTH & ORD & MCH & PAY & NTF
-    API --> AUTH & ORD & MCH & PAY & NTF
+    WEB --> SVC
+    API --> SVC
     WEB -.-> DTO
     API -.-> DTO
 
@@ -69,11 +69,7 @@ flowchart TB
     PAY -->|publishEvent| EVT
     EVT -->|เรียก| NTF
 
-    AUTH --> REPO
-    ORD --> REPO
-    MCH --> REPO
-    PAY --> REPO
-    NTF --> REPO
+    SVC --> REPO
     REPO --> ENT
     REPO -->|JDBC + SSL| DB
     FLY -->|migrate ตอนสตาร์ท| DB

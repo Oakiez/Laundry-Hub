@@ -1,0 +1,23 @@
+<!DOCTYPE html>
+<html lang="th" xmlns:th="http://www.thymeleaf.org">
+<body>
+<!--
+  Thai labels and colored badges for enum values, so pages never show raw English names
+  (COMPLETED, AVAILABLE ...). Usage:
+    <span th:replace="~{fragments/badges :: sessionStatus(${s.status})}"></span>
+    <span th:replace="~{fragments/badges :: machineStatus(${m.status})}"></span>
+    <span th:replace="~{fragments/badges :: machineType(${m.machineType})}"></span>
+-->
+
+<span th:fragment="sessionStatus(s)" class="badge"
+      th:classappend="${s.name() == 'COMPLETED'} ? 'text-bg-success' : (${s.name() == 'IN_USE'} ? 'text-bg-primary' : (${s.name() == 'RESERVED'} ? 'text-bg-info' : 'text-bg-secondary'))"
+      th:text="${{'RESERVED':'จองแล้ว','IN_USE':'กำลังใช้งาน','COMPLETED':'เสร็จสิ้น','CANCELLED':'ยกเลิก'}[s.name()]}">สถานะ</span>
+
+<span th:fragment="machineStatus(s)" class="badge"
+      th:classappend="${s.name() == 'AVAILABLE'} ? 'text-bg-success' : (${s.name() == 'IN_USE'} ? 'text-bg-primary' : (${s.name() == 'RESERVED'} ? 'text-bg-info' : 'text-bg-secondary'))"
+      th:text="${{'AVAILABLE':'ว่าง','RESERVED':'ถูกจองแล้ว','IN_USE':'กำลังใช้งาน','OUT_OF_SERVICE':'ปิดซ่อม'}[s.name()]}">สถานะ</span>
+
+<span th:fragment="machineType(t)"
+      th:text="${t.name() == 'WASHER' ? '🧺 เครื่องซัก' : '🌬️ เครื่องอบ'}">เครื่องซัก</span>
+</body>
+</html>

@@ -1,0 +1,61 @@
+<!DOCTYPE html>
+<html lang="th" xmlns:th="http://www.thymeleaf.org"
+      xmlns:sec="http://www.thymeleaf.org/extras/spring-security">
+<head th:replace="~{fragments/layout :: head('รายละเอียดการชำระเงิน')}"></head>
+<body class="d-flex flex-column min-vh-100">
+<nav th:replace="~{fragments/layout :: navbar}"></nav>
+
+<main class="container py-4 flex-grow-1">
+    <div th:replace="~{fragments/layout :: alert}"></div>
+
+    <h1 class="h4 mb-3">การชำระเงิน #<span th:text="${payment.id}">1</span></h1>
+
+    <div class="card" style="max-width: 560px;">
+        <div class="card-body">
+            <dl class="row mb-0">
+                <dt class="col-sm-5">รายการ</dt>
+                <dd class="col-sm-7">
+                    <span th:text="${typeLabels.get(payment.payableType)}">ออเดอร์</span>
+                    #<span th:text="${payment.payableId}">1</span>
+                </dd>
+
+                <dt class="col-sm-5">จำนวนเงิน</dt>
+                <dd class="col-sm-7"><span th:text="${#numbers.formatDecimal(payment.amount, 1, 'COMMA', 2, 'POINT')}">0.00</span> บาท</dd>
+
+                <dt class="col-sm-5">วิธีชำระ</dt>
+                <dd class="col-sm-7" th:text="${methodLabels.get(payment.method)}">เงินสด</dd>
+
+                <dt class="col-sm-5">สถานะ</dt>
+                <dd class="col-sm-7">
+                    <span class="badge"
+                          th:classappend="${payment.status.name() == 'PAID'} ? 'text-bg-success' : (${payment.status.name() == 'PENDING'} ? 'text-bg-warning' : 'text-bg-danger')"
+                          th:text="${statusLabels.get(payment.status)}">สถานะ</span>
+                </dd>
+
+                <dt class="col-sm-5">สร้างเมื่อ</dt>
+                <dd class="col-sm-7" th:text="${#temporals.format(payment.createdAt, 'dd/MM/yyyy HH:mm')}">-</dd>
+
+                <dt class="col-sm-5" th:if="${payment.paidAt != null}">ชำระเมื่อ</dt>
+                <dd class="col-sm-7" th:if="${payment.paidAt != null}"
+                    th:text="${#temporals.format(payment.paidAt, 'dd/MM/yyyy HH:mm')}">-</dd>
+            </dl>
+        </div>
+        <div class="card-footer bg-white" sec:authorize="hasAnyRole('STAFF','ADMIN')"
+             th:if="${payment.status.name() == 'PENDING'}">
+            <form th:action="@{/staff/payments/{id}/confirm(id=${payment.id})}" method="post"
+                  onsubmit="return confirm('ยืนยันว่าได้รับเงินแล้ว?');">
+                <button type="submit" class="btn btn-success">ยืนยันรับเงิน</button>
+            </form>
+        </div>
+    </div>
+
+    <div class="mt-3">
+        <a th:href="@{/payments/new}" class="btn btn-outline-secondary btn-sm">ชำระรายการอื่น</a>
+        <a th:href="@{/notifications}" class="btn btn-outline-secondary btn-sm">ดูแจ้งเตือน</a>
+    </div>
+</main>
+
+<footer th:replace="~{fragments/layout :: footer}"></footer>
+<script th:replace="~{fragments/layout :: scripts}"></script>
+</body>
+</html>

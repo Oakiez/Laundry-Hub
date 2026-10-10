@@ -21,6 +21,7 @@ import java.util.UUID;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.httpBasic;
+import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.csrf;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.patch;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
@@ -93,6 +94,33 @@ class SessionPaymentIntegrationTest {
 
     private String request(Long id, String method) {
         return "{\"payableType\":\"USAGE_SESSION\",\"payableId\":" + id + ",\"method\":\"" + method + "\"}";
+    }
+
+    @Test
+    void realWebFormBooksForAuthenticatedOwnerAndLifecyclePersists() throws Exception {
+        Long machineId = jdbc.queryForObject("SELECT machine_id FROM usage_sessions WHERE id=?", Long.class, sessionId);
+        jdbc.update("UPDATE machines SET base_price=20.00,price_per_minute=1.50 WHERE id=?", machineId);
+        mvc.perform(get("/machines/" + machineId + "/book").with(httpBasic("provider_customer", "test-password")))
+                .andExpect(status().isOk()).andExpect(view().name("machines/book"));
+        mvc.perform(post("/machines/" + machineId + "/book").with(httpBasic("provider_customer", "test-password"))
+                        .with(csrf()).param("startTime", "2030-01-03T10:00").param("durationMinutes", "30")
+                        .param("userId", "999999").param("amount", "0"))
+                .andExpect(redirectedUrl("/sessions/history"));
+        Long bookedId = jdbc.queryForObject("SELECT id FROM usage_sessions WHERE machine_id=? AND start_time='2030-01-03 10:00'",
+                Long.class, machineId);
+        assertEquals(ownerId, jdbc.queryForObject("SELECT user_id FROM usage_sessions WHERE id=?", Long.class, bookedId));
+        assertEquals(0, new java.math.BigDecimal("65.00").compareTo(
+                jdbc.queryForObject("SELECT amount FROM usage_sessions WHERE id=?", java.math.BigDecimal.class, bookedId)));
+        mvc.perform(get("/sessions/history").with(httpBasic("provider_customer", "test-password")))
+                .andExpect(status().isOk()).andExpect(view().name("sessions/history"));
+        mvc.perform(post("/sessions/" + bookedId + "/start").with(httpBasic("provider_other", "test-password"))
+                .with(csrf())).andExpect(status().isForbidden());
+        mvc.perform(post("/sessions/" + bookedId + "/start").with(httpBasic("provider_customer", "test-password"))
+                .with(csrf())).andExpect(redirectedUrl("/sessions/history"));
+        mvc.perform(post("/sessions/" + bookedId + "/finish").with(httpBasic("provider_customer", "test-password"))
+                .with(csrf())).andExpect(redirectedUrl("/sessions/history"));
+        assertEquals("COMPLETED", jdbc.queryForObject("SELECT status FROM usage_sessions WHERE id=?", String.class, bookedId));
+        assertEquals("AVAILABLE", jdbc.queryForObject("SELECT status FROM machines WHERE id=?", String.class, machineId));
     }
 
     @Test
