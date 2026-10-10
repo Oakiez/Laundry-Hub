@@ -1,0 +1,75 @@
+<!DOCTYPE html>
+<html lang="th" xmlns:th="http://www.thymeleaf.org"
+      xmlns:sec="http://www.thymeleaf.org/extras/spring-security">
+<head th:replace="~{fragments/layout :: head('ออเดอร์ฝากซักของฉัน')}"></head>
+<body class="d-flex flex-column min-vh-100">
+<nav th:replace="~{fragments/layout :: navbar}"></nav>
+
+<main class="container py-4 flex-grow-1">
+    <div th:replace="~{fragments/layout :: alert}"></div>
+
+    <div class="d-flex flex-wrap justify-content-between align-items-center gap-2 mb-3">
+        <h1 class="h4 mb-0">ออเดอร์ฝากซักของฉัน</h1>
+        <div class="d-flex gap-2">
+            <form th:action="@{/orders}" method="get">
+                <select name="status" class="form-select form-select-sm" onchange="this.form.submit()">
+                    <option value="">ทุกสถานะ</option>
+                    <option th:each="s : ${statuses}" th:value="${s}" th:text="${statusLabels.get(s)}"
+                            th:selected="${s == status}">สถานะ</option>
+                </select>
+            </form>
+            <a th:href="@{/orders/new}" class="btn btn-primary btn-sm text-nowrap">+ ฝากซักใหม่</a>
+        </div>
+    </div>
+
+    <div class="card">
+        <div class="table-responsive">
+            <table class="table table-hover align-middle mb-0">
+                <thead class="table-light">
+                <tr>
+                    <th>#</th>
+                    <th>สร้างเมื่อ</th>
+                    <th>รายการ</th>
+                    <th class="text-end">น้ำหนัก (กก.)</th>
+                    <th class="text-end">ยอดรวม (บาท)</th>
+                    <th>สถานะ</th>
+                    <th></th>
+                </tr>
+                </thead>
+                <tbody>
+                <tr th:each="o : ${orders.content}">
+                    <td th:text="${o.id}">1</td>
+                    <td th:text="${#temporals.format(o.createdAt, 'dd/MM/yyyy HH:mm')}">-</td>
+                    <td>
+                        <span th:text="${#lists.size(o.items)}">1</span> รายการ
+                        <span th:if="${o.express}" class="badge text-bg-warning ms-1">ด่วน</span>
+                    </td>
+                    <td class="text-end" th:text="${#numbers.formatDecimal(o.totalWeightKg, 1, 'COMMA', 2, 'POINT')}">0.00</td>
+                    <td class="text-end" th:text="${#numbers.formatDecimal(o.totalAmount, 1, 'COMMA', 2, 'POINT')}">0.00</td>
+                    <td><span th:replace="~{orders/fragments :: statusBadge(${o.status})}"></span></td>
+                    <td class="text-end">
+                        <a th:href="@{/orders/{id}(id=${o.id})}" class="btn btn-outline-secondary btn-sm">ดู</a>
+                    </td>
+                </tr>
+                <tr th:if="${#lists.isEmpty(orders.content)}">
+                    <td colspan="7" class="text-center text-muted py-4">ยังไม่มีออเดอร์</td>
+                </tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    <nav class="d-flex justify-content-between align-items-center mt-3" th:if="${orders.totalPages > 1}">
+        <a class="btn btn-outline-secondary btn-sm" th:classappend="${orders.page == 0} ? 'disabled'"
+           th:href="@{/orders(status=${status},page=${orders.page - 1})}">&laquo; ก่อนหน้า</a>
+        <span class="text-muted small">หน้า <span th:text="${orders.page + 1}">1</span> /
+            <span th:text="${orders.totalPages}">1</span></span>
+        <a class="btn btn-outline-secondary btn-sm" th:classappend="${orders.page + 1 >= orders.totalPages} ? 'disabled'"
+           th:href="@{/orders(status=${status},page=${orders.page + 1})}">ถัดไป &raquo;</a>
+    </nav>
+</main>
+
+<footer th:replace="~{fragments/layout :: footer}"></footer>
+<script th:replace="~{fragments/layout :: scripts}"></script>
+</body>
+</html>
