@@ -2,13 +2,13 @@
 
 ผู้รับผิดชอบ: ภีมเดช กลั่นกิ่ง (โชกุน) · Test Lead
 ขอบเขตของฉบับนี้: ผลรวมทั้งโปรเจค ([หัวข้อ 5](#5-ผลรวมทั้งโปรเจค)) และรายละเอียดกรณีทดสอบของโมดูลผู้เขียน คือ Payment, Notification และ API Quality (Exception handling) ([หัวข้อ 2–4](#2-สรุปผล-โมดูลของผู้เขียน))
-ผลทดสอบรอบล่าสุด: **212 ข้อ — ผ่าน 203, ข้ามโดยเจตนา 9, ล้มเหลว 0** · `BUILD SUCCESS`
+ผลทดสอบรอบล่าสุด: **369 ข้อ — ผ่าน 333, ข้ามโดยเจตนา 36, ล้มเหลว 0** · `BUILD SUCCESS` (เมื่อเปิดเทสต์ฐานข้อมูลจริง: **379 ข้อ ผ่านทั้งหมด ข้าม 0 ล้มเหลว 0**)
 
 ## 1. สภาพแวดล้อมและวิธีรัน
 
 | รายการ | ค่า |
 |---|---|
-| วันที่รันล่าสุด | 9 ต.ค. 2569 (2026-10-09) 22:16 น. (รอบรวมงานของทุกโมดูลบน `develop`) |
+| วันที่รันล่าสุด | 10 ต.ค. 2569 (2026-10-10) หลังเพิ่มหน้าเว็บและแก้ข้อบกพร่อง (รอบรวมงานของทุกโมดูลบน `develop` ของผู้เขียน) |
 | Java | Temurin 17.0.20.1 |
 | Maven | 3.10.0 |
 | Spring Boot | 3.5.7 |
@@ -29,7 +29,7 @@ mvn test -Dtest=GlobalExceptionHandlerTest      # รันคลาสเดี
 
 | โมดูล | คลาสเทสต์ | จำนวน | ผ่าน | ล้มเหลว |
 |---|---|---:|---:|---:|
-| API Quality | `GlobalExceptionHandlerTest` | 12 | 12 | 0 |
+| API Quality | `GlobalExceptionHandlerTest` | 13 | 13 | 0 |
 | API Quality | `PageableValidatorTest` | 4 | 4 | 0 |
 | Payment (entity) | `PaymentTest` | 4 | 4 | 0 |
 | Payment (strategy) | `CashProcessorTest` | 2 | 2 | 0 |
@@ -42,9 +42,12 @@ mvn test -Dtest=GlobalExceptionHandlerTest      # รันคลาสเดี
 | Notification (service) | `NotificationServiceImplTest` | 10 | 10 | 0 |
 | Notification (observer) | `NotificationEventListenerTest` | 4 | 4 | 0 |
 | Notification (REST) | `NotificationApiControllerTest` | 6 | 6 | 0 |
-| **รวม** | **13 คลาส** | **81** | **81** | **0** |
+| Web (หน้าเว็บ) | `PaymentWebControllerTest` | 14 | 14 | 0 |
+| Web (หน้าเว็บ) | `NotificationWebControllerTest` | 6 | 6 | 0 |
+| Security + render | `PaymentNotificationSecurityTest` | 13 | 13 | 0 |
+| **รวม** | **16 คลาส** | **115** | **115** | **0** |
 
-ผลของทั้งโปรเจคจาก Maven: `Tests run: 212, Failures: 0, Errors: 0, Skipped: 9` · `BUILD SUCCESS` (ตัวเลขของผู้เขียนข้างบนเป็นส่วนหนึ่งของ 212 ข้อ ดูหัวข้อ 5)
+ผลของทั้งโปรเจคจาก Maven: `Tests run: 369, Failures: 0, Errors: 0, Skipped: 36` · `BUILD SUCCESS` (ตัวเลขของผู้เขียนข้างบนเป็นส่วนหนึ่งของ 369 ข้อ ดูหัวข้อ 5) ตารางข้างบนนับเฉพาะเทสต์ที่รันใน `mvn test` ปกติ (115 ข้อ) ยังมี `PaymentRepositoryDbTest` อีก 13 ข้อที่ข้ามในการรันปกติและรันเมื่อเปิด `LAUNDRY_DB_TESTS=true` (หัวข้อ 3.6) รวมเป็น 128 ข้อของโมดูลนี้
 
 ## 3. รายละเอียดกรณีทดสอบ
 
@@ -126,7 +129,7 @@ mvn test -Dtest=GlobalExceptionHandlerTest      # รันคลาสเดี
 | 21 | `PATCH /api/v1/payments/2/confirm` ซ้ำ | STAFF | 409 `Payment 2 is already paid` | ผ่าน |
 | 22 | `GET /api/v1/users/3/notifications?unread=true` | CUSTOMER เจ้าของ | 200 พบ 2 ข้อความ "ชำระเงินสำเร็จสำหรับการใช้เครื่อง #1 / #2" | ผ่าน (Observer ข้ามโมดูลทำงานจริง) |
 
-ข้อ 15–22 ทดสอบเมื่อ 10 ต.ค. 2569 เวลา 02:20 น. หลังโมดูลเครื่องซักเพิ่ม `SessionPayableProvider` เข้า `develop` เนื่องจากยังไม่มี API/หน้าเว็บจองเครื่อง จึงเพิ่มรอบใช้เครื่อง 2 รอบและออเดอร์ 1 รายการลงฐานข้อมูลในเครื่องโดยตรงด้วย SQL แล้วเรียก API ชำระเงินตามปกติ
+ข้อ 15–22 ทดสอบเมื่อ 10 ต.ค. 2569 เวลา 02:20 น. หลังโมดูลเครื่องซักเพิ่ม `SessionPayableProvider` เข้า `develop` ซึ่งขณะทดสอบยังไม่มี API จองเครื่อง (ภายหลังโมดูลเครื่องซักเพิ่มแล้ว) จึงเพิ่มรอบใช้เครื่อง 2 รอบและออเดอร์ 1 รายการลงฐานข้อมูลในเครื่องโดยตรงด้วย SQL แล้วเรียก API ชำระเงินตามปกติ
 
 error ทุกแบบตอบเป็นรูปแบบ `ApiErrorResponse` เดียวกัน ส่วน 401 ตอนทดสอบในเครื่องรอบนี้ (ก่อนมี handler ของโมดูล Auth) ตอบ body ว่าง ภายหลังโมดูล Auth เพิ่ม `ApiAuthenticationEntryPoint` ทำให้ 401 ตอบเป็น `ApiErrorResponse` ด้วย ยืนยันกับเว็บที่ deploy แล้ว (`GET /api/v1/payments` ไม่ล็อกอิน → 401 พร้อม `ApiErrorResponse`)
 
@@ -137,7 +140,7 @@ error ทุกแบบตอบเป็นรูปแบบ `ApiErrorRespons
 ![Swagger UI: โครงสร้างตัวอย่างของ PaymentResponse](../../img/swagger-payments-response-schema.png)
 
 ### 3.5 REST Controller และตัวตรวจ `sort`
-เทสต์ controller ใช้ `MockMvcBuilders.standaloneSetup(...)` ร่วมกับ `GlobalExceptionHandler` และเตรียมผู้ล็อกอินจำลองใน `SecurityContext` ตรวจ status, รูปแบบ JSON และการส่ง "ผู้ใช้ปัจจุบัน/เป็นพนักงานหรือไม่" ให้ Facade (`@PreAuthorize` ไม่ทำงานในโหมด standalone จึงยืนยันด้วยการทดสอบจริงในหัวข้อ 3.4)
+เทสต์ controller ใช้ `MockMvcBuilders.standaloneSetup(...)` ร่วมกับ `GlobalExceptionHandler` และเตรียมผู้ล็อกอินจำลองใน `SecurityContext` ตรวจ status, รูปแบบ JSON และการส่ง "ผู้ใช้ปัจจุบัน/เป็นพนักงานหรือไม่" ให้ Facade (`@PreAuthorize` ไม่ทำงานในโหมด standalone จึงทดสอบแยกในหัวข้อ 3.8 ด้วย Spring Security จริง และยืนยัน manual ในหัวข้อ 3.4)
 
 **`PaymentApiControllerTest` (10)** — `POST` ลูกค้า → 201 และส่ง `staff=false` · `POST` พนักงาน → `staff=true` · body ไม่ครบ → 400 พร้อม `fieldErrors` · ไม่ใช่เจ้าของ → 403 · `GET` by id ส่งต่อผู้ใช้ปัจจุบัน · รายการแบ่งหน้า (`content`, `page.totalElements`) · `sort` ที่ไม่มี → 400 ไม่เรียก service · `sort` ที่อนุญาต → 200 · `status` ไม่ถูกต้อง → 400 · `PATCH confirm` → 200
 
@@ -160,6 +163,51 @@ error ทุกแบบตอบเป็นรูปแบบ `ApiErrorRespons
 เทสต์ทุกข้อที่ทดสอบ constraint ตรวจ **ชื่อ constraint ที่ PostgreSQL ตอบกลับ** (เมธอด `assertViolates`) ไม่ใช่แค่ตรวจว่ามี exception เกิดขึ้น เพื่อให้แน่ใจว่าถูกปฏิเสธเพราะกฎที่ตั้งใจจริง (ปรับตามข้อเสนอแนะจากการรีวิว)
 
 ผลรัน (9 ต.ค. 2569): `Tests run: 13, Failures: 0, Errors: 0, Skipped: 0` · `BUILD SUCCESS` บรรทัด `ERROR` ที่เห็นใน log ระหว่างรันเป็นข้อความที่ Hibernate บันทึกเมื่อ DB ปฏิเสธข้อมูลผิดที่เราตั้งใจส่งเข้าไป ไม่ใช่เทสต์ล้ม
+
+### 3.7 หน้าเว็บชำระเงินและแจ้งเตือน (Thymeleaf)
+หน้าเว็บเรียกผ่าน `CheckoutFacade` ตัวเดียวกับ REST API จึงใช้กฎสิทธิ์เดียวกัน (เจ้าของหรือพนักงาน) และจับ exception ในตัว controller แล้วแสดงเป็นข้อความบนหน้า (เพราะ `GlobalExceptionHandler` เป็น `@RestControllerAdvice` ซึ่งจะตอบเป็น JSON)
+
+| หน้า | URL | สิทธิ์ |
+|---|---|---|
+| ฟอร์มชำระเงิน | `/payments/new`, `POST /payments` | ผู้ล็อกอิน |
+| รายละเอียดการชำระ | `/payments/{id}` | เจ้าของ / พนักงาน |
+| รายการชำระเงิน + ยืนยันรับเงินสด | `/staff/payments`, `POST /staff/payments/{id}/confirm` | STAFF / ADMIN |
+| แจ้งเตือนของฉัน (ทั้งหมด/ยังไม่อ่าน, ทำเครื่องหมายอ่านแล้ว) | `/notifications`, `POST /notifications/{id}/read` | เจ้าของ |
+
+**เทสต์อัตโนมัติ 20 ข้อ** (`PaymentWebControllerTest` 14, `NotificationWebControllerTest` 6) ตรวจชื่อ view, ข้อมูลใน model, ข้อความ flash และการส่งผู้ใช้/บทบาทให้ Facade (ไม่ render template)
+
+**ทดสอบกับแอปจริง (เรียกหน้าด้วยบัญชีตัวอย่างและเปิดดูในเบราว์เซอร์)**
+
+| กรณี | ผลที่ได้ |
+|---|---|
+| ลูกค้าเปิดหน้าแรก, ฟอร์มชำระเงิน, แจ้งเตือน | 200 แสดงถูกต้อง ไม่มี error ของ Thymeleaf |
+| ลูกค้าเปิด `/staff/payments` | 403 |
+| พนักงานเปิด `/staff/payments` (และกรอง `status=PAID`) | 200 ตัวกรองเลือกค้างถูกต้อง |
+| เปิดรายละเอียดการชำระ #1 | แสดงรอบใช้เครื่อง #1, 40.00 บาท, หยอดเหรียญ, ชำระแล้ว |
+| ส่งฟอร์มว่าง | ขึ้นกรอบแดงที่ช่องที่ขาด (3 ช่อง) ไม่เรียก Facade |
+| ชำระออเดอร์ที่ไม่มี (#999) | แสดง "Order 999 not found" บนฟอร์ม |
+| ชำระออเดอร์ #1 ด้วย QR | สำเร็จ ได้ชำระแล้ว และผู้ใช้ได้แจ้งเตือน "ชำระเงินสำเร็จสำหรับออเดอร์ #1" (Observer ทำงานผ่านหน้าเว็บ) |
+| ชำระออเดอร์ #1 ซ้ำ | แสดง "LAUNDRY_ORDER 1 already has a payment" บนฟอร์ม |
+| ส่งฟอร์มโดยไม่มี CSRF token | 403 |
+| URL ที่ไม่มีอยู่ `/payments/abc`, `/api/v1/nothing-here` | 404 (ก่อนแก้ได้ 500 ดูข้อบกพร่องข้อ 8) |
+
+![ฟอร์มชำระเงิน (ลูกค้า)](../../img/web-payment-form.png)
+
+![รายการชำระเงิน (พนักงาน)](../../img/web-staff-payments.png)
+
+![แจ้งเตือนของฉัน (ลูกค้า)](../../img/web-notifications.png)
+
+### 3.8 เทสต์สิทธิ์และ render หน้าเว็บ — `PaymentNotificationSecurityTest` (13)
+ใช้ `@WebMvcTest` ร่วมกับ `SecurityConfig` จริง (เปิด `@PreAuthorize`) และ Thymeleaf จริง โดย mock เฉพาะ service จึงไม่ต้องใช้ฐานข้อมูล ผู้ล็อกอินจำลองเป็น `AppUserDetails` (ลูกค้า id 3, พนักงาน id 2, แอดมิน id 1) เพราะ `@PreAuthorize` และ `SecurityUtils` อ่าน id จาก principal
+
+| กลุ่ม | กรณี | ผลที่ตรวจ |
+|---|---|---|
+| REST payments | ไม่ล็อกอินเรียกรายการ · ลูกค้าเรียกรายการ/ยืนยันเงินสด · พนักงานเรียก · ลูกค้าชำระ | 401 · 403 (ไม่เรียก service) · 200 · ส่ง id ผู้ล็อกอินให้ Facade |
+| REST notifications | เจ้าของดูของตัวเอง · ลูกค้าดูของคนอื่น · แอดมินดูของคนอื่น | 200 · 403 (ไม่เรียก service) · 200 |
+| หน้าเว็บ render | ฟอร์มชำระเงิน · รายการพนักงาน · หน้าแจ้งเตือน | ทุก dropdown มีข้อความ (กันข้อบกพร่องข้อ 9) · ปุ่มยืนยันเฉพาะแถวรอยืนยัน · แสดงข้อความและปุ่มอ่านแล้ว |
+| หน้าเว็บ สิทธิ์ | ลูกค้าเปิด `/staff/payments` และกดยืนยัน · ส่งฟอร์มไม่มี CSRF · ส่ง `userId` ปลอมมากับฟอร์ม | 403 · 403 · ไม่มีผล ใช้ id จากการล็อกอิน |
+
+เทสต์ชุดนี้ปิดข้อจำกัดเดิมที่ว่า `@PreAuthorize` ของโมดูลนี้ยืนยันได้แค่แบบ manual ผลรัน: `Tests run: 13, Failures: 0, Errors: 0, Skipped: 0`
 
 ## 4. ข้อบกพร่องที่พบระหว่างทดสอบและรีวิว (และแก้แล้ว)
 
@@ -191,22 +239,30 @@ error ทุกแบบตอบเป็นรูปแบบ `ApiErrorRespons
 - ปัญหา: พารามิเตอร์แบ่งหน้าของ payments/notifications แสดงใน Swagger เป็นช่อง `pageable` ก้อนเดียว (JSON) ทดลองใช้งานไม่สะดวก ขณะที่ endpoint ออเดอร์แสดง `page`/`size`/`sort` แยกช่อง
 - แก้ไข: เพิ่ม `@ParameterObject` ที่พารามิเตอร์ `Pageable`
 
+**ข้อ 8 — พบจากการเรียกหน้าเว็บของจริง: URL ที่ไม่มีอยู่ตอบ 500**
+- ปัญหา: `/api/v1/nothing-here` และ `/payments/abc` ได้ 500 เพราะ `GlobalExceptionHandler` ไม่ได้ดัก `NoResourceFoundException` (Spring 6.1+) จึงตกไปที่ handler สุดท้าย
+- แก้ไข: เพิ่ม handler ตอบ 404 `Resource not found` รูปแบบ `ApiErrorResponse` และเพิ่มเทสต์ `unknownUrl_returns404_notFiveHundred`
+
+**ข้อ 9 — พบจากการเรียกหน้าเว็บของจริง: dropdown ว่างเปล่า**
+- ปัญหา: ตัวเลือกประเภท/วิธีชำระ/สถานะ ไม่มีข้อความ (`<option value="CASH"></option>`) เพราะใน SpEL `map[t]` ตีความ `t` เป็นข้อความ "t" ไม่ใช่ตัวแปรวนซ้ำ เทสต์ controller 20 ข้อจับไม่ได้เพราะไม่ render template
+- แก้ไข: เปลี่ยนเป็น `map.get(t)` ทุกจุดและยืนยันด้วยการเรียกหน้าจริง จึงเพิ่มเทสต์ `PaymentNotificationSecurityTest` (หัวข้อ 3.8) ที่ render template จริงและตรวจว่า dropdown ทุกอันมีข้อความ เพื่อกันบั๊กนี้กลับมา
+
 ## 5. ผลรวมทั้งโปรเจค
 
-ที่มา: รายงาน Maven Surefire ของการรัน `mvn test` บน `develop` รวมงานของทุกคน เมื่อ 9 ต.ค. 2569 22:16 น. (รันซ้ำก่อนส่งงานจริงเพื่อยืนยัน)
+ที่มา: รายงาน Maven Surefire ของการรัน `mvn test` บน `develop` รวมงานของทุกคน เมื่อ 10 ต.ค. 2569 หลังเพิ่มหน้าเว็บ (รันซ้ำก่อนส่งงานจริงเพื่อยืนยัน)
 
 | โมดูล | ผู้รับผิดชอบ | คลาสเทสต์ | จำนวนเทสต์ | ผ่าน | ข้าม | ล้มเหลว |
 |---|---|---:|---:|---:|---:|---:|
-| Payment / Notification / API Quality | โชกุน | 13 | 81 | 81 | 0 | 0 |
+| Payment / Notification / API Quality / Web | โชกุน | 17 | 128 | 115 | 13 | 0 |
 | Auth / User / Branch / Security | โอ๊ค | 4 | 29 | 29 | 0 | 0 |
-| Full-Service Order | พีช | 4 | 38 | 38 | 0 | 0 |
-| Self-Service Machine | ปอนด์ | 5 | 64 | 55 | 9 | 0 |
-| **รวม** | | **26** | **212** | **203** | **9** | **0** |
+| Full-Service Order (รวม Service Type และหน้าเว็บ) | พีช | 8 | 78 | 78 | 0 | 0 |
+| Self-Service Machine / Session | ปอนด์ | 12 | 134 | 111 | 23 | 0 |
+| **รวม** | | **41** | **369** | **333** | **36** | **0** |
 
 รายคลาสของโมดูลอื่น (จากรายงานเดียวกัน)
 - โอ๊ค: `SecurityRulesTest` 13 · `BranchServiceTest` 8 · `UserServiceTest` 5 · `AuthServiceTest` 3
-- พีช: `OrderStateTest` 15 · `OrderServiceTest` 14 · `FullServicePricingTest` 6 · `OrderPayableProviderTest` 3
-- ปอนด์: `BookingValidatorTest` 19 · `MachineServiceImplTest` 18 · `SelfServicePricingTest` 11 · `MachineStateTest` 7 · `SelfServiceRepositoryTest` (รอบ `mvn test` ปกติ Maven นับว่า**ข้าม 9** โดยเจตนา ส่วนเมื่อเปิดสวิตช์ให้ต่อ PostgreSQL จริงรันได้ **19 ข้อ ผ่านทั้งหมด** ดูด้านล่าง)
+- พีช: `OrderSecurityTest` 17 · `OrderStateTest` 15 · `OrderServiceTest` 14 · `OrderWebControllerTest` 9 · `ServiceTypeServiceTest` 7 · `ServiceTypeSecurityTest` 7 · `FullServicePricingTest` 6 · `OrderPayableProviderTest` 3
+- ปอนด์: `SessionServiceImplTest` 20 · `BookingValidatorTest` 19 · `MachineServiceImplTest` 19 · `SelfServiceWebSecurityTest` 14 · `SelfServicePricingTest` 11 · `SessionApiSecurityTest` 10 · `MachineApiSecurityTest` 8 · `MachineStateTest` 7 · `SessionPayableProviderTest` 3 · เทสต์ที่ต่อ PostgreSQL จริง (รอบ `mvn test` ปกติ Maven นับว่า**ข้ามโดยเจตนา 23**) ได้แก่ `SelfServiceRepositoryTest` 9 · `SessionLifecycleIntegrationTest` 7 · `SessionPaymentIntegrationTest` 7 เมื่อเปิดสวิตช์ให้ต่อ PostgreSQL จริง `SelfServiceRepositoryTest` รันได้ **19 ข้อ ผ่านทั้งหมด** ดูด้านล่าง
 
 **ผลรันแยกของ `SelfServiceRepositoryTest` กับฐานข้อมูลจริง** (9 ต.ค. 2569, PostgreSQL 16 ใน Docker พอร์ต 5433, ตั้ง `LAUNDRY_DB_TESTS=true`):
 
@@ -216,16 +272,20 @@ LAUNDRY_DB_TESTS=true mvn test -Dtest=SelfServiceRepositoryTest
 # Tests run: 19, Failures: 0, Errors: 0, Skipped: 0 · BUILD SUCCESS
 ```
 
-เทสต์นี้สร้าง schema ชั่วคราวของตัวเอง (ชื่อสุ่ม) รัน Flyway ในนั้นแล้วลบทิ้งตอนจบ จึงไม่แตะตารางจริง เมื่อรวมผลนี้กับผลรันแยกของ `PaymentRepositoryDbTest` (13 ข้อ ดูหัวข้อ 3.6) ทั้งโปรเจคผ่านรวม **235 ข้อ (203 + 19 + 13) ไม่มีล้มเหลว** (รวมจากสามการรัน) ที่ตัวเลขต่างกัน (ข้าม 9 แต่รันจริง 19) เพราะเมื่อข้ามทั้งคลาส Maven นับตามจำนวนเมธอดเทสต์ ซึ่งในไฟล์มี `@Test` 7 เมธอด + `@ParameterizedTest` 2 เมธอด = 9 แต่ตอนรันจริงเทสต์แบบพารามิเตอร์แตกเป็นหลายกรณี รวมเป็น 19 ข้อ (ตรวจจากโค้ดของ `SelfServiceRepositoryTest`)
+เทสต์นี้สร้าง schema ชั่วคราวของตัวเอง (ชื่อสุ่ม) รัน Flyway ในนั้นแล้วลบทิ้งตอนจบ จึงไม่แตะตารางจริง เมื่อรวมผลนี้กับผลรันแยกของ `PaymentRepositoryDbTest` (13 ข้อ ดูหัวข้อ 3.6) เมื่อเปิด `LAUNDRY_DB_TESTS=true` และรันทั้งโปรเจคครั้งเดียวกับ PostgreSQL 16 จริง (หลังรวมงานทุกโมดูลและเพิ่มหน้าเว็บ ผลรัน 10 ต.ค. 2569 เวลา 17:21 น.) ได้ **`Tests run: 379, Failures: 0, Errors: 0, Skipped: 0` · `BUILD SUCCESS`** (333 ข้อที่รันปกติ + 46 ข้อที่ต่อฐานข้อมูล คือ `PaymentRepositoryDbTest` 13 + `SelfServiceRepositoryTest` 19 + `SessionLifecycleIntegrationTest` 7 + `SessionPaymentIntegrationTest` 7) ข้อความ `ERROR ... test_block_notification` ในล็อกของ `SessionLifecycleIntegrationTest` เป็นความตั้งใจของเทสต์ที่ทดสอบการ rollback ธุรกรรมเมื่อบันทึกแจ้งเตือนล้มเหลว ไม่ใช่ข้อผิดพลาด
+
+![ผลรัน mvn test ทั้งโปรเจคเมื่อเปิดเทสต์ฐานข้อมูลจริง (LAUNDRY_DB_TESTS=true) รอบก่อนเพิ่มหน้าเว็บ 321 ข้อ ผ่านทั้งหมด (ปัจจุบัน 379 ข้อ)](../../img/test-run-full-db.png)
 
 ## 6. ข้อจำกัดและสิ่งที่ยังไม่ได้ทดสอบ
 
 - **เทสต์ที่ต่อฐานข้อมูลจริงเป็นแบบ opt-in** (ต้องตั้ง `LAUNDRY_DB_TESTS=true` และเปิด PostgreSQL) จึงไม่ถูกรวมใน `mvn test` ปกติและ CI ปัจจุบันของทีมไม่ได้รันชุดนี้ ตัวเลขผลรวมหัวข้อ 5 จึงเป็นเทสต์แบบ unit เป็นหลัก ส่วนเทสต์ที่ต่อ DB จริงของ payments/notifications (`PaymentRepositoryDbTest` 13 ข้อ ครอบ `UNIQUE`, `FK`, `CHECK`) ผ่านแล้วตามหัวข้อ 3.6
-- **flow ชำระเงินกับรอบใช้เครื่องทดสอบแบบ manual แล้ว** (หัวข้อ 3.4 ข้อ 15–22: COIN, เงินสด, ยืนยัน, แจ้งเตือน) แต่ยังไม่มี API/หน้าเว็บสำหรับจองเครื่อง จึงใช้รอบใช้เครื่องที่เพิ่มลงฐานข้อมูลโดยตรง ยังไม่ได้ทดสอบ flow ตั้งแต่จองจนถึงจ่ายเงิน
-- **สิทธิ์ (`@PreAuthorize`) ของ payments/notifications ยืนยันแบบ manual แล้ว** (หัวข้อ 3.4) แต่ยังไม่มีเทสต์อัตโนมัติ เพราะเทสต์ controller แบบ standalone ไม่เปิดใช้ method security
+- **flow ชำระเงินกับรอบใช้เครื่องทดสอบแบบ manual แล้ว** (หัวข้อ 3.4 ข้อ 15–22: COIN, เงินสด, ยืนยัน, แจ้งเตือน) โดยใช้รอบใช้เครื่องที่เพิ่มลงฐานข้อมูลโดยตรง เพราะตอนทดสอบยังไม่มี API จองเครื่อง ต่อมาโมดูลเครื่องซักเพิ่ม API จอง/เริ่ม/จบ/ยกเลิกแล้ว และมีเทสต์ `SessionPaymentIntegrationTest` (ต่อ PostgreSQL จริง ทดสอบจองแล้วจ่ายผ่าน HTTP) แต่ผู้เขียนยังไม่ได้ทดสอบ flow ตั้งแต่จองจนจ่ายด้วยตัวเองแบบ manual
+- **เทสต์สิทธิ์ (`PaymentNotificationSecurityTest`, หัวข้อ 3.8) mock service** จึงไม่ได้ตรวจกฎ "เจ้าของ payable" ใน `CheckoutFacade` ร่วมกับฐานข้อมูลจริง (กฎนั้นตรวจด้วย `CheckoutFacadeTest` และการทดสอบ manual ในหัวข้อ 3.4)
 - **เทสต์ repository ของโมดูล Self-Service (`SelfServiceRepositoryTest`) ถูกข้ามโดยเจตนา** ในการรัน `mvn test` ปกติ (Maven นับเป็นข้าม 9) เพราะตั้งให้รันเฉพาะเมื่อกำหนด `LAUNDRY_DB_TESTS=true` และมี PostgreSQL พร้อม (ไม่ให้การรันเทสต์ทั่วไปต้องพึ่งฐานข้อมูล) จึงนับเป็น "ข้าม" ไม่ใช่ "ผ่าน" ในตารางหัวข้อ 5 แต่ได้ยืนยันแยกแล้วว่าผ่านครบ 19 ข้อกับ PostgreSQL จริง (ดูหัวข้อ 5) เทสต์ชุดนี้เป็นของโมดูลเครื่องซัก ไม่ได้ครอบคลุม `payments`/`notifications`
 - ตัวเลขในหัวข้อ 5 อ้างอิงการรัน ณ เวลาที่ระบุ หากมีการแก้โค้ดหลังจากนั้นต้องรันใหม่
-- **ยังไม่ได้ทดสอบหน้าเว็บ (Thymeleaf)**
+- **ฟอร์มชำระเงินผ่านเมนูยังให้ผู้ใช้พิมพ์เลขที่รายการเอง** (มีปุ่ม "ชำระเงิน" จากหน้ารายละเอียดออเดอร์ของพีชและหน้าประวัติรอบใช้งานของปอนด์แล้ว ซึ่งเติมค่าให้อัตโนมัติผ่านพารามิเตอร์ `type` และ `id`) และ 404 ของหน้าเว็บยังตอบเป็น JSON
+- **ข้อความผิดพลาดบนหน้าเว็บชำระเงินบางกรณียังเป็นภาษาอังกฤษ** เช่น "LAUNDRY_ORDER 1 already has a payment" หรือ "Order 999 not found" เพราะ controller แสดงข้อความจาก service/`GlobalExceptionHandler` ตรงๆ (ข้อความที่ controller เขียนเองเป็นภาษาไทยแล้ว) ควรแปลงเป็นภาษาไทยในรอบต่อไป
+- **สัญญา `Payable` ไม่มีข้อมูลสถานะ** ทำให้ `CheckoutFacade` ตรวจไม่ได้ว่ารายการนั้นยกเลิกแล้วหรือไม่ ออเดอร์ที่ยกเลิกแล้วจึงยังชำระผ่าน API หรือฟอร์มได้ (หน้ารายละเอียดออเดอร์ซ่อนปุ่มไว้แล้ว) เป็นข้อจำกัดของสัญญาที่ใช้ร่วมกันหลายโมดูล พีชบันทึกไว้ในรายงานของโมดูลออเดอร์เช่นกัน
 - **ยังไม่ได้ตั้งค่า Jacoco** จึงยังไม่มีตัวเลข code coverage (รายการระดับ P2)
 - ไม่มีเทสต์การทำงานพร้อมกัน (race) ของการจ่ายซ้ำจริง (สองคำขอพร้อมกัน) ตัว `UNIQUE` ที่กันการจ่ายซ้ำพิสูจน์แล้วในหัวข้อ 3.6 แต่สถานการณ์สองคำขอแข่งกันยังไม่ได้ทดสอบ
-- **หมายเหตุตัวเลขหัวข้อ 2 และ 5:** เป็นผลของรอบวันที่ 22:16 ก่อนเพิ่ม `PaymentRepositoryDbTest` เมื่อคลาสนี้เข้า `develop` การรัน `mvn test` ปกติจะนับเทสต์เพิ่ม (เมธอดของคลาสนี้ถูกนับเป็น "ข้าม") ต้องรันรอบสุดท้ายก่อนส่งงานเพื่อยืนยันตัวเลขอีกครั้ง
+- **หมายเหตุตัวเลขหัวข้อ 2 และ 5:** อ้างอิงการรัน 10 ต.ค. 2569 หลังเพิ่มหน้าเว็บ หากมีการแก้โค้ดหลังจากนั้นต้องรันใหม่ก่อนส่งงาน

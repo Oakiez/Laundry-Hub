@@ -2,6 +2,8 @@
 
 อ้างอิงโค้ด: `CheckoutFacade.checkout`, `PaymentServiceImpl.create`, `NotificationEventListener`
 
+ภาพที่เรนเดอร์แล้ว (ใช้ในรายงาน): ![ส่วนที่ 1](../../img/activity-checkout-1.png) ![ส่วนที่ 2](../../img/activity-checkout-2.png) ![ยืนยันเงินสด](../../img/activity-confirm.png)
+
 ## 1) ลูกค้า/พนักงานชำระเงิน — `POST /api/v1/payments`
 
 ```mermaid

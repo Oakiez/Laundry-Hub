@@ -1,0 +1,82 @@
+<!DOCTYPE html>
+<html lang="th" xmlns:th="http://www.thymeleaf.org"
+      xmlns:sec="http://www.thymeleaf.org/extras/spring-security">
+<head th:replace="~{fragments/layout :: head('รายการชำระเงิน')}"></head>
+<body class="d-flex flex-column min-vh-100">
+<nav th:replace="~{fragments/layout :: navbar}"></nav>
+
+<main class="container py-4 flex-grow-1">
+    <div th:replace="~{fragments/layout :: alert}"></div>
+
+    <div class="d-flex justify-content-between align-items-center mb-3">
+        <h1 class="h4 mb-0">รายการชำระเงิน</h1>
+        <form th:action="@{/staff/payments}" method="get" class="d-flex gap-2">
+            <select name="status" class="form-select form-select-sm" onchange="this.form.submit()">
+                <option value="">ทุกสถานะ</option>
+                <option th:each="s : ${statuses}" th:value="${s}" th:text="${statusLabels.get(s)}"
+                        th:selected="${s == status}">สถานะ</option>
+            </select>
+        </form>
+    </div>
+
+    <div class="card">
+        <div class="table-responsive">
+            <table class="table table-hover align-middle mb-0">
+                <thead class="table-light">
+                <tr>
+                    <th>#</th>
+                    <th>รายการ</th>
+                    <th class="text-end">จำนวนเงิน</th>
+                    <th>วิธีชำระ</th>
+                    <th>สถานะ</th>
+                    <th>สร้างเมื่อ</th>
+                    <th class="text-end">จัดการ</th>
+                </tr>
+                </thead>
+                <tbody>
+                <tr th:each="p : ${payments.content}">
+                    <td th:text="${p.id}">1</td>
+                    <td>
+                        <span th:text="${typeLabels.get(p.payableType)}">ออเดอร์</span>
+                        #<span th:text="${p.payableId}">1</span>
+                    </td>
+                    <td class="text-end" th:text="${#numbers.formatDecimal(p.amount, 1, 'COMMA', 2, 'POINT')}">0.00</td>
+                    <td th:text="${methodLabels.get(p.method)}">เงินสด</td>
+                    <td>
+                        <span class="badge"
+                              th:classappend="${p.status.name() == 'PAID'} ? 'text-bg-success' : (${p.status.name() == 'PENDING'} ? 'text-bg-warning' : 'text-bg-danger')"
+                              th:text="${statusLabels.get(p.status)}">สถานะ</span>
+                    </td>
+                    <td th:text="${#temporals.format(p.createdAt, 'dd/MM/yyyy HH:mm')}">-</td>
+                    <td class="text-end table-actions">
+                        <a th:href="@{/payments/{id}(id=${p.id})}" class="btn btn-outline-secondary btn-sm">ดู</a>
+                        <form th:if="${p.status.name() == 'PENDING'}"
+                              th:action="@{/staff/payments/{id}/confirm(id=${p.id})}" method="post"
+                              onsubmit="return confirm('ยืนยันว่าได้รับเงินแล้ว?');">
+                            <button type="submit" class="btn btn-success btn-sm">ยืนยันรับเงิน</button>
+                        </form>
+                    </td>
+                </tr>
+                <tr th:if="${payments.empty}">
+                    <td colspan="7" class="text-center text-muted py-4">ยังไม่มีรายการชำระเงิน</td>
+                </tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    <nav class="d-flex justify-content-between align-items-center mt-3" th:if="${payments.totalPages > 1}">
+        <a class="btn btn-outline-secondary btn-sm" th:classappend="${payments.first} ? 'disabled'"
+           th:href="@{/staff/payments(status=${status},page=${payments.number - 1})}">&laquo; ก่อนหน้า</a>
+        <span class="text-muted small">
+            หน้า <span th:text="${payments.number + 1}">1</span> / <span th:text="${payments.totalPages}">1</span>
+        </span>
+        <a class="btn btn-outline-secondary btn-sm" th:classappend="${payments.last} ? 'disabled'"
+           th:href="@{/staff/payments(status=${status},page=${payments.number + 1})}">ถัดไป &raquo;</a>
+    </nav>
+</main>
+
+<footer th:replace="~{fragments/layout :: footer}"></footer>
+<script th:replace="~{fragments/layout :: scripts}"></script>
+</body>
+</html>

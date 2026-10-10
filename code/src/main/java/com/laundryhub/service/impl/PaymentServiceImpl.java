@@ -16,6 +16,10 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.util.Collection;
+import java.util.HashSet;
+import java.util.Set;
+
 @Service
 @Transactional
 public class PaymentServiceImpl implements PaymentService {
@@ -71,6 +75,21 @@ public class PaymentServiceImpl implements PaymentService {
         return status == null
                 ? paymentRepository.findAll(pageable)
                 : paymentRepository.findByStatus(status, pageable);
+    }
+
+    @Override
+    @Transactional(readOnly = true)
+    public boolean orderHasPayment(Long orderId) {
+        return paymentRepository.existsByOrderId(orderId);
+    }
+
+    @Override
+    @Transactional(readOnly = true)
+    public Set<Long> sessionIdsWithPayment(Collection<Long> sessionIds) {
+        if (sessionIds.isEmpty()) {
+            return Set.of();
+        }
+        return new HashSet<>(paymentRepository.findSessionIdsWithPayment(sessionIds));
     }
 
     private boolean alreadyHasPayment(Payable payable) {

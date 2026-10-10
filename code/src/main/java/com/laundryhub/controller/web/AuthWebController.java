@@ -10,6 +10,7 @@ import org.springframework.validation.BindingResult;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.ModelAttribute;
 import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
 @Controller
@@ -34,8 +35,14 @@ public class AuthWebController {
 
     @PostMapping("/register")
     public String register(@Valid @ModelAttribute("form") RegisterRequest form, BindingResult result,
+                           @RequestParam(defaultValue = "") String confirmPassword,
                            Model model, RedirectAttributes redirectAttributes) {
-        if (result.hasErrors()) {
+        // the second password box exists only on the web form (typo guard), the REST API does not need it
+        boolean mismatch = form.password() != null && !form.password().equals(confirmPassword);
+        if (mismatch) {
+            model.addAttribute("confirmError", "รหัสผ่านทั้งสองช่องไม่ตรงกัน");
+        }
+        if (result.hasErrors() || mismatch) {
             return "auth/register";
         }
         try {
