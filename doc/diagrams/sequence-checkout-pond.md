@@ -35,7 +35,7 @@ sequenceDiagram
         Payments->>Factory: getProcessor(method)
         Factory-->>Payments: processor
         Payments->>Processor: process(payment)
-        Processor-->>Payments: CASH → PENDING; QR_MOCK/COIN → PAID
+        Processor-->>Payments: CASH → PENDING<br/> QR_MOCK/COIN → PAID
         Note over Payments: amount จาก Payable ฝั่ง server
         Payments->>PaymentRepo: save(payment)
         PaymentRepo-->>Payments: Payment
