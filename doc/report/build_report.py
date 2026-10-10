@@ -352,6 +352,11 @@ class Book:
     def cover(self):
         d = self.doc
         c = WD_ALIGN_PARAGRAPH.CENTER
+        logo = os.path.join(PROJECT_ROOT, "img", "kku-logo.png")   # ตรามหาวิทยาลัยขอนแก่น (ถ้ามีไฟล์)
+        if os.path.exists(logo):
+            d.add_picture(logo, height=Inches(1.9))
+            d.paragraphs[-1].alignment = c
+            d.paragraphs[-1].paragraph_format.space_after = Pt(18)
         para(d, "รายงานโครงงาน", 24, True, c, space_after=30)
         para(d, "เรื่อง", 18, False, c, space_after=6)
         para(d, META["title"], 22, True, c, space_after=40)
