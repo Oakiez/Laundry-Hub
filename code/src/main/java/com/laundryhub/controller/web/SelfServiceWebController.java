@@ -7,9 +7,12 @@ import com.laundryhub.dto.request.SessionBookingForm;
 import com.laundryhub.exception.BookingConflictException;
 import com.laundryhub.exception.BusinessRuleException;
 import com.laundryhub.service.BranchService;
+import com.laundryhub.dto.response.SessionResponse;
 import com.laundryhub.service.MachineService;
+import com.laundryhub.service.PaymentService;
 import com.laundryhub.service.SessionService;
 import jakarta.validation.Valid;
+import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Sort;
 import org.springframework.security.access.prepost.PreAuthorize;
@@ -26,11 +29,20 @@ public class SelfServiceWebController {
     private final MachineService machines;
     private final SessionService sessions;
     private final BranchService branches;
+    private final PaymentService payments;
 
-    public SelfServiceWebController(MachineService machines, SessionService sessions, BranchService branches) {
+    public SelfServiceWebController(MachineService machines, SessionService sessions, BranchService branches,
+                                    PaymentService payments) {
         this.machines = machines;
         this.sessions = sessions;
         this.branches = branches;
+        this.payments = payments;
+    }
+
+    /** Tells the table which sessions already have a payment, so their pay button is hidden. */
+    private void addPaidSessionIds(Model model, Page<SessionResponse> page) {
+        model.addAttribute("paidSessionIds", payments.sessionIdsWithPayment(
+                page.getContent().stream().map(SessionResponse::id).toList()));
     }
 
     @GetMapping("/machines")
@@ -69,8 +81,10 @@ public class SelfServiceWebController {
     public String detail(@PathVariable Long id, @RequestParam(defaultValue = "0") int page, Model model) {
         model.addAttribute("machine", machines.findById(id));
         if (isStaff()) {
-            model.addAttribute("sessions", sessions.findForMachine(id, true,
-                    PageRequest.of(Math.max(0, page), 10, Sort.by(Sort.Direction.DESC, "startTime", "id"))));
+            Page<SessionResponse> machineSessions = sessions.findForMachine(id, true,
+                    PageRequest.of(Math.max(0, page), 10, Sort.by(Sort.Direction.DESC, "startTime", "id")));
+            model.addAttribute("sessions", machineSessions);
+            addPaidSessionIds(model, machineSessions);
         }
         return "machines/detail";
     }
@@ -110,8 +124,10 @@ public class SelfServiceWebController {
     @PreAuthorize("hasRole('CUSTOMER')")
     public String history(@RequestParam(defaultValue = "0") int page, Model model) {
         Long owner = SecurityUtils.currentUserId();
-        model.addAttribute("sessions", sessions.findForUser(owner, owner, false,
-                PageRequest.of(Math.max(0, page), 10, Sort.by(Sort.Direction.DESC, "startTime", "id"))));
+        Page<SessionResponse> mine = sessions.findForUser(owner, owner, false,
+                PageRequest.of(Math.max(0, page), 10, Sort.by(Sort.Direction.DESC, "startTime", "id")));
+        model.addAttribute("sessions", mine);
+        addPaidSessionIds(model, mine);
         return "sessions/history";
     }
 
