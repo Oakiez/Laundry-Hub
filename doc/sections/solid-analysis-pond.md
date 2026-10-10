@@ -3,6 +3,7 @@
 Scope: pricing, machine states, booking validation, repositories, machine management,
 and session booking/lifecycle/payment lookup, machine/session REST API and web pages.
 The web layer shares the same service interfaces and shared layout as the team.
+Citation audit: 10 October 2026, develop `9a11daa`; see `doc/report/pond-citation-check.md`.
 Paths below are relative to `code/src/main/java/com/laundryhub/`.
 
 | Principle | Evidence | Explanation / limitation |
