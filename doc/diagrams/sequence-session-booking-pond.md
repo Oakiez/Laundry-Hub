@@ -16,7 +16,7 @@ sequenceDiagram
     participant Listener as NotificationEventListener
     participant Notifications as NotificationService
     Customer->>Controller: book(machineId, startTime, duration)
-    Note over Controller: authentication + validation; web POST ตรวจ CSRF
+    Note over Controller: authentication + validation<br/> web POST ตรวจ CSRF
     Controller->>Service: book(machineId, actorId, staff, request)
     Note over Service: transaction B: ตรวจ owner + enabled CUSTOMER
     Service->>MachineRepo: findByIdForUpdate(machineId)
@@ -43,7 +43,7 @@ sequenceDiagram
     Service->>Sessions: findByIdForUpdate(sessionId)
     Service->>State: getState(machine.status).canStart()
     State-->>Service: true for AVAILABLE
-    Note over Service: ตรวจ owner + RESERVED; Session/Machine → IN_USE
+    Note over Service: ตรวจ owner + RESERVED<br/> Session/Machine → IN_USE
     Service->>Sessions: flush()
     Service->>Events: MachineStatusChangedEvent(IN_USE)
     Note over Events: ยังไม่มี listener ของ Machine event
@@ -57,7 +57,7 @@ sequenceDiagram
     Note over Service: transaction F: machine ID query → lock Machine → lock Session
     Service->>State: getState(machine.status).canFinish()
     State-->>Service: true for IN_USE
-    Note over Service: ตรวจ owner + IN_USE; Session → COMPLETED, Machine → AVAILABLE
+    Note over Service: ตรวจ owner + IN_USE<br/> Session → COMPLETED, Machine → AVAILABLE
     Service->>Sessions: flush()
     Service->>Events: MachineStatusChangedEvent(AVAILABLE)
     Service->>Events: SessionStatusChangedEvent(COMPLETED)
