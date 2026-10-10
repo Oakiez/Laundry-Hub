@@ -10,6 +10,7 @@ import com.laundryhub.exception.BusinessRuleException;
 import com.laundryhub.exception.ResourceNotFoundException;
 import com.laundryhub.service.BranchService;
 import com.laundryhub.service.OrderService;
+import com.laundryhub.service.PaymentService;
 import com.laundryhub.service.ServiceTypeService;
 import com.laundryhub.service.state.OrderStateFactory;
 import jakarta.validation.ConstraintViolation;
@@ -66,9 +67,12 @@ public class OrderWebController {
     private final BranchService branchService;
     private final ServiceTypeService serviceTypeService;
     private final Validator validator;
+    private final PaymentService paymentService;
 
     public OrderWebController(OrderService orderService, BranchService branchService,
-                              ServiceTypeService serviceTypeService, Validator validator) {
+                              ServiceTypeService serviceTypeService, Validator validator,
+                              PaymentService paymentService) {
+        this.paymentService = paymentService;
         this.orderService = orderService;
         this.branchService = branchService;
         this.serviceTypeService = serviceTypeService;
@@ -122,6 +126,7 @@ public class OrderWebController {
         try {
             OrderResponse order = orderService.getForCustomer(SecurityUtils.currentUserId(), id);
             model.addAttribute("order", order);
+            model.addAttribute("hasPayment", paymentService.orderHasPayment(id));
             model.addAttribute("flow", FLOW);
             model.addAttribute("currentStep", FLOW.indexOf(order.status()));
             return "orders/detail";

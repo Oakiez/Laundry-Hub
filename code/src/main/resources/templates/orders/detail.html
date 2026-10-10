@@ -65,7 +65,8 @@
     </p>
 
     <div class="d-flex gap-2">
-        <a th:if="${order.status.name() != 'CANCELLED'}"
+        <span th:if="${order.status.name() != 'CANCELLED' and hasPayment}" class="badge text-bg-success align-self-center p-2">มีการชำระเงินแล้ว</span>
+        <a th:if="${order.status.name() != 'CANCELLED' and !hasPayment}"
            th:href="@{/payments/new(type='LAUNDRY_ORDER',id=${order.id})}" class="btn btn-primary">ชำระเงิน</a>
         <form th:if="${order.status.name() == 'RECEIVED'}" th:action="@{/orders/{id}/cancel(id=${order.id})}"
               method="post" onsubmit="return confirm('ยืนยันยกเลิกออเดอร์นี้?');">
