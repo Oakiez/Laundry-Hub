@@ -1,0 +1,9 @@
+<!DOCTYPE html>
+<html lang="th" xmlns:th="http://www.thymeleaf.org">
+<body>
+<!-- status badge shared by orders/list, orders/detail and orders/board -->
+<span th:fragment="statusBadge(s)" class="badge"
+      th:classappend="${s.name() == 'CANCELLED'} ? 'text-bg-secondary' : (${s.name() == 'PICKED_UP'} ? 'text-bg-success' : (${s.name() == 'READY'} ? 'text-bg-info' : 'text-bg-primary'))"
+      th:text="${statusLabels.get(s)}">สถานะ</span>
+</body>
+</html>

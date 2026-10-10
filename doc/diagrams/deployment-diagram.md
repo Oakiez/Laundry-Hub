@@ -3,7 +3,7 @@
 แสดงว่าระบบรันที่ไหน และไหลจากโค้ดไปสู่ผู้ใช้อย่างไร (Docker → Render ← Neon)
 
 ```mermaid
-flowchart LR
+flowchart TB
     subgraph USER["อุปกรณ์ผู้ใช้"]
         BR["เบราว์เซอร์"]
     end
