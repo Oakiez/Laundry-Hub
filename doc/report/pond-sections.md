@@ -1,9 +1,10 @@
 # ส่วนรายงานของปอนด์ — Self-Service Machine
 
 > ผู้รับผิดชอบ: ปฏิภาณ มะนิลทิพย์ รหัส 673380589-2
-> สถานะ ณ 10 ตุลาคม 2569: รายงานนี้อ้างอิงโค้ดจริงใน branch Pathiphan_6733805892_03
-> API ผ่าน review ใน PR #22 และ merge เข้า main แล้ว แต่ต้องเปิด PR เข้า develop เพิ่ม เพราะ PR #22 ใช้ base ผิด
-> หน้าเว็บและ Sequence/State Diagram ของปอนด์ยังไม่ได้ส่งมอบ ห้ามนำไปสรุปว่าเสร็จแล้ว
+> สถานะ ณ 10 ตุลาคม 2569: งาน Self-Service ที่กล่าวถึงในรายงานส่งมอบเข้า develop แล้ว ตรวจสถานะล่าสุดที่ bf9d636 (merge PR #37)
+> API ส่งเข้า develop ผ่าน PR #23; หน้าเว็บและ Sequence/State Diagram ผ่าน PR #25; ลิงก์ชำระเงินจากประวัติผ่าน PR #28; การแก้ syntax Mermaid ผ่าน PR #34 โดย PR #34 มีรีวิวจากโชกุนและ CI Test + Docker build ผ่าน
+> PR #22 เคยเลือก base เป็น main ผิด แต่ได้ส่งงานเข้า develop ภายหลังแล้ว ไม่ใช่งานที่ยังรอส่งมอบ
+> ยืนยันเดโมจอง–ชำระ QR จำลอง–เริ่ม–จบรอบบน Render ด้วยบัญชีตัวอย่างแล้ว (Session 5, Payment 4, Machine 2; UI ภาษาไทยและซ่อนปุ่มชำระแล้ว) ดู pond-deploy-demo.md; Class Diagram ของพีชรวมแล้ว ยังรอโอ๊ครวม citation/ยืนยัน contract
 
 ## บทที่ 2 ทฤษฎีและเทคโนโลยีที่เกี่ยวข้อง
 
@@ -83,7 +84,9 @@ SessionService.findPayable คืนข้อมูลตาม contract แล�
 
 ### ผลการทดสอบโมดูล Self-Service
 
-ผลทดสอบล่าสุดวันที่ 10 ตุลาคม 2569 หลังรวม develop f7c82e1 (PR #26) พร้อมลิงก์ชำระเงินจากประวัติและเทสต์ใหม่ มี 357 รายการ Failures 0 Errors 0 Skipped 0 และ BUILD SUCCESS โดยเปิด LAUNDRY_DB_TESTS=true ตัวเลขเป็นจำนวนทั้งโปรเจกต์ ไม่ใช่จำนวนเทสต์ที่ปอนด์เขียนทั้งหมด Log อยู่ใน code/target/pond-pr26-checkout-tests.log ซึ่งเป็น build output ไม่ได้ commit เข้ารายงาน
+ผลทดสอบล่าสุดก่อน merge PR #34 หลังรวม develop f9c11a4: Maven รัน 369 รายการ ผ่าน 333 ข้าม 36 ไม่มี failure/error และ BUILD SUCCESS โดยโหลด Byte Buddy agent ล่วงหน้าเพื่อหลีกเลี่ยงข้อจำกัดการ attach บน Windows รอบนี้ไม่ได้เปิด LAUNDRY_DB_TESTS จึงไม่ใช่หลักฐานว่าชุด PostgreSQL ล่าสุดผ่านทั้งหมด ตัวเลขตรงกับผลรวมใน doc/test-report/test-report.md ส่วน CI ของ PR #34 ผ่านทั้ง Test และ Docker build
+
+หลักฐานทดสอบ PostgreSQL รอบก่อน วันที่ 10 ตุลาคม 2569 หลังรวม develop f7c82e1 (PR #26) พร้อมลิงก์ชำระเงินจากประวัติและเทสต์ใหม่ มี 357 รายการ Failures 0 Errors 0 Skipped 0 และ BUILD SUCCESS โดยเปิด LAUNDRY_DB_TESTS=true ตัวเลขเป็นจำนวนทั้งโปรเจกต์ ไม่ใช่จำนวนเทสต์ที่ปอนด์เขียนทั้งหมด Log อยู่ใน code/target/pond-pr26-checkout-tests.log ซึ่งเป็น build output ไม่ได้ commit เข้ารายงาน
 
 | ประเภท | หลักฐานที่ตรวจ |
 |---|---|
@@ -101,17 +104,19 @@ SessionService.findPayable คืนข้อมูลตาม contract แล�
 
 PR #22 มี review และ approval จากโชกุนก่อน merge เข้า main แต่ใช้ base ผิดจาก workflow ของทีม จากนั้น PR #23 ส่งงานเข้า develop ที่ a21cb2a และ PR #25 ส่งหน้าเว็บ/diagrams เข้า develop ที่ 11fe6af โดยโชกุน approve และ CI Test + Docker build ผ่าน งานลิงก์ชำระเงินเพิ่มเติม merge ผ่าน PR #28 ที่ 5070373 โดยโชกุน approve และ CI Test + Docker build ผ่าน การผ่านเทสต์ในเครื่องที่เปิดฐานข้อมูลไม่เท่ากับ CI ทดสอบ PostgreSQL เพราะ workflow ไม่เปิด opt-in database suite รายละเอียดอยู่ใน doc/self-service-api.md และ doc/test-report/session-lifecycle-pond.md
 
+PR #34 แก้ตัวคั่นข้อความ Sequence และลำดับ note ของสถานะ RESERVED เพื่อให้ Mermaid แสดงผลได้ โดยคง flow เดิม ผ่าน review จากโชกุนและ CI Test + Docker build แล้ว merge เข้า develop ที่ 9a11daa
+
 ## บทที่ 5 สรุปผลและข้อเสนอแนะ
 
 ### สรุปโมดูลที่ทำแล้ว
 
 ส่งมอบ Entity/Repository, Strategy, State, BookingValidator, MachineService/SessionService, DTO/Mapper, REST API เครื่องและรอบใช้งาน, SessionPayableProvider และเทสต์กฎธุรกิจ/สิทธิ์/ฐานข้อมูล การจองคิดราคาและเวลาใน server ใช้ lock ป้องกันคำขอพร้อมกัน และเปลี่ยนสถานะเครื่องกับรอบใช้งานใน transaction เดียวกัน หน้าเว็บเครื่อง จอง ประวัติ และพนักงานเปลี่ยนสถานะใช้ layout ของทีมและ Service เดียวกับ API พร้อม Sequence Diagram สาม scenario และ State Diagram ของ Machine ทั้งหมด merge เข้า develop แล้วผ่าน PR #25
 
-### งานที่ยังไม่ส่งมอบและแนวทางพัฒนาต่อ
+### ข้อจำกัด งานตรวจรับที่เหลือ และแนวทางพัฒนาต่อ
 
-งานลิงก์ชำระเงินจากประวัติพร้อมเทสต์และรายงานล่าสุด merge ผ่าน PR #28 ที่ 5070373 โดยโชกุน approve และ CI Test + Docker build ผ่าน ส่วนหน้าเว็บและ diagrams ชุดหลัก merge แล้ว ยังไม่ได้ยืนยัน flow จอง/ชำระบน deployment ด้วยบัญชีจริง Start ตรวจสถานะแต่ไม่บังคับช่วงเวลาเริ่มหรือการชำระก่อนใช้งาน Machine event ยังไม่มี listener และ API อ่านเครื่องใช้ข้อกำหนดล็อกอินของทีม หน้าชำระเงินของโชกุนอยู่ใน develop ผ่าน PR #26 ลิงก์จากประวัติส่งเฉพาะประเภทกับเลขรอบและซ่อนสำหรับรอบยกเลิก เนื่องจาก SessionResponse ไม่มี payment status ลิงก์ยังอาจแสดงในรอบที่จ่ายแล้ว โดย PaymentService ตรวจและปฏิเสธการชำระซ้ำ
+งานลิงก์ชำระเงินจากประวัติพร้อมเทสต์และรายงานล่าสุด merge ผ่าน PR #28 ที่ 5070373 โดยโชกุน approve และ CI Test + Docker build ผ่าน ส่วนหน้าเว็บและ diagrams ชุดหลัก merge แล้ว ทดสอบ flow จอง/ชำระ QR จำลอง/start/finish บน deployment ด้วยบัญชีตัวอย่างแล้ว ดู doc/report/pond-deploy-demo.md Start ตรวจสถานะแต่ไม่บังคับช่วงเวลาเริ่มหรือการชำระก่อนใช้งาน Machine event ยังไม่มี listener และ API อ่านเครื่องใช้ข้อกำหนดล็อกอินของทีม หน้าชำระเงินของโชกุนอยู่ใน develop ผ่าน PR #26 ลิงก์จากประวัติส่งเฉพาะประเภทกับเลขรอบและซ่อนสำหรับรอบยกเลิก หลัง PR #37 controller เรียก PaymentService เพื่ออ่าน payment IDs ครั้งเดียวต่อหน้าและซ่อนปุ่มเมื่อมีรายการชำระเงินแล้ว เดโมใหม่ตรวจว่าปุ่มหายหลัง QR สำเร็จ โดย backend ยังคงปฏิเสธการชำระซ้ำ
 
-ก่อนปิดงานควรตกลง HTTP status ของ lifecycle ให้ตรง brief ทุกส่วน ตรวจ flow ผ่านหน้าเว็บจริง และปรับ diagrams/เอกสารรวมตาม branch ที่ส่งมอบล่าสุด แนวทางขยายคือกำหนดนโยบายเริ่มก่อน/หลังเวลาจองและ session เกินเวลา รวมทั้งเลือกผู้รับแจ้งเตือนเครื่องหยุดบริการก่อนเพิ่ม listener
+ก่อนปิดงานควรตกลง HTTP status ของ lifecycle ให้ตรง brief ทุกส่วน รวมหลักฐานเดโม UI ล่าสุดและปรับ citation/เอกสารรวมตาม branch ที่ส่งมอบล่าสุด แนวทางขยายคือกำหนดนโยบายเริ่มก่อน/หลังเวลาจองและ session เกินเวลา รวมทั้งเลือกผู้รับแจ้งเตือนเครื่องหยุดบริการก่อนเพิ่ม listener
 
 ## ภาคผนวก
 
@@ -128,3 +133,12 @@ PR #22 มี review และ approval จากโชกุนก่อน mer
 - Sequence Diagram: doc/diagrams/sequence-order-create-pond.md, sequence-session-booking-pond.md, sequence-checkout-pond.md
 - State Diagram: doc/diagrams/state-machine-pond.md
 - ผลตรวจความสอดคล้องกับทีม: doc/report/pond-integration-check.md
+
+### ตรวจรับเพิ่มเติม 10 ตุลาคม 2569
+
+หลักฐาน browser/API จริงและภาพอยู่ใน `doc/report/pond-deploy-demo.md`; citation ที่ต้องให้โอ๊ครวมอยู่ใน `pond-citation-check.md`; contract 2 ข้อที่รอข้อตกลงอยู่ใน `pond-contract-check.md`; บทซ้อมอยู่ใน `pond-presentation-rehearsal.md` เดโมนี้ไม่ใช่การชำระเงินจริงหรือ concurrency test และไม่ยืนยัน deployment SHA
+
+### ตรวจซ้ำหลัง UI ล่าสุด
+
+10 ตุลาคม 2569 รวม develop bf9d636 แล้วเดโมรอบใหม่ 5/Payment 4 ครบจอง–QR จำลอง–เริ่ม–จบ ตรวจสถานะภาษาไทย ปุ่มชำระหาย และแจ้งเตือนครบ ดู pond-deploy-demo.md ภาพและสไลด์ใช้รอบใหม่นี้
+Maven หลังรวม develop รัน 376 รายการ ผ่าน 340 ข้าม PostgreSQL 36 ไม่มี failure/error และ BUILD SUCCESS เวลา 22:13 น. รอบนี้ไม่ได้เปิด LAUNDRY_DB_TESTS ไม่ใช้แทนหลักฐาน DB suite

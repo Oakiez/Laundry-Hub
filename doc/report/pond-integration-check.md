@@ -1,6 +1,6 @@
 # ผลตรวจงานปอนด์กับทีม — 10 ตุลาคม 2569
 
-ตรวจหน้า GitHub ก่อนเริ่มงาน ยืนยัน PR #25 ของปอนด์ merge เข้า develop ที่ 11fe6af พร้อม approval และ Test/Docker build ผ่าน จากนั้น PR #26 ของโชกุน merge ที่ f7c82e1 เพิ่มหน้าเว็บชำระเงินและแจ้งเตือน รวม develop ล่าสุดเข้าสาขา Pathiphan_6733805892_03 โดยไม่มี conflict แล้วเพิ่มลิงก์ชำระเงินจากประวัติรอบใช้งาน งานลิงก์นี้ merge ผ่าน PR #28 ที่ 5070373 โดยโชกุน approve และ CI Test + Docker build ผ่าน แต่ยังไม่ยืนยัน flow บน deploy
+ตรวจหน้า GitHub ก่อนเริ่มงาน ยืนยัน PR #25 ของปอนด์ merge เข้า develop ที่ 11fe6af พร้อม approval และ Test/Docker build ผ่าน จากนั้น PR #26 ของโชกุน merge ที่ f7c82e1 เพิ่มหน้าเว็บชำระเงินและแจ้งเตือน รวม develop ล่าสุดเข้าสาขา Pathiphan_6733805892_03 โดยไม่มี conflict แล้วเพิ่มลิงก์ชำระเงินจากประวัติรอบใช้งาน งานลิงก์นี้ merge ผ่าน PR #28 ที่ 5070373 โดยโชกุน approve และ CI Test + Docker build ผ่าน และวันที่ 10 ตุลาคมยืนยัน flow บน deploy ด้วยบัญชีตัวอย่างแล้ว ดู pond-deploy-demo.md
 
 | จุดเชื่อมต่อ | ผลตรวจจากโค้ดจริง |
 |---|---|
@@ -31,7 +31,7 @@
 - อ่านเครื่องต้องล็อกอินตาม Security กลาง แม้ brief ระบุอ่านได้ทุกคน
 - start ตรวจสถานะ/เจ้าของ แต่ยังไม่บังคับ clock window หรือชำระก่อน start; รูปและหน้าเว็บไม่เพิ่มกฎเอง
 - MachineStatusChangedEvent ยังไม่มี listener; การเพิ่มผู้รับแจ้งเตือนต้องตกลงกับทีม
-- ทดสอบ render ด้วย MockMvc/Thymeleaf และ integration PostgreSQL แล้ว ยังไม่ได้ตรวจภาพหน้าเว็บใน browser หรือยืนยัน deploy ของ commit ใหม่
+- ทดสอบ render ด้วย MockMvc/Thymeleaf และ integration PostgreSQL แล้ว เพิ่มหลักฐาน browser จริงครบ booking/QR จำลอง/start/finish/notifications ใน pond-deploy-demo.md; หน้าเว็บไม่แสดง SHA จึงไม่ยืนยัน revision deployment
 
 ## หลักฐานทดสอบ
 
@@ -44,3 +44,7 @@
 - PR #28 base develop: ลิงก์ชำระเงิน/เทสต์และรายงาน merge แล้ว งานหลักหน้าเว็บ/diagrams อยู่ใน develop ผ่าน PR #25
 - `doc/report/pond-sections.md` สำหรับรวมรายงาน และไฟล์ sections ของปอนด์สำหรับให้โอ๊ครวม SOLID/Pattern
 - ให้ตรวจ trusted user/amount, CSRF/role, owner enforcement, transaction เดียวกับ API และเส้น diagram โดยเฉพาะ RESERVED ของ Machine ที่ไม่มี transition เข้าจาก booking
+
+## ตรวจ UI ซ้ำหลัง PR #37
+
+รวม develop bf9d636; demo Session 5/Payment 4 ผ่านครบวงจร สถานะรอบ/เครื่องเป็นไทย และ payment link หายหลังสร้างรายการชำระ ใช้ PaymentService ผ่าน controller constructor (บรรทัด 34/43) ไม่มีการข้ามไป repository ภาพใน pond-deploy-demo.md เป็น UI ใหม่ ผล Maven 376/ผ่าน340/ข้าม36/ไม่มีfailหรือerror; ไม่เปิด DB suite

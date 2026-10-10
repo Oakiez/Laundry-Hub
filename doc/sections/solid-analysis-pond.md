@@ -3,6 +3,7 @@
 Scope: pricing, machine states, booking validation, repositories, machine management,
 and session booking/lifecycle/payment lookup, machine/session REST API and web pages.
 The web layer shares the same service interfaces and shared layout as the team.
+Citation audit: 10 October 2026, develop `bf9d636` (after PR #37); see `doc/report/pond-citation-check.md`.
 Paths below are relative to `code/src/main/java/com/laundryhub/`.
 
 | Principle | Evidence | Explanation / limitation |
@@ -48,8 +49,10 @@ of individual sessions remains enforced inside SessionService as well.
 The MVC tests check role denial before service invocation and identity spoofing;
 the PostgreSQL HTTP test verifies actual ownership enforcement across layers.
 
-SelfServiceWebController uses constructor injection of MachineService, SessionService
-and BranchService (`controller/web/SelfServiceWebController.java:30`). SessionBookingForm
+SelfServiceWebController uses constructor injection of MachineService, SessionService,
+BranchService and PaymentService (`controller/web/SelfServiceWebController.java:34`).
+PaymentService queries payment IDs once per page (`SelfServiceWebController.java:43`)
+to hide duplicate payment links; the controller still never calls a repository. SessionBookingForm
 has no userId/amount fields; the controller derives the owner from SecurityUtils.
 SecurityConfig's existing web CSRF protection applies to all POST forms. Thymeleaf
 renders DTOs; the controller never accesses an entity's LAZY association.
